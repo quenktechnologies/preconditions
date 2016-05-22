@@ -1,7 +1,7 @@
 {
     "name": "some-criteria",
     "version": "0.0.1",
-    "description": "Transform an object by sending it down some pipes.",
+    "description": "Transform an object by applying some criteria.",
     "main": "index.js",
     "files": [
         "build"
@@ -9,7 +9,7 @@
     "repository": "https://github.com/metasansana/pipes.git",
     "scripts": {
         "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-        "postinstall": "cp -R ./build/* .; rm -R build",
+        "postinstall": "mv build/* . && rm -R build",
         "build": "./node_modules/.bin/babel -D src -d build"
     },
     "keywords": [
