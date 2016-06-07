@@ -7,7 +7,7 @@ import Criterion from '../Criterion';
  */
 class Required extends Criterion {
 
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
         if ((value === '') || (value === null) || (value === undefined))
             return done(new Error(`The field '${key}' is required!`), key, value);

@@ -7,7 +7,7 @@ var criteria;
 
 class UpperCase extends Criterion {
 
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
         done(null, key, value.toUpperCase());
 
@@ -17,7 +17,7 @@ class UpperCase extends Criterion {
 
 class Increment extends Criterion {
 
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
         done(null, key, value + 1);
 
@@ -53,9 +53,9 @@ class NormalCriteria extends Criteria {
 
 describe('Criteria', function() {
 
-    describe('Criteria.apply', function() {
+    describe('Criteria.execute', function() {
 
-        it('should apply', function(done) {
+        it('should execute', function(done) {
 
             var criteria = new NormalCriteria();
 

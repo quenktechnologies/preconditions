@@ -43,7 +43,7 @@ class DefaultStrategy {
         }
 
         if (left === 0) return done(null, obj);
-        allKeys.forEach((key) => all[key].enforce(key, obj[key], next));
+        allKeys.forEach((key) => all[key].apply(key, obj[key], next));
         return null;
 
     }

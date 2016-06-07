@@ -50,7 +50,7 @@ class Criteria extends Criterion {
 
     }
 
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
         this._strategy.execute(this, value,
             (err, o) => (err !== null) ?

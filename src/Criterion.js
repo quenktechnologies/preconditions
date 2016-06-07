@@ -30,19 +30,19 @@ class Criterion {
     next(key, value, done) {
 
         if (this._next !== null)
-            return this._next.enforce(key, value, done);
+            return this._next.apply(key, value, done);
 
         done(null, key, value);
 
     }
 
     /**
-     * enforce the Criterion.
+     * apply the Criterion.
      * @param {string} key The property name currently being actioned.
      * @param {*} value The value of the property
      * @param {done} done A callback that will be called when the Criterion has finished its work.
      */
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
     }
 

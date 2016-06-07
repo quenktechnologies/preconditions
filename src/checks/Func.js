@@ -23,7 +23,7 @@ class Func extends Criterion {
 
     }
 
-    enforce(key, value, done) {
+    apply(key, value, done) {
 
         var next;
         var ptr = 0;
