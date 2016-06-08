@@ -26,16 +26,14 @@ class DefaultStrategy {
                 return target(key, value, next);
 
             if (typeof target === 'object')
-                              if (target !== null) 
-if(Array.isArray(target)) {
-                return next(null, key, target);
-}else{
+                if (target !== null)
+                    if (Array.isArray(target)) {
+                        return next(null, key, target);
+                    } else {
+                        return target.apply(key, value, next);
+                    }
 
-                    return target.apply(key, value, next);
-
-            }
-
-            next(null, key, value, next);
+            next(null, key, target);
 
         };
 
