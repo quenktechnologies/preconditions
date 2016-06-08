@@ -22,8 +22,12 @@ class DefaultStrategy {
 
             target = q.shift();
 
-            if(target)
-            target.apply(key, value, next);
+            if (typeof target === 'function')
+                return target(key, value, next);
+
+            if (typeof target === 'object')
+                if (target !== null)
+                    target.apply(key, value, next);
 
         };
 
@@ -33,7 +37,7 @@ class DefaultStrategy {
 
     execute(criteria, obj, done) {
 
-        var all = criteria.all();
+        var all = criteria.getCriteria();
         var left = Object.keys(all).length;
         var errorCount = 0;
         var errors = {};

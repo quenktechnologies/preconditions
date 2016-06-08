@@ -1,7 +1,6 @@
 import must from 'must';
 import Criteria from '../src/Criteria';
 import Criterion from '../src/Criterion';
-import DefaultStrategy from '../src/DefaultStrategy';
 
 var criteria;
 

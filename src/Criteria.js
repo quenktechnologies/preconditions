@@ -7,30 +7,21 @@ import Criterion from './Criterion';
  * to each property in an object passed to apply that it knows about.
  *
  * @abstract
- * @implements {Criterion}
- * @param {Strategy} [strategy=DefaultStrategy] The strategy to use when applyning the pipe.
- * @param {Criterion} [next=null]
+ * @implements {CriteriaRule}
  */
-class Criteria extends Criterion {
-
-    constructor(strategy, next) {
-
-        super(next);
-        this._strategy = strategy || new DefaultStrategy();
-
-    }
+class Criteria {
 
     /**
-     * all returns a map of Criteron this objects.
+     * getCriteria returns a map of Criteron this objects.
      * @returns {object}
      */
-    all() {
+    getCriteria() {
 
         var o = {};
 
         Object.keys(this).forEach(key => {
 
-            if (this[key] instanceof Criterion)
+            if (this.hasOwnProperty(key))
                 o[key] = this[key];
 
         });
@@ -52,10 +43,10 @@ class Criteria extends Criterion {
 
     apply(key, value, done) {
 
-        this._strategy.execute(this, value,
+        (new DefaultStrategy()).execute(this, value,
             (err, o) => (err !== null) ?
-            next(err, key, value) :
-            this.onComplete(o, (err, o)=>done(err, key, o)));
+            done(err, key, value) :
+            this.onComplete(o, (err, o) => done(err, key, o)));
 
     }
 
@@ -70,7 +61,7 @@ class Criteria extends Criterion {
      */
     execute(obj, done) {
 
-        return this._strategy.execute(this, obj,
+        (new DefaultStrategy()).execute(this, obj,
             (err, o) => (err !== null) ? done(err, obj) : this.onComplete(o, done));
 
     }

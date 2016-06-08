@@ -8,7 +8,7 @@ function makeCriteria(o) {
 
     return {
 
-        all: function() {
+        getCriteria: function() {
             return o;
         },
         onComplete: function(k, v, cb) {
@@ -63,7 +63,7 @@ describe('Strategy', function() {
 
         it('should recognize arrays', function() {
 
-            var a = makeChain((k, v, cb) => cb(null, k, v.toLowerCase()));
+            var a = (k, v, cb) => cb(null, k, v.toLowerCase());
             var b = makeChain((k, v, cb) => cb(null, k, v + ' and politician'));
             var c = makeChain((k, v, cb) => cb(null, k, v * 10));
 
