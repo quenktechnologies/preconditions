@@ -1,13 +1,13 @@
 import must from 'must';
-import Required from '../../src/checks/Required';
+import Rules from '../src/Rules';
 
 var criterion;
 
-describe('Required', function() {
+describe('Rules', function() {
 
     beforeEach(function() {
 
-        criterion = new Required(null);
+        criterion = new Rules();
 
     });
 
@@ -15,7 +15,7 @@ describe('Required', function() {
 
         it('should fail if a value is not specified', function() {
 
-            criterion.apply('name', '', function(err, key, value) {
+            criterion.required()('name', '', function(err, key, value) {
 
                 must(err instanceof Error).be(true);
                 must(err.message).be(`The field 'name' is required!`);
