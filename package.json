@@ -1,16 +1,12 @@
 {
-    "name": "some-criteria",
+    "name": "criterias",
     "version": "0.0.1",
     "description": "Transform an object by applying some criteria.",
     "main": "index.js",
-    "files": [
-        "build"
-    ],
     "repository": "https://github.com/metasansana/pipes.git",
     "scripts": {
         "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-        "postinstall": "mv build/* . && rm -R build",
-        "build": "./node_modules/.bin/babel -D src -d build"
+        "build": "mkdir -p lib; ./node_modules/.bin/babel -D src -d lib"
     },
     "keywords": [
         "transform",

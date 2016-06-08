@@ -10,29 +10,24 @@
 /**
  * Criterion is the abstract class that must be sub classed to 
  * create a check, filter or other operation during the execution of Criteria.
- * @param {Criteria} [next=null] If passed, will be called if this criteria
  * @abstract
  */
 class Criterion {
 
-    constructor(next) {
+    constructor(msg) {
 
-        this._next = next || null;
+        this.message = msg || 'The value for {key} is invalid!';
 
     }
 
     /**
-     * next will apply the next Criterion if it exists.
-     * @param {string} key 
-     * @param {*} value 
-     * @param {CriterionCallback} done 
+     * template interpolates the values in a template string so
+     * it can be used to display meaningfull messages.
+     * @param {object} context 
      */
-    next(key, value, done) {
+    template(context) {
 
-        if (this._next !== null)
-            return this._next.apply(key, value, done);
-
-        done(null, key, value);
+        return this.message.replace(/\{([\w\$\.\-]*)}/g, (s, k) => context[k]);
 
     }
 
@@ -43,6 +38,8 @@ class Criterion {
      * @param {done} done A callback that will be called when the Criterion has finished its work.
      */
     apply(key, value, done) {
+
+        throw new ReferenceError('apply() must be overrided!');
 
     }
 

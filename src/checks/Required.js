@@ -1,5 +1,6 @@
 import Criterion from '../Criterion';
 
+const DEFAULT_MSG = 'The field \'{key}\' is required!';
 /**
  * Required ensures that the target value is not null, undefined, or an empty string.
  * @implements {Criteria}
@@ -7,12 +8,21 @@ import Criterion from '../Criterion';
  */
 class Required extends Criterion {
 
+    constructor(msg) {
+
+        super(msg || DEFAULT_MSG);
+
+    }
+
     apply(key, value, done) {
 
         if ((value === '') || (value === null) || (value === undefined))
-            return done(new Error(`The field '${key}' is required!`), key, value);
+            return done(new Error(this.template({
+                key,
+                value
+            })), key, value);
 
-        this.next(key, value, done);
+        done(null, key, value);
 
     }
 

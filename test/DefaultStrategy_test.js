@@ -61,6 +61,32 @@ describe('Strategy', function() {
 
         });
 
+        it('should recognize arrays', function() {
+
+            var a = makeChain((k, v, cb) => cb(null, k, v.toLowerCase()));
+            var b = makeChain((k, v, cb) => cb(null, k, v + ' and politician'));
+            var c = makeChain((k, v, cb) => cb(null, k, v * 10));
+
+            must(strategy.execute(makeCriteria({
+                name: a,
+                job: [b, b],
+                age: [c, c, c]
+            }), {
+                name: 'Keith Rowley',
+                job: 'lawyer',
+                age: 75
+            }, function(err, o) {
+
+                must(o).eql({
+                    name: 'keith rowley',
+                    job: 'lawyer and politician and politician',
+                    age: 75000
+                });
+
+            }));
+
+        });
+
         it('should recognize when an error occured', function() {
 
             must(strategy.execute(makeCriteria({
