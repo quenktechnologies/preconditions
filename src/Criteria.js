@@ -22,7 +22,8 @@ class Criteria {
         Object.keys(this).forEach(key => {
 
             if (this.hasOwnProperty(key))
-                o[key] = this[key];
+                if (key[0] !== '_')
+                    o[key] = this[key];
 
         });
 
