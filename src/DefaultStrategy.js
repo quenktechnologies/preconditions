@@ -26,8 +26,16 @@ class DefaultStrategy {
                 return target(key, value, next);
 
             if (typeof target === 'object')
-                if (target !== null)
-                    target.apply(key, value, next);
+                              if (target !== null) 
+if(Array.isArray(target)) {
+                return next(null, key, target);
+}else{
+
+                    return target.apply(key, value, next);
+
+            }
+
+            next(null, key, value, next);
 
         };
 
@@ -72,8 +80,9 @@ class DefaultStrategy {
             return done(null, obj);
 
         Object.keys(all).
-        forEach(key => this._run((Array.isArray(all[key])) ?
-            all[key] : [all[key]], key, obj[key], next));
+        forEach(key =>
+            this._run((Array.isArray(all[key])) ?
+                all[key] : [all[key]], key, obj[key], next));
 
         return null;
 
