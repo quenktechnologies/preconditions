@@ -1,8 +1,8 @@
-const INVALID_MSG = 'Invalid value supplied for \'${key}\'!';
+const INVALID_MSG = 'Invalid value supplied for \'{key}\'!';
 const REQUIRED_MSG = 'The field \'{key}\' is required!';
-const MAX_MSG = 'The field \'${key}\' has a maxium of {max}!';
-const MIN_MSG = 'The field \'${key}\' has a minimum of {min}!';
-const ONE_OF_MSG = 'The field \'{key}\' must be one of \'${enum}\!';
+const MAX_MSG = 'The field \'{key}\' takes a maximum of {max} characters!';
+const MIN_MSG = 'The field \'{key}\' takes a minimum of {min} characters!';
+const ONE_OF_MSG = 'The field \'{key}\' must be one of \'{enum}\!';
 
 /**
  * Rules provides convenience methods for
@@ -28,7 +28,7 @@ class Rules {
      */
     cast(type) {
 
-        return (key, value, next) => n(null, k, type(v));
+        return (key, value, next) => next(null, key, type(value));
 
     }
 
@@ -62,6 +62,17 @@ class Rules {
 
     }
 
+    /**
+     * trim the value
+     * @returns {callback}
+     */
+    trim() {
+
+        return (key, value, next) => next(null, key,
+            (typeof value === 'string') ?
+            value.trim() : value);
+    }
+
 
     /**
      * range supplies a Range rule
@@ -75,24 +86,29 @@ class Rules {
 
         return (key, value, next) => {
 
-            value = (typeof value === 'number') ? value : (value.length) ? value.length : null;
+            var test = (typeof value === 'number') ?
+                value :
+                (value.length) ?
+                value.length : null;
 
-            if (value === null)
+            if (test === null)
                 return next(new Error(this.getMessage(INVALID_MSG, {
                     key,
                     value,
                     max,
                     min
-                })));
+                })), key, value);
 
-            if (value < min)
+            if (test < min)
                 return next(new Error(
                     this.getMessage(minMsg || MIN_MSG, {
                         key,
-                        value
+                        value,
+                        max,
+                        min
                     })), key, value);
 
-            if (value > max)
+            if (test > max)
                 return next(new Error(this.getMessage(maxMsg || MAX_MSG, {
                     key,
                     value,
@@ -133,9 +149,22 @@ class Rules {
             next(new Error(this.getMessage(emsg || ONE_OF_MSG, {
                 key,
                 value,
-              enum: list.join(',')
+                enum: list.join(',')
             })), key, value) :
             next(null, key, value);
+
+    }
+
+    /**
+     * optional will not continue the chain if the value is not set
+     */
+    optional(key, value, next) {
+
+        if (!value)
+            return next(null, null, null);
+
+        next(null, key, value);
+
 
     }
 

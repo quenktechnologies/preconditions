@@ -11,7 +11,7 @@ describe('Rules', function() {
 
     });
 
-    describe('apply', function() {
+    describe('required', function() {
 
         it('should fail if a value is not specified', function() {
 
@@ -20,6 +20,28 @@ describe('Rules', function() {
                 must(err instanceof Error).be(true);
                 must(err.message).be(`The field 'name' is required!`);
                 must(key).equal('name');
+
+            });
+
+        });
+
+    });
+
+    describe('cast', function() {
+
+        it('should properly cast a value', function() {
+
+            criterion.cast(String)('age', 12, function(err, key, value) {
+
+                must(key).equal('age');
+                must(value).equal('12');
+
+            });
+
+criterion.cast(Number)('age', '24', function(err, key, value) {
+
+                must(key).equal('age');
+                must(value).equal(24);
 
             });
 

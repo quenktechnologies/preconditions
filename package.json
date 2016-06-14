@@ -6,7 +6,7 @@
     "repository": "https://github.com/metasansana/pipes.git",
     "scripts": {
         "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-        "build": "mkdir -p lib; ./node_modules/.bin/babel -D src -d lib"
+        "build": "mkdir -p lib; ./node_modules/.bin/babel -D src -s inline -d lib"
     },
     "keywords": [
         "transform",

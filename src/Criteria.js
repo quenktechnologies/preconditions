@@ -42,6 +42,15 @@ class Criteria {
 
     }
 
+    /**
+     * onError is called if an error occured after applying all the rules.
+     */
+    onError(err, obj, done) {
+
+      done(err, obj);
+
+    }
+
     apply(key, value, done) {
 
         (new DefaultStrategy()).execute(this, value,
@@ -63,7 +72,7 @@ class Criteria {
     execute(obj, done) {
 
         (new DefaultStrategy()).execute(this, obj,
-            (err, o) => (err !== null) ? done(err, obj) : this.onComplete(o, done));
+            (err, o) => (err !== null) ? this.onError(err, obj, done) : this.onComplete(o, done));
 
     }
 

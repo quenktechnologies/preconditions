@@ -20,6 +20,9 @@ class DefaultStrategy {
             if (q.length === 0)
                 return done(null, key, value);
 
+            if(key === null)
+              return done(null, null, null);
+
             target = q.shift();
 
             if (typeof target === 'function')
@@ -48,6 +51,9 @@ class DefaultStrategy {
         var errorCount = 0;
         var errors = {};
         var result = {};
+
+        if ((typeof obj !== 'object') || (obj === null))
+            return done(new Error('Payload is empty!'));
 
         var next = function(err, key, value) {
 
@@ -78,9 +84,12 @@ class DefaultStrategy {
             return done(null, obj);
 
         Object.keys(all).
-        forEach(key =>
-            this._run((Array.isArray(all[key])) ?
-                all[key] : [all[key]], key, obj[key], next));
+        forEach(key => {
+            this._run(
+                (Array.isArray(all[key])) ?
+                all[key] : [all[key]], key, obj[key], next)
+
+        });
 
         return null;
 
