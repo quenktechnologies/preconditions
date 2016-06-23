@@ -1,8 +1,8 @@
 const INVALID_MSG = 'Invalid value supplied for \'{key}\'!';
-const REQUIRED_MSG = 'The field \'{key}\' is required!';
-const MAX_MSG = 'The field \'{key}\' takes a maximum of {max} characters!';
-const MIN_MSG = 'The field \'{key}\' takes a minimum of {min} characters!';
-const ONE_OF_MSG = 'The field \'{key}\' must be one of \'{enum}\!';
+const REQUIRED_MSG = 'The field is required!';
+const MAX_MSG = 'The field takes a maximum of {max} characters!';
+const MIN_MSG = 'The field takes a minimum of {min} characters!';
+const ONE_OF_MSG = 'The field must be one of \'{enum}\!';
 
 /**
  * Rules provides convenience methods for
