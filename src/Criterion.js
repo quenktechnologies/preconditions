@@ -14,32 +14,14 @@
  */
 class Criterion {
 
-    constructor(msg) {
-
-        this.message = msg || 'The value for {key} is invalid!';
-
-    }
-
     /**
-     * template interpolates the values in a template string so
-     * it can be used to display meaningfull messages.
-     * @param {object} context 
-     */
-    template(context) {
-
-        return this.message.replace(/\{([\w\$\.\-]*)}/g, (s, k) => context[k]);
-
-    }
-
-    /**
-     * apply the Criterion.
+     * statisfy this Criterion.
      * @param {string} key The property name currently being actioned.
      * @param {*} value The value of the property
      * @param {done} done A callback that will be called when the Criterion has finished its work.
      */
-    apply(key, value, done) {
+    statisfy(key, value, done) {
 
-        throw new ReferenceError('apply() must be overrided!');
 
     }
 

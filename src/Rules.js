@@ -1,8 +1,8 @@
 const INVALID_MSG = 'Invalid value supplied for \'{key}\'!';
-const REQUIRED_MSG = 'The field is required!';
-const MAX_MSG = 'The field takes a maximum of {max} characters!';
-const MIN_MSG = 'The field takes a minimum of {min} characters!';
-const ONE_OF_MSG = 'The field must be one of \'{enum}\!';
+const REQUIRED_MSG = 'This field is required!';
+const MAX_MSG = 'This field takes a maximum of {max} characters!';
+const MIN_MSG = 'This field takes a minimum of {min} characters!';
+const ONE_OF_MSG = 'This field must be one of \'{enum}\!';
 
 /**
  * Rules provides convenience methods for
@@ -165,6 +165,46 @@ class Rules {
 
         next(null, key, value);
 
+
+    }
+
+/**
+ * all runs all of the 
+ */
+all() {
+  
+        var q = list.slice();
+        var target;
+
+        var next = function(err, key, value) {
+
+            if (err !== null)
+                return done(err, key, value);
+
+            if (q.length === 0)
+                return done(null, key, value);
+
+            if(key === null)
+              return done(null, null, null);
+
+            target = q.shift();
+
+            if (typeof target === 'function')
+                return target(key, value, next);
+
+            if (typeof target === 'object')
+                if (target !== null)
+                    if (Array.isArray(target)) {
+                        return next(null, key, target);
+                    } else {
+                        return target.apply(key, value, next);
+                    }
+
+            next(null, key, target);
+
+        };
+
+        next(null, key, value);
 
     }
 

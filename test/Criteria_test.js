@@ -6,7 +6,7 @@ var criteria;
 
 class UpperCase extends Criterion {
 
-    apply(key, value, done) {
+    satisfy(key, value, done) {
 
         done(null, key, value.toUpperCase());
 
@@ -16,7 +16,7 @@ class UpperCase extends Criterion {
 
 class Increment extends Criterion {
 
-    apply(key, value, done) {
+    satisfy(key, value, done) {
 
         done(null, key, value + 1);
 

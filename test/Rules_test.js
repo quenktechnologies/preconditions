@@ -18,7 +18,7 @@ describe('Rules', function() {
             criterion.required()('name', '', function(err, key, value) {
 
                 must(err instanceof Error).be(true);
-                must(err.message).be(`The field 'name' is required!`);
+                must(err.message).be(`This field is required!`);
                 must(key).equal('name');
 
             });

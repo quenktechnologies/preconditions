@@ -1,13 +1,16 @@
 import DefaultStrategy from './DefaultStrategy';
-import Criterion from './Criterion';
 
 /**
  * Criteria is the main entry point for using this library.
- * It represents a set of Criterion that will be applied
- * to each property in an object passed to apply that it knows about.
+ * Each key decleared in a Criteria sub class represents
+ * a check or set of checks that will be performed on corresponding
+ * keys of each object passed to the execute() method.
+ *
+ * Any key prefixed with '_' (underscore) is treated as private and is
+ * not considered a check.
  *
  * @abstract
- * @implements {CriteriaRule}
+ * @implements {Criterion}
  */
 class Criteria {
 
@@ -47,11 +50,11 @@ class Criteria {
      */
     onError(err, obj, done) {
 
-      done(err, obj);
+        done(err, obj);
 
     }
 
-    apply(key, value, done) {
+    satisfy(key, value, done) {
 
         (new DefaultStrategy()).execute(this, value,
             (err, o) => (err !== null) ?

@@ -33,7 +33,7 @@ class DefaultStrategy {
                     if (Array.isArray(target)) {
                         return next(null, key, target);
                     } else {
-                        return target.apply(key, value, next);
+                        return target.satisfy(key, value, next);
                     }
 
             next(null, key, target);

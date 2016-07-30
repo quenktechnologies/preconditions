@@ -22,7 +22,7 @@ function makeCriteria(o) {
 function makeChain(f) {
 
     return {
-        apply: function(k, v, cb) {
+        satisfy: function(k, v, cb) {
             return f(k, v, cb);
         }
     };
@@ -31,7 +31,7 @@ function makeChain(f) {
 
 describe('Strategy', function() {
 
-    describe('apply()', function() {
+    describe('satisfy()', function() {
 
         beforeEach(function() {
 
