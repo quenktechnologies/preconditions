@@ -1,81 +1,26 @@
-import DefaultStrategy from './DefaultStrategy';
+import * as core from 'criteria-pattern-core';
+import Satisfaction from './Satisfaction';
 
 /**
- * Criteria is the main entry point for using this library.
- * Each key decleared in a Criteria sub class represents
- * a check or set of checks that will be performed on corresponding
- * keys of each object passed to the execute() method.
+ * Criteria represents a set of Criterion that will be applied to 
+ * the keys of an object (map).
  *
- * Any key prefixed with '_' (underscore) is treated as private and is
- * not considered a check.
- *
- * @abstract
- * @implements {Criterion}
+ * @param {object} schema
+ * @property {object} messages
  */
-class Criteria {
+class Criteria extends core.Criterion {
 
-    /**
-     * getCriteria returns a map of Criteron this objects.
-     * @returns {object}
-     */
-    getCriteria() {
+    constructor(schema, messages) {
 
-        var o = {};
-
-        Object.keys(this).forEach(key => {
-
-            if (this.hasOwnProperty(key))
-                if (key[0] !== '_')
-                    o[key] = this[key];
-
-        });
-
-        return o;
+        super();
+        this.schema = schema;
+        this._strategy = new Satisfaction(messages);
 
     }
 
-    /**
-     * onComplete is called if there are no errors after applying all the rules.
-     * @param {object} result 
-     * @param {function} done 
-     */
-    onComplete(result, done) {
+    satisfy(value) {
 
-        done(null, result);
-
-    }
-
-    /**
-     * onError is called if an error occured after applying all the rules.
-     */
-    onError(err, obj, done) {
-
-        done(err, obj);
-
-    }
-
-    satisfy(key, value, done) {
-
-        (new DefaultStrategy()).execute(this, value,
-            (err, o) => (err !== null) ?
-            done(err, key, value) :
-            this.onComplete(o, (err, o) => done(err, key, o)));
-
-    }
-
-    /**
-     * execute the rules to the passed object.
-     * If a callback is provided, it is called with the results,
-     * the return value of the internal strategy in use is also returned which
-     * is expected to be null or a Promise.
-     * @param {object} obj The object to apply through the pipe.
-     * @param {function} cb A callback that is called with the results.
-     * @returns {null|Promise} 
-     */
-    execute(obj, done) {
-
-        (new DefaultStrategy()).execute(this, obj,
-            (err, o) => (err !== null) ? this.onError(err, obj, done) : this.onComplete(o, done));
+        return this._strategy.apply(value, this.schema);
 
     }
 

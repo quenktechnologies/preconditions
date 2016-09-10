@@ -142,6 +142,7 @@ class Rules {
      * enum supplies a OneOf rule
      * @param {array} list 
      * @param {string} emsg 
+     * @returns {callback} 
      */
     oneOf(list, emsg) {
 
@@ -165,50 +166,94 @@ class Rules {
 
         next(null, key, value);
 
-
     }
 
-/**
- * all runs all of the 
- */
-all() {
-  
-        var q = list.slice();
-        var target;
+    /**
+     * nullable will not continue the chain if the value is not set
+     */
+    nullable(rule) {
 
-        var next = function(err, key, value) {
+        return (key, value, next) => {
 
-            if (err !== null)
-                return done(err, key, value);
+            if (!value)
+                return next(null, null, null);
 
-            if (q.length === 0)
-                return done(null, key, value);
-
-            if(key === null)
-              return done(null, null, null);
-
-            target = q.shift();
-
-            if (typeof target === 'function')
-                return target(key, value, next);
-
-            if (typeof target === 'object')
-                if (target !== null)
-                    if (Array.isArray(target)) {
-                        return next(null, key, target);
-                    } else {
-                        return target.apply(key, value, next);
-                    }
-
-            next(null, key, target);
+            rule.call(this, key, value, next);
 
         };
 
-        next(null, key, value);
+    }
 
+    /**
+     * default provides a default value if the key is not set.
+     * @param {*} value
+     * @returns {callback}
+     */
+    default (value) {
+
+        return function(key, val, next) {
+
+            if ((val === null) || (val === undefined))
+                next(null, key, value);
+
+            next(null, key, val);
+
+        }
+
+    }
+
+    /**
+     * and performs a logical and between two callbacks.
+     * @param {callback} left 
+     * @param {callback} right 
+     */
+    and(left, right) {
+
+        var list = [];
+
+        return (key, value, next) => {
+
+            left.call(this, key, value, (err, key1, value1) => {
+
+                if (err !== null) {
+                    next(err, key, value);
+                } else {
+                    right.call(this, key1, value1, next);
+                }
+
+            });
+
+        };
+
+    }
+
+    /**
+     * or performs a logical or between two callbacks
+     * @param {callback} left 
+     * @param {callback} right 
+     */
+    or(left, right) {
+
+        return (key, value, next) => {
+
+            left.call(this, key, value, (err, key1, value1) => {
+
+                if (err !== null) {
+
+                    right.call(this, key, value, next);
+
+                } else {
+
+                    next(null, key1, value1);
+
+                }
+
+            });
+
+        }
     }
 
 
 }
 
-export default Rules
+export default new Rules()

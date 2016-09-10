@@ -1,14 +1,17 @@
 import must from 'must';
+import {
+    Criterion,
+    Failure
+} from 'criteria-pattern-core';
 import Criteria from '../src/Criteria';
-import Criterion from '../src/Criterion';
 
 var criteria;
 
 class UpperCase extends Criterion {
 
-    satisfy(key, value, done) {
+    satisfy(value) {
 
-        done(null, key, value.toUpperCase());
+        return value.toUpperCase();
 
     }
 
@@ -16,9 +19,9 @@ class UpperCase extends Criterion {
 
 class Increment extends Criterion {
 
-    satisfy(key, value, done) {
+    satisfy(value) {
 
-        done(null, key, value + 1);
+        return value + 1;
 
     }
 
@@ -29,10 +32,10 @@ class NestedCriteria extends Criteria {
 
     constructor() {
 
-        super();
-        this.name = new UpperCase();
-        this.count = new Increment();
-
+        super({
+            name: new UpperCase(),
+            count: new Increment()
+        });
     }
 
 }
@@ -41,10 +44,11 @@ class NormalCriteria extends Criteria {
 
     constructor() {
 
-        super();
-        this.name = new UpperCase();
-        this.count = new Increment();
-        this.nested = new NestedCriteria();
+        super({
+            name: new UpperCase(),
+            count: new Increment(),
+            nested: new NestedCriteria()
+        });
 
     }
 
@@ -52,13 +56,13 @@ class NormalCriteria extends Criteria {
 
 describe('Criteria', function() {
 
-    describe('Criteria.execute', function() {
+    describe('Criteria.satisfy', function() {
 
-        it('should execute', function(done) {
+        it('should work', function() {
 
-            var criteria = new NormalCriteria();
+            criteria = new NormalCriteria();
 
-            criteria.execute({
+            return criteria.satisfy({
                 name: 'hera',
                 count: 6,
                 invalid: true,
@@ -67,14 +71,18 @@ describe('Criteria', function() {
                     count: 0,
                     invalid: true,
                 }
-            }, function(err, filtered) {
-                must(err).be.null();
-                must(filtered).eql({
+            }).
+            then(function(report) {
+
+                must(report).eql({
                     name: 'HERA',
                     count: 7,
-                  nested: {count:1, name:'BLUEBIRD'}
+                    nested: {
+                        count: 1,
+                        name: 'BLUEBIRD'
+                    }
                 });
-                done();
+
             });
 
         });

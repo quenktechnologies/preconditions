@@ -1,111 +1,197 @@
-# Criterias
+# criteria-pattern
 
-A library for filtering, validating and transforming an object.
+An async friendly version of a Criteria pattern.
 
 ## Background
 
-Instead of relying on complicated O*Ms for validation, why not keep
-your validation logic seperate? Of course no one enjoys writing:
+Originally this library was created for validation and transforming
+objects, however after coming into contact with the specification and
+criteria pattern; this library is still mostly intended for 
+validation and transforming objects however it has be refactored
+to allowing mimicing those patterns so it can be used for buisiness logic.
 
-```javascript
+## Installation
 
-var v = new Validator(object);
-
-v.validateName();
-v.validateAge();
-v.validateSomethingElse();
-v.validateBlahBlahBlah();
-
+```sh
+ npm install --save criteria-pattern
 ```
 
-This gets tedious quickly and a pain when you have to add/remove new methods or do validation
-in different places. Not to mention, if you want to do some asynchronous operation or 
-add additional data to your objects you code path becomes a bit more difficult to follow.
+There is also a `criteria-pattern-basics` package you can install for some
+basic useful criterion:
 
-An alternative approach is to conduct all these operations in one go, via a simple interface:
-
-```javascript
-
-criteria.execute(object, function (err, result) {
-
- //do something here.
-
-});
-
+```sh
+ npm install --save criteria-pattern-basics
 ```
+## Usage
 
-### Usage
+There are four main classes in this library:
+* Criterion
+* Failure
+* Criteria
+* BulkFailure
 
-Extend the built in [Criteria](src/Criteria)
-class to get started. Each key not prefixed with '_' are treated
-as checks that will be applied to the corresponding keys of any objects passed through
-the `execute` method. Checks (internally called Criterion) are treated as chains
-of operations that are called one after the other with each having the oppurtunity
-to validate, filter, or transform the value of the keys they work on before calling the next.
+### Criterion
 
-A check can be one of :
-
-1. A primitive value (string or number). In this case the value is just copied.
-2. A callback function with the signature `function (key, value, done)` where:
-   * key is the name of the key being processed.
-   * value is the current value of that key.
-   * done is a callback used to signify the end of processing with the signature 
-   `function(err, key, value)` pass an instance of Error if validation fails or null to continue
-    the chain.
-3. A [Key](src/Key) subclass, in which case you must implement the `satisfy` method which
-   has the same signature as the callback above.
-4. Another instance of Criteria, use this if you want to check nested properties.
-
-### Example
+The `Criterion` class represents a single operation that will be performed
+on the data passed to its `satisfy(value)` method. Extend this class to 
+implement your own custom check, filter or business logic:
 
 ```javascript
 
-import Criteria from 'criterias/lib/Criteria';
-import Rules from 'criterias/lib/Rules';
-import Custom from './MyCustomRules';
+import {Criterion, Failure} from 'criteria-pattern';
 
-var id = 0;
+class CanUserWithdraw extends Criterion {
 
-class NewUser extends Criteria {
+  satisfy(user) {
 
-  constructor() {
-
-    super();
-
-    this.id = ids++;
-    this.name = [Rules.required];
-    this.email = [Custom.validateEmail, Custom.lookupEmail];
-    this.created_at = Date.now();
+    return (user.balance > 0) ? user : new Failure('Insufficient funds!', null);
 
   }
 
 }
 
-//In a route handler somewhere
+someProcessForLoadingUsers.
+get().
+then(user=>{
 
-function (req, res, next) {
+  var check = new CanUserWithdraw();
+  var result = check.satisfy(user);
 
-var check = new NewUser();
+  if(result instanceof Failure)
+    return reply(result.error);
 
-check.execute(req.body, fuction(err, user) {
-
-   if(err) {
-
-    res.render('register.html', {errors:err.errors});
-
-   }else{
-
-    database.createUser(user);
-
-   }
+    withdrawFunds(result);
 
 });
 
+```
+
+In the above example, returning an instance of Failure is not absolutely necessary but is highly recommended.
+The `Criteria` class and the boolean logic methods of `Criterion` depend on instances of `Failure` to 
+recognise a failure. If the value returned is not an instance of `Failure` and is not a
+`Promise` then the Criterion is considered satisfied and the value returned as the result.
+
+When consuming the result of `Criterion#satisfy` remember the result can be a `Failure`, `Promise` or anything else your Criterion return.
+
+It is best to guard against unforseen race conditions by wrapping the result in a `Promise#resolve` call
+and continuing execution from there.
+
+For this reason `Criterion#satisfy` should never return an `Error` unless the intention is to reject the promise chain.
+
+### Failure
+
+The `Failure` class accepts two arguments to its constructor: an error message (string)  and a context (object) for the error message.
+The error message can contain template variables example: `This is an error message for {you}.`. Calling `Failure#toString` will attempt to replace `{you}` with the key `you` from the context.
+
+This is used internally to allow for more flexible error messages.
+
+### Criteria
+
+The `Criteria` class is a actually a sub-class of `Criterion` however it works by applying an entire schema (map/object/whatever) of Criterion to an object:
+
+```javascript
+
+import {basics} from 'criteria-pattern-common';
+import {Criteria, BulkFailure} from 'criteria-pattern';
+
+class NewUserCriteria extends Criteria {
+
+  constructor() {
+
+   super({
+ 
+    name: basics.required().and(basics.string()).and(new NameCriterion()),
+    email: basics.required().and(basics.string()).and(new EmailCriterion()),
+    password: basics.required().and(basics.range(8, 255))
+ 
+   });
+
+  }
+
 }
+
+var check = new NewUserCriteria();
+
+check.satisfy(req.body).
+then(result=> {
+
+  if(result instanceof BulkFailure)
+    return res.send(409, result.errros);
+
+    return createUserSomeHow(result.value);
+
+});
 
 ```
 
-### License
+`Criterion#satisfy` always returns a Promise, this Promise resolves
+with the result of applying the Criteria or a `BulkFailure` when one of the Criterion fails.
 
-Apache-2.0 (c) Quenk Technologies Limited
+### BulkFailure
+
+A child class of `Failure` with an additional property `errors`.
+
+### Error Messages
+
+When using the `Criteria` class, you can pass a map of error message templates.
+as the second parameter to its constructor. When a Failure occurs,
+the Criteria will attempt to resolve and expand the relavant error template.
+
+Resolution of an error message works by using either the concatenation of
+key, '.' and the error message or the error message or finally the error message itself as the
+property to copy from the error message map.
+
+Example error message map:
+
+```javascript
+
+ const messages = {
+
+  'name.not': 'This is the error message used when the NotCriterion fails for the name key', 
+  'not': 'This will be used for any failing NotCriterion except for the name key of course',
+  'email.required': 'This is used when the {email} property is not supplied',
+  'required': 'This is used for failing required keys',
+ }
+
+
+```
+
+### Chaining
+
+Like the Criteria and Specification pattern, `Criterion` can be chained for boolean
+logic effect. Currently the following methods are supported:
+
+* `Criterion#and({Criterion})`
+* `Criterion#or({Criterion})`
+* `Criterion#Not()`
+
+Each one returns a Crtierion sub class. Keep in mind that in order to support async
+operations, their `satisfy({value})` methods all return Promises.
+
+Example:
+
+```javascript
+
+var chain = (new Validate()).
+            and(new AlreadySaved().Not())
+            and(new CheckLockStatus()).
+            or(new RequestQ()).
+            and(new Save());
+
+chain.satisfy().
+then(result=> {
+
+  if(result instanceof Failure)
+  return res.send(409, result.errors);
+
+  res.send(201);
+
+}).
+catch(e=>handleError(e));
+
+```
+
+## License
+
+Apache-2.0 © Quenk Technologies Limited
 

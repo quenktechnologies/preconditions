@@ -20,8 +20,8 @@ class DefaultStrategy {
             if (q.length === 0)
                 return done(null, key, value);
 
-            if(key === null)
-              return done(null, null, null);
+            if (key === null)
+                return done(null, null, null);
 
             target = q.shift();
 
@@ -33,7 +33,7 @@ class DefaultStrategy {
                     if (Array.isArray(target)) {
                         return next(null, key, target);
                     } else {
-                        return target.satisfy(key, value, next);
+                        return target.call(null, key, value, next);
                     }
 
             next(null, key, target);
