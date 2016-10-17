@@ -9,6 +9,9 @@ function resolve_message(key, msg, messages) {
     if (messages[combined])
         return messages[combined];
 
+    if (messages[key])
+        return messages[key];
+
     if (messages[msg])
         return messages[msg];
 
@@ -37,9 +40,8 @@ class Satisfaction {
         var errors = {};
         var o = {};
 
-        if (typeof values !== 'object')
-            return Promise.reject(new TypeError(`The value supplied must be an object! ` +
-                `Got '${typeof values}!'`));
+        if ((typeof values !== 'object') || (values === null))
+            values = {};
 
         return Promise.all(work.map((key, index) =>
             Promise.resolve(map[key].satisfy(values[key])))).
@@ -57,7 +59,7 @@ class Satisfaction {
 
                 } else {
 
-                    if (result !== null)
+                    if ((result !== null) || (result !== undefined))
                         o[work[index]] = result;
 
                 }

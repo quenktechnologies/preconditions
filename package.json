@@ -25,6 +25,6 @@
     "node": "^4.0.0"
   },
   "dependencies": {
-    "criteria-pattern-core": "^0.0.7"
+    "criteria-pattern-core": "0.0.8"
   }
 }
