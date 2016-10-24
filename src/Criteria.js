@@ -14,6 +14,7 @@ class Criteria extends core.Criterion {
 
         super();
         this.schema = schema;
+      this.messages = messages;
         this._strategy = new Satisfaction(messages);
 
     }
