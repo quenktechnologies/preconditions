@@ -1,6 +1,6 @@
 {
   "name": "criteria-pattern",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "An async friendly version of a Criteria pattern.",
   "main": "lib/index.js",
   "repository": "https://github.com/quenktechnologies/criteria-pattern.git",
