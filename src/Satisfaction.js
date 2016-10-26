@@ -1,5 +1,7 @@
 import Promise from 'bluebird';
-import * as core from 'criteria-pattern-core';
+import {
+    Failure
+} from 'criteria-pattern-core';
 import BulkFailure from './BulkFailure';
 
 function resolve_message(key, msg, messages) {
@@ -49,12 +51,14 @@ class Satisfaction {
 
             results.forEach((result, index) => {
 
-                if (result instanceof core.Failure) {
+                if (result instanceof BulkFailure) {
 
-                    errors[work[index]] = result.
-                    set('key', work[index]).
-                    setError(resolve_message(work[index], result.error, this.messages)).
-                    toString();
+                    errors[work[index]] = result.errors;
+                    ok = false;
+
+                } else if (result instanceof Failure) {
+
+                    errors[work[index]] = result.toMessage(work[index], this.messages);
                     ok = false;
 
                 } else {

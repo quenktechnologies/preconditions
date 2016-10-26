@@ -9,6 +9,7 @@ import {
 class BulkFailure extends Failure {
 
     constructor(errors) {
+
         super();
         this.errors = errors;
 
