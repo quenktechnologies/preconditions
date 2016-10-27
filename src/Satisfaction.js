@@ -45,8 +45,15 @@ class Satisfaction {
         if ((typeof values !== 'object') || (values === null))
             values = {};
 
-        return Promise.all(work.map((key, index) =>
-            Promise.resolve(map[key].satisfy(values[key])))).
+        return Promise.all(work.map((key, index) => {
+
+            if ((values[key] === null) || (values[key] === undefined))
+                if (map[key].required !== true)
+                    return null;
+
+            return Promise.resolve(map[key].satisfy(values[key]))
+
+        })).
         then(results => {
 
             results.forEach((result, index) => {
@@ -61,10 +68,9 @@ class Satisfaction {
                     errors[work[index]] = result.toMessage(work[index], this.messages);
                     ok = false;
 
-                } else {
+                } else if ((result !== null) && (result !== undefined)) {
 
-                    if ((result !== null) || (result !== undefined))
-                        o[work[index]] = result;
+                    o[work[index]] = result;
 
                 }
 

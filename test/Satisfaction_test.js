@@ -5,7 +5,7 @@ import {
 import Satisfaction from '../src/Satisfaction';
 import BulkFailure from '../src/BulkFailure';
 
-var strategy;
+var satisfaction;
 
 describe('Satisfaction', function() {
 
@@ -13,13 +13,13 @@ describe('Satisfaction', function() {
 
         beforeEach(function() {
 
-            strategy = new Satisfaction();
+            satisfaction = new Satisfaction();
 
         });
 
         it('should run each criteria', function() {
 
-            return strategy.apply({
+            return satisfaction.apply({
                 name: 'Keith Rowley',
                 job: 'lawyer',
                 age: 75
@@ -48,7 +48,7 @@ describe('Satisfaction', function() {
 
         it('should recognize when a Failure occurs', function() {
 
-            return strategy.apply({
+            return satisfaction.apply({
                 name: 'Keith Rowley',
                 job: 'lawyer',
                 age: 'old'
@@ -73,6 +73,55 @@ describe('Satisfaction', function() {
 
             });
 
+        });
+
+        it('should not execute a chain if the value is not supplied', function() {
+
+            return satisfaction.apply({
+                name: 'Keith Rowley',
+            }, {
+                name: {
+                    satisfy: v => v.toLowerCase()
+                },
+                job: {
+                    satisfy: v => 'politician'
+                },
+                age: {
+                    satisfy: v => new Failure('Must be number!')
+                }
+            }).
+            then(function(report) {
+
+                must(report).eql({
+                    name: 'keith rowley'
+                });
+            });
+        });
+
+        it('should execute a chain if the value is not supplied but the Criterion is required', function() {
+
+            return satisfaction.apply({
+                name: 'Keith Rowley',
+            }, {
+                name: {
+                    satisfy: v => v.toLowerCase()
+                },
+                job: {
+                    required: true,
+                    satisfy: v => 'politician'
+                },
+                age: {
+                    satisfy: v => new Failure('Must be number!')
+                }
+            }).
+            then(function(report) {
+
+                must(report).eql({
+                    name: 'keith rowley',
+                  job: 'politician'
+                });
+
+            });
         });
 
     });
