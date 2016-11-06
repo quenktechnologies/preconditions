@@ -1,33 +1,36 @@
 {
-    "name": "criteria-pattern",
-    "version": "0.0.7",
-    "description": "An async friendly version of a Criteria pattern.",
-    "main": "lib/index.js",
-    "repository": "https://github.com/quenktechnologies/criteria-pattern.git",
-    "scripts": {
-        "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-        "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/babel -D src -s inline -d lib"
-    },
-    "keywords": [
-        "criteria"
-    ],
-    "author": "Lasana Murray <dev@quenk.com>",
-    "license": "Apache-2.0",
-    "devDependencies": {
-        "babel-cli": "^6.16.0",
-        "babel-plugin-add-module-exports": "^0.2.1",
-        "babel-preset-es2015": "^6.14.0",
-        "babel-register": "^6.14.0",
-        "mocha": "^2.3.4",
-        "must": "^0.13.1"
-    },
-    "engines": {
-        "node": "^4.0.0"
-    },
-    "peerDependencies": {
-        "criteria-pattern-core": "0.0.8"
-    },
-    "dependencies": {
-        "criteria-pattern-core": "0.0.8"
-    }
+  "name": "criteria-pattern",
+  "version": "0.0.7",
+  "description": "An async friendly version of a Criteria pattern.",
+  "main": "lib/index.js",
+  "repository": "https://github.com/quenktechnologies/criteria-pattern.git",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --opts mocha.opts test",
+    "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/babel -D src -s inline -d lib"
+  },
+  "keywords": [
+    "criteria"
+  ],
+  "author": "Lasana Murray <dev@quenk.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "babel-cli": "^6.16.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-export-extensions": "^6.8.0",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-register": "^6.14.0",
+    "mocha": "^2.3.4",
+    "must": "^0.13.1"
+  },
+  "engines": {
+    "node": "^4.0.0"
+  },
+  "peerDependencies": {
+    "criteria-pattern-core": "0.0.8"
+  },
+  "dependencies": {
+    "beof": "^0.2.0",
+    "criteria-pattern-core": "0.0.8",
+    "slugify": "^1.0.2"
+  }
 }
