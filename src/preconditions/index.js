@@ -1,6 +1,16 @@
 import PreconditionError from './PreconditionError';
 import Func from './Func';
 
+/* jshint ignore: start */
+export Precondition from './Precondition';
+export AsyncPrecondition from './AsyncPrecondition';
+export Map from './Map';
+export AsyncMap from './AsyncMap';
+export List from './List';
+export AsyncList from './List';
+export Part from './Part';
+/* jshint ignore: end */
+
 /**
  * number tests if the value supplied is a number.
  * @returns {Predicate}
@@ -29,7 +39,7 @@ export function string() {
         if (typeof value !== 'string')
             return new TypeError('string');
 
-return value;
+        return value;
 
     });
 
@@ -46,7 +56,7 @@ export function array() {
         if (!Array.isArray(value))
             return new TypeError('array');
 
-return value;
+        return value;
 
     });
 
@@ -66,7 +76,7 @@ export function object() {
         if (Array.isArray(value))
             return new TypeError('object');
 
-return value;
+        return value;
 
     });
 
@@ -84,7 +94,7 @@ export function matches(pattern) {
         if (!pattern.test(value))
             return new PreconditionError('matches', { pattern })
 
-return value;
+        return value;
 
     });
 
@@ -116,7 +126,7 @@ export function range(min, max) {
         if (test > max)
             return new PreconditionError('range', { min, max });
 
-return value;
+        return value;
 
     });
 
@@ -133,7 +143,7 @@ export function equals(target) {
         if (value !== target)
             return new PreconditionError('equals', { target });
 
-return value;
+        return value;
 
     });
 
@@ -150,7 +160,7 @@ export function notNull() {
         if (value == null)
             return new Error('notNull');
 
-return value;
+        return value;
 
     });
 
@@ -168,7 +178,7 @@ export function isin(list) {
         if (list.indexOf(value) < 0)
             return new PreconditionError('isin', { list });
 
-return value;
+        return value;
 
     });
 
@@ -185,7 +195,7 @@ export function nullable() {
         if (value != null)
             return new Error('nullable');
 
-return value;
+        return value;
 
     });
 
@@ -202,7 +212,7 @@ export function empty() {
         if (value.length === 0)
             return new Error('empty');
 
-return value;
+        return value;
 
     });
 
@@ -219,7 +229,7 @@ export function length(len) {
         if (value.length !== len)
             return new PreconditionError('length', { len });
 
-return value;
+        return value;
 
     });
 
@@ -232,5 +242,63 @@ return value;
 export function func(cb) {
 
     return new Func(cb);
+
+}
+
+/**
+ * expand a templated message, any additional arguments will
+ * have their own keys merged into one context object.
+ * @param {string} message
+ * @param {...object} context
+ */
+export function expand(message) {
+
+    var context;
+    var i = arguments.length;
+    var args = [];
+    while (i--) args[i] = arguments[i];
+
+    context = args.reduce(function(context, o) {
+
+        if (typeof o === 'object')
+            Object.keys(o).forEach(function(k) {
+
+                context[k] = o[k];
+
+            });
+
+        return context;
+
+    }, {});
+
+    return String(message).replace(/\{([\w\$\.\-]*)}/g, (s, k) => context[k] || '');
+
+}
+
+/**
+ * template applies the message template resolution algorithim
+ * to provide the correct error message that should be used when
+ * a Precondition fails.
+ * @param {string} key - The key the message relates to, pass an empty string to omit.
+ * @param {string|Error} error - The error reference. If an Error instance, message will be used.
+ * @param {object.<string, string>} templates - The message templates.
+ */
+export function template(key, error, templates) {
+
+    var combined;
+    var message;
+
+    message = (error instanceof Error) ? error.message : String(error);
+    combined = `${key}.${message}`;
+
+    if (templates[combined])
+        return templates[combined];
+
+
+    else if (templates[message])
+        return templates[message];
+
+    else
+        return message;
 
 }
