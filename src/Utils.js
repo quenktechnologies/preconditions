@@ -21,6 +21,7 @@ class Utils {
             Object.defineProperty(dest, key, {
                 configurable: false,
                 enumerable: true,
+                writable: true,
                 value: src[key]
             });
 
