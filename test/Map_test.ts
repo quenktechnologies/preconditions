@@ -169,7 +169,7 @@ describe('builtins', function() {
 
             const test = { apply(_: any) { return conditions.valid('12') } };
 
-            must(conditions.optional(test).apply(undefined).takeRight()).be(undefined)
+            must(conditions.optional(test).apply(undefined).takeRight()).eql(null)
             must(conditions.optional(test).apply('earth').takeRight()).be('12')
 
         }))

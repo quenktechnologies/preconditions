@@ -181,7 +181,7 @@ export declare const isin: <A>(list: A[]) => Precondition<{}, {}>;
 /**
  * optional applies the tests given only if the value is != null
  */
-export declare const optional: <A>(t: Precondition<A, A>) => Precondition<{}, A>;
+export declare const optional: <A, B>(t: Precondition<A, B>) => Precondition<{}, any>;
 /**
  * length tests if the value is of a certain length.
  */

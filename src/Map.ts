@@ -420,8 +420,8 @@ export const isin = <A>(list: A[]) =>
 /**
  * optional applies the tests given only if the value is != null
  */
-export const optional = <A>(t: Precondition<A, A>) =>
-    func((value: A) =>  (value == null) ? valid(value) : t.apply(value));
+export const optional = <A, B>(t: Precondition<A, B>) =>
+    func((value: A) => (value == null) ? valid(null) : t.apply(value));
 
 /**
  * length tests if the value is of a certain length.
