@@ -171,18 +171,17 @@ export declare const range: <A>(min: number, max: number) => Precondition<{}, {}
  */
 export declare const equals: <A, B>(target: B) => Precondition<{}, {}>;
 /**
- * notNull requires a value to be specified
+ * required requires a value to be specified
  */
-export declare const notNull: <A>() => Precondition<{}, {}>;
+export declare const required: <A>() => Precondition<{}, {}>;
 /**
  * isin requires the value to be enumerated in the supplied list.
  */
 export declare const isin: <A>(list: A[]) => Precondition<{}, {}>;
 /**
- * nullable tests whether the value is null or undefined.
- * @returns {Predicate}
+ * optional applies the tests given only if the value is != null
  */
-export declare const nullable: <A>() => Precondition<{}, A>;
+export declare const optional: <A>(t: Precondition<A, A>) => Precondition<{}, A>;
 /**
  * length tests if the value is of a certain length.
  */

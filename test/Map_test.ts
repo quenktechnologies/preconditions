@@ -151,18 +151,28 @@ describe('MapFailure', () => {
 
 describe('builtins', function() {
 
-    describe('notNull', function() {
+    describe('required', function() {
 
         it('should fail if a value is not specified', function() {
 
             let x;
 
-            must(conditions.notNull().apply('value').takeRight()).be('value');
-            must(conditions.notNull().apply(x).takeLeft()).be.instanceOf(conditions.Failure);
+            must(conditions.required().apply('value').takeRight()).be('value');
+            must(conditions.required().apply(x).takeLeft()).be.instanceOf(conditions.Failure);
 
         });
 
     });
+
+    describe('optional', () =>
+        it('should pass on to the test when not null', () => {
+
+            const test = { apply(_: any) { return conditions.valid('12') } };
+
+            must(conditions.optional(test).apply(undefined).takeRight()).be(undefined)
+            must(conditions.optional(test).apply('earth').takeRight()).be('12')
+
+        }))
 
     describe('number', function() {
 

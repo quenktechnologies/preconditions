@@ -190,7 +190,7 @@ export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
             });
 
         let right = (key: string, { failures, values }: Reports<A, B>) =>
-            (b: B) => ({
+            (b: B) => (b == null) ? { failures, values } : ({
                 values: afpl.util.merge<Values<B>, Values<B>>(values, {
                     [key]: b
                 }), failures
@@ -400,9 +400,9 @@ export const equals = <A, B>(target: B) =>
         fail('equals', value, { target }));
 
 /**
- * notNull requires a value to be specified
+ * required requires a value to be specified
  */
-export const notNull = <A>() =>
+export const required = <A>() =>
     func((value: A) =>
         ((value == null) || ((typeof value === 'string') && (value === ''))) ?
             fail('notNull', value) :
@@ -418,10 +418,10 @@ export const isin = <A>(list: A[]) =>
             valid(value))
 
 /**
- * nullable tests whether the value is null or undefined.
- * @returns {Predicate}
+ * optional applies the tests given only if the value is != null
  */
-export const nullable = <A>() => func((value: A) => valid(value));
+export const optional = <A>(t: Precondition<A, A>) =>
+    func((value: A) =>  (value == null) ? valid(value) : t.apply(value));
 
 /**
  * length tests if the value is of a certain length.

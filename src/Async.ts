@@ -86,7 +86,7 @@ export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
             });
 
         let right = (key: string, { failures, values }: Sync.Reports<A, B>) =>
-            (b: B): Reports<A, B> => Promise.resolve({
+            (b: B): Reports<A, B> => Promise.resolve((b ==null)? {failures, values} : {
                 values: afpl.util.merge<Sync.Values<B>, Sync.Values<B>>(values, {
                     [key]: b
                 }), failures
