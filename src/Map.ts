@@ -76,7 +76,7 @@ export interface Contexts {
  */
 export interface Context {
 
-    [key: string]: string | number | boolean | Date | Context
+    [key: string]: any
 
 }
 
@@ -84,6 +84,24 @@ export type Expansion
     = string
     | object
     ;
+
+export class ListFailure<A> extends Failure<A[]> {
+
+    constructor(
+        public failures: Failures<A>,
+        public value: A[],
+        public contexts: Contexts = {}) { super('list', value, contexts); }
+
+    expand(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+
+        return afpl.util.reduce(this.failures, ((o, f, $index) =>
+            afpl.util.merge(o, {
+                [$index]: f.expand(templates, afpl.util.merge(c, { $index }))
+            })), {});
+
+    }
+
+}
 
 /**
  * MapFailure is contains info on failures that occured while applying preconditions.
@@ -93,7 +111,7 @@ export class MapFailure<A> extends Failure<Values<A>> {
     constructor(
         public failures: Failures<A>,
         public value: Values<A>,
-        public contexts: Contexts = {}) { super('map', value, {}); }
+        public contexts: Contexts = {}) { super('map', value, contexts); }
 
     expand(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
 
@@ -128,6 +146,18 @@ export interface Reports<A, B> {
 export interface Preconditions<A, B> {
 
     [key: string]: Precondition<A, B>
+
+}
+
+export class Func<A, B> implements Precondition<A, B> {
+
+    constructor(public f: (value: A) => Result<A, B>) { }
+
+    apply(value: A): Result<A, B> {
+
+        return this.f(value);
+
+    }
 
 }
 
@@ -198,3 +228,185 @@ export const mapFail: <A, B>(e: Failures<A>, v: Values<A>, c?: Contexts) =>
 
 export const valid: <A, B>(b: B) => afpl.Either<Failure<A>, B> =
     <A, B>(b: B) => afpl.Either.right<Failure<A>, B>(b);
+
+/**
+ * func 
+ */
+export const func: <A, B>(f: (value: A) => Result<A, B>) => Precondition<A, B> =
+    <A, B>(f: (value: A) => Result<A, B>) => new Func(f);
+
+/**
+ * or
+ */
+export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
+    Precondition<A, B> = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
+        func((value: A) => left.apply(value).cata(
+            () => right.apply(value),
+            v => valid(v)))
+
+/**
+ * and
+ */
+export const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B> =
+    <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
+        func((value: A) => left.apply(value).cata<Result<A, B>>(
+            afpl.Either.left,
+            (v: A) => right.apply(v)));
+
+/**
+ * set 
+ */
+export const set: <A, B>(v: B) => Precondition<A, B> =
+    <B>(v: B) => func((_a: any) => valid(v));
+
+/**
+ * decide does evaluates condition and decides
+ * whether to return left if true or right if false.
+ *
+ * The evaluation is done before apply is called.
+ */
+export const decide = <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) =>
+    func((value: A) => condition ? left.apply(value) : right.apply(value));
+
+/**
+ * number tests if the value supplied is a number.
+ */
+export const number = () => func(<A>(n: A) =>
+    (typeof n === 'number') ? valid(n) : fail('number', n))
+
+/**
+ * string tests if the value is a string.
+ */
+export const string = <A>() => func((s: A) =>
+    (typeof s === 'string') ? valid(s) : fail('string', s))
+
+/**
+ * list tests if the value is an array.
+ */
+export const list = <A>() => func((a: A) =>
+    (Array.isArray(a)) ? valid(a) : fail('list', a))
+
+
+/**
+ * each applies a precondition for each member of an array.
+ */
+export const each = <A, B>(p: Precondition<A, B>) =>
+
+    func((value: A) => {
+
+        if (Array.isArray(value)) {
+
+            let r = value.reduce(({ failures, values }, a, k) =>
+                p.apply(a).cata(
+                    f => ({
+                        values,
+                        failures: afpl.util.merge(failures, { [k]: f })
+                    }),
+                    v => ({
+                        failures,
+                        values: values.concat(v)
+                    })), { failures: {}, values: [] });
+
+            if (Object.keys(r.failures).length > 0)
+                return afpl.Either.left(new ListFailure(r.failures, value));
+            else
+                return valid(r.values);
+
+        } else {
+
+            return fail('invalid', value);
+
+        }
+
+    })
+
+/**
+ * object tests if the value is a js object.
+ */
+export const object = <A>() =>
+    func((value: A) => (typeof value !== 'object') ?
+        fail('object', value) :
+        (Array.isArray(value)) ?
+            fail('object', value) :
+            valid(value))
+
+
+/**
+ * matches tests if the value satisfies a regular expression.
+ */
+export const matches = (pattern: RegExp) =>
+    func((value: string) => (!pattern.test(value)) ?
+        fail('matches', value, { pattern: pattern.toString() }) :
+        valid(value))
+
+/**
+ * range tests if a string, number or array falls within a range
+ */
+export const range = <A>(min: number, max: number) =>
+    func((value: string | number | A[]) => {
+
+        let test = (typeof value === 'number') ?
+            value :
+            (Array.isArray(value)) ?
+                value.length :
+                (typeof value === 'string') ?
+                    value.length : null;
+
+        if (test === null)
+            return fail('invalid', value, { min, max });
+
+        if (test < min)
+            return fail('range.min', value, { min, max });
+
+        if (test > max)
+            return fail('range.max', value, { min, max });
+
+        return valid(value);
+
+
+    })
+
+
+const isB = <B>(a: any, b: B): a is B => (a === b)
+
+/**
+ * equals tests if the value is equal to the value specified (strictly).
+ */
+export const equals = <A, B>(target: B) =>
+    func((value: A) => isB(value, target) ?
+        valid(target):
+fail('equals', value, { target }));
+
+/**
+ * notNull requires a value to be specified
+ */
+export const notNull = <A>() =>
+    func((value: A) =>
+        ((value == null) || ((typeof value === 'string') && (value === ''))) ?
+            fail('notNull', value) :
+            valid(value))
+
+/**
+ * isin requires the value to be enumerated in the supplied list.
+ */
+export const isin = <A>(list: A[]) =>
+    func((value: A) =>
+        (list.indexOf(value) < 0) ?
+            fail('isin', value, { list }) :
+            valid(value))
+
+/**
+ * nullable tests whether the value is null or undefined.
+ * @returns {Predicate}
+ */
+export const nullable = <A>() => func((value: A) => valid(value));
+
+/**
+ * length tests if the value is of a certain length.
+ */
+export const length = <A>(len: number) =>
+    func((value: A[] | string) => (value.length !== len) ?
+        fail('length', value, { length: len }) :
+        valid(value))
+
+

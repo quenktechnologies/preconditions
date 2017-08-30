@@ -27,6 +27,36 @@ export interface Precondition<A, B> {
 
 export type Result<A, B> = Promise<Sync.Result<A, B>>
 
+/**
+ * And
+ */
+export class And<A, B> implements Precondition<A, B> {
+
+    constructor(public left: Precondition<A, A>, public right: Precondition<A, B>) { }
+
+    apply(value: A): Result<A, B> {
+
+        return this
+            .left
+            .apply(value).
+            then(e => e.cata(Promise.resolve, v => this.right.apply(v)))
+
+    }
+
+}
+
+export class Func<A, B> implements Precondition<A, B> {
+
+    constructor(public f: (value: A) => Result<A, B>) { }
+
+    apply(value: A): Result<A, B> {
+
+        return this.f(value);
+
+    }
+
+}
+
 export type Reports<A, B> = Promise<Sync.Reports<A, B>>
 
 /**
@@ -55,7 +85,7 @@ export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
                     [key]: b
                 }), failures
             });
-debugger;
+
         if (typeof value !== 'object') {
 
             return Promise.resolve(Sync.mapFail<A, Sync.Values<B>>({}, value));
@@ -85,6 +115,7 @@ debugger;
 
 }
 
+
 export const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) =>
     Promise<afpl.Either<Sync.Failure<A>, B>> =
     <A, B>(message: string, value: A, ctx: Sync.Context = {}) =>
@@ -98,3 +129,36 @@ export const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Co
 export const valid: <A, B>(b: B) => Promise<afpl.Either<Sync.Failure<A>, B>> =
     <A, B>(b: B) => Promise.resolve(Sync.valid<A, B>(b))
 
+/**
+ * func 
+ */
+export const func: <A, B>(f: (value: A) => Result<A, B>) => Precondition<A, B> =
+    <A, B>(f: (value: A) => Result<A, B>) => new Func(f);
+
+/**
+ * or
+ */
+export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) => Precondition<A, B> =
+    <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
+        func((value: A) => left.apply(value).then(e =>
+            e.cata(() => right.apply(value), v => valid(v))))
+
+/**
+ * and
+ */
+export const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B> =
+    <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
+        func((value: A) => left.apply(value).then(e =>
+            e.cata<Result<A, B>>(
+                (f: Sync.Failure<A>) => Promise.resolve(afpl.Either.left(f)),
+                (v: A) => right.apply(v))));
+
+/**
+ * set 
+ */
+export const set: <A, B>(v: B) => Precondition<A, B> =
+    <B>(v: B) => func((_a: any) => valid(v));
+
+
+export const wrap = <A, B>(s: Sync.Precondition<A, B>) =>
+    func((value: A) => s.apply(value).cata(Promise.resolve, Promise.resolve));

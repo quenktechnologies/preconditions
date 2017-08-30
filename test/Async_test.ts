@@ -9,9 +9,13 @@ const async = <A, B>(type: string) => ({
 
         return Promise.fromCallback(cb => {
 
-            setTimeout(() => cb(null, (typeof value !== type) ?
-                Map.fail('async', value) :
-                Map.valid(value)), 100)
+            setTimeout(() => cb(null, (type === 'array') ?
+                Array.isArray(value) ?
+                    Map.valid(value) :
+                    Map.fail('async', value) :
+                (typeof value !== type) ?
+                    Map.fail('async', value) :
+                    Map.valid(value)), 100)
 
         });
 
@@ -76,6 +80,30 @@ describe('Map', function() {
                 })))
 
     });
+
+});
+
+describe('Or', () => {
+
+    let test = Async.or(async('string'), async('number'));
+
+    it('should detect fails', () =>
+        test.apply([1]).then(e => must(e.takeLeft().expand()).eql('async')));
+
+    it('should detect valids', () =>
+        test.apply(1).then(e => must(e.takeRight()).be(1)));
+
+});
+
+describe('And', () => {
+
+    let test = Async.and(async('object'), async('array'));
+
+    it('should detect fails', () =>
+        test.apply({}).then(e =>  must(e.takeLeft().expand()).eql('async')));
+
+    it('should detect valids', () =>
+        test.apply([6]).then(e => must(e.takeRight()).eql([6])));
 
 });
 

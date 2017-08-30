@@ -134,4 +134,68 @@ describe('MapFailure', () => {
 
 });
 
+describe('builtins', function() {
+
+    describe('notNull', function() {
+
+        it('should fail if a value is not specified', function() {
+
+            let x;
+
+            must(conditions.notNull().apply('value').takeRight()).be('value');
+            must(conditions.notNull().apply(x).takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('number', function() {
+
+        it('should fail if the value specified is not a number', function() {
+
+            must(conditions.number().apply(12).takeRight()).be(12);
+            must(conditions.number().apply('12').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('string', function() {
+
+        it('should fail if the value specified is not a string', function() {
+
+            must(conditions.string().apply('12').takeRight()).be('12');
+            must(conditions.string().apply(12).takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('list', function() {
+
+        it('should fail if the value supplied is not an array', function() {
+
+            must(conditions.list().apply([]).takeRight()).eql([]);
+            must(conditions.list().apply('[]').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('equals', function() {
+
+        it('should fail if the value is not equal', function() {
+
+            console.log(conditions.equals(23).apply(23));
+            must(conditions.equals(23).apply(23).takeRight()).be(23);
+            must(conditions.equals(23).apply('23').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+});
+
+
+
 
