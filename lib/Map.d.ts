@@ -73,12 +73,12 @@ export declare class MapFailure<A> extends Failure<Values<A>> {
 /**
  * Values is the map of values to apply the preconditions to.
  */
-export interface Values<A> {
-    [key: string]: A;
+export interface Values<V> {
+    [key: string]: V;
 }
-export interface Reports<A, B> {
-    failures: Failures<A>;
-    values: Values<B>;
+export interface Reports<M, V> {
+    failures: Failures<M>;
+    values: Values<V>;
 }
 /**
  * A map of key precondition pairs
@@ -97,19 +97,21 @@ export declare class Func<A, B> implements Precondition<A, B> {
  * A map applies a precondition for each property declared on it.
  * Do not declare any key values that do not implement Precondition.
  */
-export declare class Map<A, B> implements Precondition<Values<A>, Values<B>> {
-    getConditions(): Preconditions<A, B>;
-    apply(value: Values<A>): Result<Values<A>, Values<B>>;
+export declare class Map<A, C> implements Precondition<Values<A>, C> {
+    getConditions(): Preconditions<any, any>;
+    apply(value: Values<A>): Result<Values<A>, C>;
 }
 /**
  * Hash is like Map except you specify the preconditions by passing
  * a plain old javascript object.
  */
-export declare class Hash<A, B> extends Map<A, B> {
-    conditions: Preconditions<A, B>;
-    constructor(conditions: Preconditions<A, B>);
-    getConditions(): Preconditions<A, B>;
+export declare class Hash<A, C> extends Map<A, C> {
+    conditions: Preconditions<any, any>;
+    constructor(conditions: Preconditions<any, any>);
+    getConditions(): Preconditions<any, any>;
 }
+export declare const whenLeft: <M, V>(key: string, {failures, values}: Reports<M, V>) => (f: Failure<M>) => Reports<M, V>;
+export declare const whenRight: <M, V>(key: string, {failures, values}: Reports<M, V>) => (v: V) => Reports<M, V>;
 export declare const left: <A, B>(a: A) => afpl.Either<A, B>;
 export declare const right: <A, B>(b: B) => afpl.Either<A, B>;
 export declare const fail: <A, B>(m: string, v: A, ctx?: Context) => afpl.Either<Failure<A>, B>;
@@ -145,7 +147,7 @@ export declare const number: <A>() => Precondition<A, number>;
 /**
  * string tests if the value is a string.
  */
-export declare const string: <A>() => Precondition<A, string>;
+export declare const string: () => Precondition<any, string>;
 /**
  * list tests if the value is an array.
  */

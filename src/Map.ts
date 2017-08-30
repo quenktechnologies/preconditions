@@ -127,16 +127,16 @@ export class MapFailure<A> extends Failure<Values<A>> {
 /**
  * Values is the map of values to apply the preconditions to.
  */
-export interface Values<A> {
+export interface Values<V> {
 
-    [key: string]: A
+    [key: string]: V
 
 }
 
-export interface Reports<A, B> {
+export interface Reports<M, V> {
 
-    failures: Failures<A>
-    values: Values<B>
+    failures: Failures<M>
+    values: Values<V>
 
 }
 
@@ -167,53 +167,35 @@ export class Func<A, B> implements Precondition<A, B> {
  * A map applies a precondition for each property declared on it.
  * Do not declare any key values that do not implement Precondition.
  */
-export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
+export class Map<A, C> implements Precondition<Values<A>, C>{
 
-    getConditions(): Preconditions<A, B> {
+    getConditions(): Preconditions<any, any> {
 
         return <any>this;
 
     }
 
-    apply(value: Values<A>): Result<Values<A>, Values<B>> {
+    apply(value: Values<A>): Result<Values<A>, C> {
 
         let conditions = this.getConditions();
-
-        let init: Reports<A, B> = { failures: {}, values: {} };
-
-        let left = (key: string, { failures, values }: Reports<A, B>) =>
-            (f: Failure<A>) => ({
-                values,
-                failures: afpl.util.merge<Failures<A>, Failures<A>>(failures, {
-                    [key]: f
-                })
-            });
-
-        let right = (key: string, { failures, values }: Reports<A, B>) =>
-            (b: B) => (b == null) ? { failures, values } : ({
-                values: afpl.util.merge<Values<B>, Values<B>>(values, {
-                    [key]: b
-                }), failures
-            });
+        let init: Reports<A, any> = { failures: {}, values: {} };
 
         if (typeof value !== 'object') {
 
-            return mapFail<A, Values<B>>({}, value);
+            return mapFail<A, C>({}, value);
 
         } else {
 
-            let result = afpl.util.reduce(conditions,
-                (reports: Reports<A, B>, condition: Precondition<A, B>, key: string) =>
-                    condition.apply(value[key])
-                        .cata(left(key, reports), right(key, reports)), init);
+            let reports = afpl.util.reduce(conditions,
+                (r: Reports<A, any>, p: Precondition<any, any>, k: string) =>
+                    p.apply(value[k]).cata<Reports<A, any>>(whenLeft(k, r), whenRight(k, r)), init);
 
-            if (Object.keys(result.failures).length > 0)
-                return mapFail<A, Values<B>>(result.failures, value);
+            if (Object.keys(reports.failures).length > 0)
+                return mapFail<A, C>(reports.failures, value);
             else
-                return valid<Values<A>, Values<B>>(result.values);
+                return valid<Values<A>, C>(<C><any>reports.values);
 
         }
-
     }
 
 }
@@ -222,17 +204,36 @@ export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
  * Hash is like Map except you specify the preconditions by passing
  * a plain old javascript object.
  */
-export class Hash<A, B> extends Map<A, B> {
+export class Hash<A, C> extends Map<A, C> {
 
-    constructor(public conditions: Preconditions<A, B>) { super() }
+    constructor(public conditions: Preconditions<any, any>) { super(); }
 
-    getConditions(): Preconditions<A, B> {
+    getConditions(): Preconditions<any, any> {
 
         return this.conditions;
 
     }
 
 }
+
+export const whenLeft =
+    <M, V>(key: string, { failures, values }: Reports<M, V>) =>
+        (f: Failure<M>): Reports<M, V> => ({
+            values,
+            failures: afpl.util.merge<Failures<M>, Failures<M>>(failures, {
+                [key]: f
+            })
+        });
+
+export const whenRight = <M, V>(key: string, { failures, values }: Reports<M, V>) =>
+    (v: V): Reports<M, V> => (v == null) ?
+        { failures, values } :
+        ({
+            failures,
+            values: afpl.util.merge<Values<V>, Values<V>>(values, {
+                [key]: v
+            })
+        });
 
 export const left: <A, B>(a: A) => afpl.Either<A, B> = afpl.Either.left;
 
@@ -299,8 +300,10 @@ export const number = <A>(): Precondition<A, number> =>
 /**
  * string tests if the value is a string.
  */
-export const string = <A>(): Precondition<A, string> => func((s: A) =>
-    (typeof s === 'string') ? valid<A, string>(s) : fail<A, string>('string', s))
+export const string = (): Precondition<any, string> =>
+  func((s: any) => (typeof s === 'string') ? 
+    valid<any, string>(s) :
+    fail<any, string>('string', s))
 
 /**
  * list tests if the value is an array.
@@ -431,5 +434,3 @@ export const length = <A>(len: number) =>
     func((value: A[] | string) => (value.length !== len) ?
         fail('length', value, { length: len }) :
         valid(value))
-
-

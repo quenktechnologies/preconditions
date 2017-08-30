@@ -62,57 +62,44 @@ export type Reports<A, B> = Promise<Sync.Reports<A, B>>
 /**
  * Map for async preconditions
  */
-export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
+export class Map<A, C> implements Precondition<Sync.Values<A>, C> {
 
-    getConditions(): Preconditions<A, B> {
+    getConditions(): Preconditions<any, any> {
 
         return <any>this;
 
     }
 
-    apply(value: Sync.Values<A>): Result<Sync.Values<A>, Sync.Values<B>> {
+    apply(value: Sync.Values<A>): Result<Sync.Values<A>, C> {
 
         let conditions = this.getConditions();
 
-        let init: Reports<A, B> =
+        let init: Reports<A, any> =
             Promise.resolve({ failures: {}, values: {} });
-
-        let left = (key: string, { failures, values }: Sync.Reports<A, B>) =>
-            (f: Sync.Failure<A>): Reports<A, B> => Promise.resolve({
-                values,
-                failures: afpl.util.merge<Sync.Failures<A>, Sync.Failures<A>>(failures, {
-                    [key]: f
-                })
-            });
-
-        let right = (key: string, { failures, values }: Sync.Reports<A, B>) =>
-            (b: B): Reports<A, B> => Promise.resolve((b ==null)? {failures, values} : {
-                values: afpl.util.merge<Sync.Values<B>, Sync.Values<B>>(values, {
-                    [key]: b
-                }), failures
-            });
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, Sync.Values<B>>({}, value));
+            return Promise.resolve(Sync.mapFail<A, C>({}, value));
 
         } else {
 
             return afpl.util.reduce(conditions, (
-                p: Reports<A, B>,
-                condition: Precondition<A, B>,
+                p: Reports<A, any>,
+                condition: Precondition<any, any>,
                 key: string) =>
-                p.then((r: Sync.Reports<A, B>) =>
+                p.then((r: Sync.Reports<A, any>) =>
                     condition
                         .apply(value[key])
-                        .then((e: Sync.Result<A, B>) =>
-                            e.cata(left(key, r), right(key, r)))), init)
-                .then((r: Sync.Reports<A, B>) => {
+                        .then((e: Sync.Result<A, any>) =>
+                            Promise.resolve(e.cata(Sync.whenLeft(key, r),
+                                Sync.whenRight(key, r))))), init)
+                .then((r: Sync.Reports<A, any>) => {
 
                     if (Object.keys(r.failures).length > 0)
-                        return Promise.resolve(Sync.mapFail<A, Sync.Values<B>>(r.failures, value));
+                        return Promise.resolve(Sync.mapFail<A, C>(r.failures, value));
                     else
-                        return Promise.resolve(Sync.valid<Sync.Values<A>, Sync.Values<B>>(r.values));
+                        return Promise
+                            .resolve(Sync.valid<Sync.Values<A>, C>(<C><any>r.values));
 
                 });
 
@@ -125,11 +112,11 @@ export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
  * Hash is like Map except you specify the preconditions by passing
  * a plain old javascript object.
  */
-export class Hash<A, B> extends Map<A, B> {
+export class Hash<A, C> extends Map<A, C> {
 
-    constructor(public conditions: Preconditions<A, B>) { super() }
+    constructor(public conditions: Preconditions<any, any>) { super(); }
 
-    getConditions(): Preconditions<A, B> {
+    getConditions(): Preconditions<any, any> {
 
         return this.conditions;
 

@@ -37,18 +37,18 @@ export declare type Reports<A, B> = Promise<Sync.Reports<A, B>>;
 /**
  * Map for async preconditions
  */
-export declare class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
-    getConditions(): Preconditions<A, B>;
-    apply(value: Sync.Values<A>): Result<Sync.Values<A>, Sync.Values<B>>;
+export declare class Map<A, C> implements Precondition<Sync.Values<A>, C> {
+    getConditions(): Preconditions<any, any>;
+    apply(value: Sync.Values<A>): Result<Sync.Values<A>, C>;
 }
 /**
  * Hash is like Map except you specify the preconditions by passing
  * a plain old javascript object.
  */
-export declare class Hash<A, B> extends Map<A, B> {
-    conditions: Preconditions<A, B>;
-    constructor(conditions: Preconditions<A, B>);
-    getConditions(): Preconditions<A, B>;
+export declare class Hash<A, C> extends Map<A, C> {
+    conditions: Preconditions<any, any>;
+    constructor(conditions: Preconditions<any, any>);
+    getConditions(): Preconditions<any, any>;
 }
 export declare const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) => Promise<afpl.Either<Sync.Failure<A>, B>>;
 export declare const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) => Promise<afpl.Either<Sync.MapFailure<A>, B>>;

@@ -2,7 +2,7 @@ import * as must from 'must/register';
 import * as help from './help';
 import * as conditions from '../src/Map';
 
-class Condition<A, B> extends conditions.Map<A, B> {
+class Condition<A, C> extends conditions.Map<A, C> {
 
     name = help.string()
     age = help.number()
@@ -10,11 +10,16 @@ class Condition<A, B> extends conditions.Map<A, B> {
 
 }
 
-class Nested<A, B> extends conditions.Map<A, B> {
+class Nested<A, C> extends conditions.Map<A, C> {
 
     id = help.number()
     condition = new Condition()
 
+}
+
+interface User {
+    name: string
+    age: number
 }
 
 const map = new Condition();
@@ -64,6 +69,16 @@ describe('Map', function() {
 
     })
 
+    it('should allow for type recognition', () => {
+
+        let map = new Condition<any, User>();
+
+        let user: User = map.apply({ name: 'Me', age: 21, roles: [] }).takeRight();
+
+        must(user).eql({ name: 'Me', age: 21, roles: [] });
+
+    })
+
 })
 
 describe('Hash', function() {
@@ -81,6 +96,19 @@ describe('Hash', function() {
             eql({ name: 'string', age: '22' });
 
     });
+
+    it('should allow for type recognition', () => {
+
+        let hash = new conditions.Hash<any, User>({
+            name: help.string(),
+            age: help.number()
+        });
+
+        let user: User = hash.apply({ name: 'Me', age: 21 }).takeRight();
+
+        must(user).eql({ name: 'Me', age: 21 });
+
+    })
 
 });
 
