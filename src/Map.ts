@@ -222,16 +222,16 @@ export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
  * Hash is like Map except you specify the preconditions by passing
  * a plain old javascript object.
  */
-export class Hash<A,B> extends Map<A,B> {
+export class Hash<A, B> extends Map<A, B> {
 
-  constructor(private conditions: Preconditions<A,B>){ super() }
+    constructor(public conditions: Preconditions<A, B>) { super() }
 
-  getConditions():Preconditions<A,B> {
+    getConditions(): Preconditions<A, B> {
 
-    return this.conditions;
+        return this.conditions;
 
-  }
-  
+    }
+
 }
 
 export const left: <A, B>(a: A) => afpl.Either<A, B> = afpl.Either.left;

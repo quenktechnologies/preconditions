@@ -106,7 +106,7 @@ export declare class Map<A, B> implements Precondition<Values<A>, Values<B>> {
  * a plain old javascript object.
  */
 export declare class Hash<A, B> extends Map<A, B> {
-    private conditions;
+    conditions: Preconditions<A, B>;
     constructor(conditions: Preconditions<A, B>);
     getConditions(): Preconditions<A, B>;
 }
