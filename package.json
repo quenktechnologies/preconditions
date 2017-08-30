@@ -2,11 +2,12 @@
   "name": "criteria-pattern",
   "version": "0.0.7",
   "description": "An async friendly version of a Criteria pattern.",
-  "main": "lib/index.js",
+  "main": "lib/Map.js",
+  "types": "lib/Map.d.ts",
   "repository": "https://github.com/quenktechnologies/criteria-pattern.git",
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-    "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/babel -D src -s inline -d lib"
+    "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/tsc --project src"
   },
   "keywords": [
     "criteria"
@@ -14,13 +15,19 @@
   "author": "Lasana Murray <dev@quenk.com>",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/bluebird": "^3.5.8",
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^8.0.25",
     "babel-cli": "^6.16.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-export-extensions": "^6.8.0",
     "babel-preset-es2015": "^6.14.0",
     "babel-register": "^6.14.0",
+    "build": "^0.1.4",
     "mocha": "^2.3.4",
-    "must": "^0.13.1"
+    "must": "^0.13.1",
+    "run": "^1.4.0",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.4.2"
   },
   "engines": {
     "node": "^4.0.0"
@@ -29,7 +36,10 @@
     "criteria-pattern-core": "0.0.8"
   },
   "dependencies": {
+    "@quenk/polate": "^1.2.0",
+    "afpl": "^0.5.4",
     "beof": "^0.2.0",
+    "bluebird": "^3.5.0",
     "criteria-pattern-core": "0.0.8",
     "slugify": "^1.0.2"
   }

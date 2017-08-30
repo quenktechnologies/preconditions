@@ -1,5 +1,5 @@
 import must from 'must';
-import { number, string, array, equals, notNull, nullable, func } from '../../src/preconditions';
+import { number, string, array, equals, notNull, nullable, func, expand } from '../../src/preconditions';
 
 describe('builtins', function() {
 
@@ -57,5 +57,17 @@ describe('builtins', function() {
         });
 
     });
+
+    describe('expand', function() {
+
+        it('should expand inline templates', function() {
+
+            must(expand('My name is {name}', { name: 'Hutumu' })).be('My name is Hutumu');
+
+        });
+
+    });
+
+
 
 });

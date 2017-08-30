@@ -1,5 +1,8 @@
 import * as afpl from 'afpl';
 import * as polate from '@quenk/polate';
+import * as Async from './Async';
+
+export { Async }
 
 /**
  * Precondition represents some condition that must be satisfied

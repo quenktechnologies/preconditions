@@ -23,6 +23,11 @@ describe('MapError', function() {
 
     });
 
+    it('must be an instance of MapError', function() {
+
+        must(new MapError()).be.instanceof(MapError);
+
+    });
 
     it('must be an instance of Error', function() {
 
@@ -38,6 +43,14 @@ describe('MapError', function() {
 
         });
 
+        it('must be an instanceof of MapError', function() {
+
+            must(new Child()).be.instanceof(MapError);
+
+        });
+
+
+
     });
 
     describe('grand-children', function() {
@@ -48,15 +61,12 @@ describe('MapError', function() {
 
         });
 
-    });
+        it('must be an instanceof MapError', function() {
 
-    describe('expand', function() {
-
-        it('should expand inline templates', function() {
-
-            must(err.expand('My name is {name}', { name: 'Hutumu' })).be('My name is Hutumu');
+            must(new Child1()).be.instanceof(MapError);
 
         });
+
 
     });
 
