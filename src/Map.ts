@@ -293,21 +293,22 @@ export const whenTrue = <A, B>(condition: boolean, left: Precondition<A, B>, rig
 /**
  * number tests if the value supplied is a number.
  */
-export const number = () => func(<A>(n: A) =>
-    (typeof n === 'number') ? valid(n) : fail('number', n))
+export const number = <A>(): Precondition<A, number> =>
+    func((n: A) => (typeof n === 'number') ? valid<A, number>(n) : fail<A, number>('number', n))
 
 /**
  * string tests if the value is a string.
  */
-export const string = <A>() => func((s: A) =>
-    (typeof s === 'string') ? valid(s) : fail('string', s))
+export const string = <A>(): Precondition<A, string> => func((s: A) =>
+    (typeof s === 'string') ? valid<A, string>(s) : fail<A, string>('string', s))
 
 /**
  * list tests if the value is an array.
  */
-export const list = <A>() => func((a: A) =>
-    (Array.isArray(a)) ? valid(a) : fail('list', a))
-
+export const list = <A, B>(): Precondition<A, B[]> =>
+    func((a: A) => (Array.isArray(a)) ?
+        valid<A, B[]>(a) :
+        fail<A, B[]>('list', a))
 
 /**
  * each applies a precondition for each member of an array.
@@ -345,12 +346,12 @@ export const each = <A, B>(p: Precondition<A, B>) =>
 /**
  * object tests if the value is a js object.
  */
-export const object = <A>() =>
-    func((value: A) => (typeof value !== 'object') ?
-        fail('object', value) :
-        (Array.isArray(value)) ?
-            fail('object', value) :
-            valid(value))
+export const object = <B>(): Precondition<any, B> =>
+    func((value: any) => (typeof value !== 'object') ?
+        fail<any, B>('object', value) :
+        (!Array.isArray(value)) ?
+            valid<any, B>(value) :
+            fail<any, B>('object', value));
 
 
 /**

@@ -141,15 +141,15 @@ export declare const whenTrue: <A, B>(condition: boolean, left: Precondition<A, 
 /**
  * number tests if the value supplied is a number.
  */
-export declare const number: () => Precondition<{}, {}>;
+export declare const number: <A>() => Precondition<A, number>;
 /**
  * string tests if the value is a string.
  */
-export declare const string: <A>() => Precondition<{}, {}>;
+export declare const string: <A>() => Precondition<A, string>;
 /**
  * list tests if the value is an array.
  */
-export declare const list: <A>() => Precondition<{}, {}>;
+export declare const list: <A, B>() => Precondition<A, B[]>;
 /**
  * each applies a precondition for each member of an array.
  */
@@ -157,7 +157,7 @@ export declare const each: <A, B>(p: Precondition<A, B>) => Precondition<{}, any
 /**
  * object tests if the value is a js object.
  */
-export declare const object: <A>() => Precondition<{}, {}>;
+export declare const object: <B>() => Precondition<any, B>;
 /**
  * matches tests if the value satisfies a regular expression.
  */
