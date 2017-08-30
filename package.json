@@ -26,9 +26,6 @@
   "engines": {
     "node": "^4.0.0"
   },
-  "peerDependencies": {
-    "criteria-pattern-core": "0.0.8"
-  },
   "dependencies": {
     "@quenk/polate": "^1.2.0",
     "afpl": "^0.5.4",
