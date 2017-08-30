@@ -98,7 +98,17 @@ export declare class Func<A, B> implements Precondition<A, B> {
  * Do not declare any key values that do not implement Precondition.
  */
 export declare class Map<A, B> implements Precondition<Values<A>, Values<B>> {
+    getConditions(): Preconditions<A, B>;
     apply(value: Values<A>): Result<Values<A>, Values<B>>;
+}
+/**
+ * Hash is like Map except you specify the preconditions by passing
+ * a plain old javascript object.
+ */
+export declare class Hash<A, B> extends Map<A, B> {
+    private conditions;
+    constructor(conditions: Preconditions<A, B>);
+    getConditions(): Preconditions<A, B>;
 }
 export declare const left: <A, B>(a: A) => afpl.Either<A, B>;
 export declare const right: <A, B>(b: B) => afpl.Either<A, B>;

@@ -19,6 +19,7 @@ class Nested<A, B> extends conditions.Map<A, B> {
 
 const map = new Condition();
 const nest = new Nested();
+const hashed = new conditions.Hash({ name: help.string(), age: help.string() });
 
 describe('Map', function() {
 
@@ -46,18 +47,14 @@ describe('Map', function() {
 
     });
 
-});
-
-describe('Nested', () => {
-
-    it('should work', () => {
+    it('should work nested', () => {
 
         must(nest.apply({ id: 12, condition: { name: 'string', age: 22, roles: [] } }).takeRight())
             .eql({ id: 12, condition: { name: 'string', age: 22, roles: [] } });
 
     })
 
-    it('should detect errors', () => {
+    it('should detect nested errors', () => {
 
         must(
             nest.apply({
@@ -68,6 +65,24 @@ describe('Nested', () => {
     })
 
 })
+
+describe('Hash', function() {
+
+    it('should return a Failure for invalid data', function() {
+
+        must(hashed.apply({ name: null, age: 12, roles: '' }).takeLeft().expand()).
+            eql({ name: 'string', age: 'string' });
+
+    });
+
+    it('should return valid data', function() {
+
+        must(hashed.apply({ name: 'string', age: '22', roles: [] }).takeRight()).
+            eql({ name: 'string', age: '22' });
+
+    });
+
+});
 
 describe('Failure', function() {
 

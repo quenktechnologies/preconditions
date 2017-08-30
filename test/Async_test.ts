@@ -41,6 +41,7 @@ class Nested<A, B> extends Async.Map<A, B>{
 
 const map = new Conditions();
 const nested = new Nested();
+const hashed = new Async.Hash({ id: async('number'), net: async('number') });
 
 describe('Map', function() {
 
@@ -83,6 +84,29 @@ describe('Map', function() {
 
 });
 
+
+describe('Hash', function() {
+
+    it('should fail invalid data', function() {
+
+        return hashed
+            .apply({ id: null, age: '' })
+            .then(e =>
+                must(e.takeLeft().expand())
+                    .eql({ id: 'async', net: 'async' }))
+
+    });
+
+    it('should low valid data ', () => {
+
+        return hashed
+            .apply({ id: 12, net: 12, roles: 'rolled out' })
+            .then(e => must(e.takeRight()).eql({ id: 12, net: 12 }));
+
+    });
+
+});
+
 describe('Or', () => {
 
     let test = Async.or(async('string'), async('number'));
@@ -100,7 +124,7 @@ describe('And', () => {
     let test = Async.and(async('object'), async('array'));
 
     it('should detect fails', () =>
-        test.apply({}).then(e =>  must(e.takeLeft().expand()).eql('async')));
+        test.apply({}).then(e => must(e.takeLeft().expand()).eql('async')));
 
     it('should detect valids', () =>
         test.apply([6]).then(e => must(e.takeRight()).eql([6])));

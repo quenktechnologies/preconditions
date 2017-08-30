@@ -64,9 +64,15 @@ export type Reports<A, B> = Promise<Sync.Reports<A, B>>
  */
 export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
 
+  getConditions() : Preconditions<A,B> {
+
+    return <any>this;
+
+  }
+
     apply(value: Sync.Values<A>): Result<Sync.Values<A>, Sync.Values<B>> {
 
-        let conditions = <Preconditions<A, B>><any>this;
+        let conditions = this.getConditions();
 
         let init: Reports<A, B> =
             Promise.resolve({ failures: {}, values: {} });
@@ -115,6 +121,21 @@ export class Map<A, B> implements Precondition<Sync.Values<A>, Sync.Values<B>> {
 
 }
 
+/**
+ * Hash is like Map except you specify the preconditions by passing
+ * a plain old javascript object.
+ */
+export class Hash<A,B> extends Map<A,B> {
+
+  constructor(private conditions: Preconditions<A,B>){ super() }
+
+  getConditions():Preconditions<A,B> {
+
+    return this.conditions;
+
+  }
+  
+}
 
 export const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) =>
     Promise<afpl.Either<Sync.Failure<A>, B>> =

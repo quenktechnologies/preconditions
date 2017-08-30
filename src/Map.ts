@@ -169,9 +169,15 @@ export class Func<A, B> implements Precondition<A, B> {
  */
 export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
 
+    getConditions(): Preconditions<A, B> {
+
+        return <any>this;
+
+    }
+
     apply(value: Values<A>): Result<Values<A>, Values<B>> {
 
-        let conditions = <Preconditions<A, B>><any>this;
+        let conditions = this.getConditions();
 
         let init: Reports<A, B> = { failures: {}, values: {} };
 
@@ -210,6 +216,22 @@ export class Map<A, B> implements Precondition<Values<A>, Values<B>> {
 
     }
 
+}
+
+/**
+ * Hash is like Map except you specify the preconditions by passing
+ * a plain old javascript object.
+ */
+export class Hash<A,B> extends Map<A,B> {
+
+  constructor(private conditions: Preconditions<A,B>){ super() }
+
+  getConditions():Preconditions<A,B> {
+
+    return this.conditions;
+
+  }
+  
 }
 
 export const left: <A, B>(a: A) => afpl.Either<A, B> = afpl.Either.left;
@@ -374,8 +396,8 @@ const isB = <B>(a: any, b: B): a is B => (a === b)
  */
 export const equals = <A, B>(target: B) =>
     func((value: A) => isB(value, target) ?
-        valid(target):
-fail('equals', value, { target }));
+        valid(target) :
+        fail('equals', value, { target }));
 
 /**
  * notNull requires a value to be specified
