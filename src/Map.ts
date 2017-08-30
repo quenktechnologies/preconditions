@@ -282,13 +282,13 @@ export const set: <A, B>(v: B) => Precondition<A, B> =
     <B>(v: B) => func((_a: any) => valid(v));
 
 /**
- * decide does evaluates condition and decides
- * whether to return left if true or right if false.
+ * whenTrue does evaluates condition and decides
+ * whether to return left if false or right if true.
  *
  * The evaluation is done before apply is called.
  */
-export const decide = <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) =>
-    func((value: A) => condition ? left.apply(value) : right.apply(value));
+export const whenTrue = <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) =>
+    func((value: A) => condition ? right.apply(value) : left.apply(value));
 
 /**
  * number tests if the value supplied is a number.

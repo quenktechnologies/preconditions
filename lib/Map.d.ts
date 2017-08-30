@@ -132,12 +132,12 @@ export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) =
  */
 export declare const set: <A, B>(v: B) => Precondition<A, B>;
 /**
- * decide does evaluates condition and decides
- * whether to return left if true or right if false.
+ * whenTrue does evaluates condition and decides
+ * whether to return left if false or right if true.
  *
  * The evaluation is done before apply is called.
  */
-export declare const decide: <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
+export declare const whenTrue: <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
 /**
  * number tests if the value supplied is a number.
  */

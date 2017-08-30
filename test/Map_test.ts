@@ -201,7 +201,6 @@ describe('builtins', function() {
 
         it('should fail if the value is not equal', function() {
 
-            console.log(conditions.equals(23).apply(23));
             must(conditions.equals(23).apply(23).takeRight()).be(23);
             must(conditions.equals(23).apply('23').takeLeft()).be.instanceOf(conditions.Failure);
 
@@ -209,7 +208,23 @@ describe('builtins', function() {
 
     });
 
-});
+    describe('whenTrue', () =>
+        it('should decide correctly', () => {
+
+            const left = {
+                apply(_: any) { return conditions.valid('left'); }
+            }
+
+            const right = {
+                apply(_: any) { return conditions.valid('right'); }
+            }
+
+            must(conditions.whenTrue(false, left, right).apply(12).takeRight()).eql('left');
+            must(conditions.whenTrue(true, left, right).apply(12).takeRight()).eql('right');
+
+        }))
+
+})
 
 
 
