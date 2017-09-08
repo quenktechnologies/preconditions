@@ -1,7 +1,6 @@
 import * as afpl from 'afpl';
 import * as polate from '@quenk/polate';
 import * as Async from './Async';
-import { Either } from 'afpl';
 
 export { Async }
 
@@ -19,7 +18,7 @@ export interface Precondition<A, B> {
 /**
  * Result is the result of a precondition.
  */
-export type Result<A, B> = Either<Failure<A>, B>;
+export type Result<A, B> = afpl.Either<Failure<A>, B>;
 
 /**
  * Failures is a map of Failures.
@@ -198,11 +197,11 @@ export const valid: <A, B>(b: B) => afpl.Either<Failure<A>, B> =
  * map accepts a javascript object whose properties are all preconditions
  * and returns a function that will apply each to input.
  */
-export const map: <A, AB, B>(conditions: Preconditions<A, AB>) => Precondition<Values<A>, B> =
+export const map: <A, B>(conditions: Preconditions<any, any>) => Precondition<Values<A>, B> =
 
-    <A, AB, B>(conditions: Preconditions<any, any>) => (value: Values<A>) => {
+    <A, B>(conditions: Preconditions<any, any>) => (value: Values<A>) => {
 
-        let init: Reports<A, AB> = { failures: {}, values: {} };
+        let init: Reports<A, any> = { failures: {}, values: {} };
 
         if (typeof value !== 'object') {
 
@@ -211,7 +210,7 @@ export const map: <A, AB, B>(conditions: Preconditions<A, AB>) => Precondition<V
         } else {
 
             let reports = afpl.util.reduce(conditions,
-                (r: Reports<A, AB>, p: Precondition<A, AB>, k: string) =>
+                (r: Reports<A, any>, p: Precondition<any, any>, k: string) =>
 
                     p.apply(null, value[k])
                         .cata(
@@ -221,7 +220,7 @@ export const map: <A, AB, B>(conditions: Preconditions<A, AB>) => Precondition<V
             if (Object.keys(reports.failures).length > 0)
                 return mapFail<A, B>(reports.failures, value);
             else
-                return valid<Values<A>, B>(reports.values);
+                return valid<Values<A>, B>(<B><any>reports.values);
 
         }
     }
@@ -229,11 +228,13 @@ export const map: <A, AB, B>(conditions: Preconditions<A, AB>) => Precondition<V
 /**
  * partial is like map except it only applies to keys that exists
  */
-export const partial =
-    <A, AB, B>(conditions: Preconditions<A, AB>) =>
+export const partial:
+    <A, B>(conditions: Preconditions<any, any>) =>
+        Precondition<Values<A>, B> =
+    <A, B>(conditions: Preconditions<any, any>) =>
         (value: Values<A>) => {
 
-            let init: Reports<A, AB> = { failures: {}, values: {} };
+            let init: Reports<A, any> = { failures: {}, values: {} };
 
             if (typeof value !== 'object') {
 
@@ -242,7 +243,7 @@ export const partial =
             } else {
 
                 let reports = afpl.util.reduce(value,
-                    (r: Reports<A, AB>, value: A, k: string) =>
+                    (r: Reports<A, any>, value: A, k: string) =>
                         (conditions.hasOwnProperty(k)) ?
                             conditions[k].apply(null, value)
                                 .cata(whenLeft(k, r), whenRight(k, r)) :
@@ -251,7 +252,7 @@ export const partial =
                 if (Object.keys(reports.failures).length > 0)
                     return mapFail<A, B>(reports.failures, value);
                 else
-                    return valid<Values<A>, B>(reports.values);
+                    return valid<Values<A>, B>(<B><any>reports.values);
 
             }
 
@@ -306,6 +307,30 @@ export const whenTrue: <A, B>(
         (value: A) => (condition ? right.apply(null, value) : left.apply(null, value));
 
 /**
+ * number tests if the value supplied is a number.
+ */
+export const number = <A>(): Precondition<A, number> =>
+    (n: A) => (typeof n === 'number') ?
+        valid<A, number>(n) :
+        fail<A, number>('number', n)
+
+/**
+ * string tests if the value is a string.
+ */
+export const string = (): Precondition<any, string> =>
+    (s: any) => (typeof s === 'string') ?
+        valid<any, string>(s) :
+        fail<any, string>('string', s)
+
+/**
+ * list tests if the value is an array.
+ */
+export const list = <A, B>(): Precondition<A, B[]> =>
+    (a: A) => (Array.isArray(a)) ?
+        valid<A, B[]>(a) :
+        fail<A, B[]>('list', a)
+
+/**
  * each applies a precondition for each member of an array.
  */
 export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
@@ -324,9 +349,9 @@ export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
                     })), { failures: {}, values: [] });
 
             if (Object.keys(r.failures).length > 0)
-                return afpl.Either.left<ListFailure<A>, B[]>(new ListFailure(r.failures, value));
+                return afpl.Either.left(new ListFailure(r.failures, value));
             else
-                return valid<A[], B[]>(r.values);
+                return valid(r.values);
 
         }
 
@@ -402,10 +427,11 @@ export const equals: <A, B>(target: B) => Precondition<A, B> =
 /**
  * required requires a value to be specified
  */
-export const required = <A>(value: A) =>
-    ((value == null) || ((typeof value === 'string') && (value === ''))) ?
-        fail('notNull', value) :
-        valid(value)
+export const required: <A>() => Precondition<A, A> = <A>() =>
+    (value: A) =>
+        ((value == null) || ((typeof value === 'string') && (value === ''))) ?
+            fail('notNull', value) :
+            valid(value)
 
 
 /**
@@ -417,44 +443,3 @@ export const optional: <A, B>(t: Precondition<A, B>) => (v: A) => Precondition<A
             (value == null) ?
                 valid(null) :
                 p.apply(null, value);
-
-/**
- * upper transforms a string into uppercase
- */
-export const upper: Precondition<string, string> =
-    (s: string) => valid<string, string>(s.toUpperCase());
-
-/**
- * lower transforms a string into lowercase
- */
-export const lower: Precondition<string, string> =
-    (s: string) => valid<string, string>(s.toLowerCase());
-
-/**
- * number tests if a value is a number
- */
-export const number: Precondition<any, number> =
-    <A>(n: A) => (typeof n === 'number') ?
-        valid<any, number>(n) :
-        fail<any, number>('number', {});
-
-/**
- * string tests if a value is a string
- */
-export const string: Precondition<any, string> =
-    <A>(a: A) => (typeof a === 'string') ?
-        valid<A, string>(a) :
-        fail<A, string>('string', a);
-
-/**
- * array tests if the value is an array
- */
-export const array: Precondition<any, any[]> =
-    <A, B>(a: A) =>
-        (Array.isArray(a)) ?
-            valid<A, B[]>(a) :
-            fail<A, B[]>('array', a);
-
-export const cast: <A, B>(f: (a: A) => B) => Precondition<A, B> =
-    <A, B>(f: (a: A) => B) => (a: A) => valid(f(a));
-
