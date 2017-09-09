@@ -4,17 +4,16 @@ A module for validating, transforming and filtering data.
 
 ## Installation
 
-``bash
+```bash
 npm install --save @quenk/preconditions
-
+```
 ## Usage
 
 This module provides an api for applying preconditions to data.
 
 Typically, a precondition is a function of the form:
 
-```purescript
-
+```haskell
 precondition :: forall a b. a -> Either (Failure a) b 
 
 ```
@@ -76,7 +75,7 @@ preconditions to a javascript object or array.
 
 ## Example
 
-```ts
+```typescript
 
 import {
     Preconditions,

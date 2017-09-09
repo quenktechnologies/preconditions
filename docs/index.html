@@ -67,13 +67,12 @@
 				<h1 id="preconditions">Preconditions</h1>
 				<p>A module for validating, transforming and filtering data.</p>
 				<h2 id="installation">Installation</h2>
-				<p>``bash
-				npm install --save @quenk/preconditions</p>
+				<pre><code class="lang-bash">npm install --save @quenk/preconditions
+</code></pre>
 				<h2 id="usage">Usage</h2>
 				<p>This module provides an api for applying preconditions to data.</p>
 				<p>Typically, a precondition is a function of the form:</p>
-				<pre><code class="lang-purescript">
-precondition :: forall a b. a -&gt; Either (Failure a) b
+				<pre><code class="lang-haskell"><span class="hljs-title">precondition</span> :: <span class="hljs-keyword">forall</span> a b. a -&gt; <span class="hljs-type">Either</span> (<span class="hljs-type">Failure</span> a) b
 </code></pre>
 				<p>to borrow syntax from Purescript.</p>
 				<p>We use an implentation of the Either monad from the
@@ -132,7 +131,7 @@ priority, if not any key corresponding to</code>myKey<code>will be used or</code
 					The most useful of which are the <code>map</code> and <code>list</code> which allow you to apply
 				preconditions to a javascript object or array.</p>
 				<h2 id="example">Example</h2>
-				<pre><code class="lang-ts">
+				<pre><code class="lang-typescript">
 <span class="hljs-keyword">import</span> {
     Preconditions,
     map,
