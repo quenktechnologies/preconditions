@@ -1,0 +1,304 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@quenk/preconditions</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@quenk/preconditions</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> @quenk/preconditions</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<h1 id="preconditions">Preconditions</h1>
+				<p>A module for validating, transforming and filtering data.</p>
+				<h2 id="installation">Installation</h2>
+				<p>``bash
+				npm install --save @quenk/preconditions</p>
+				<h2 id="usage">Usage</h2>
+				<p>This module provides an api for applying preconditions to data.</p>
+				<p>Typically, a precondition is a function of the form:</p>
+				<pre><code class="lang-purescript">
+precondition :: forall a b. a -&gt; Either (Failure a) b
+</code></pre>
+				<p>to borrow syntax from Purescript.</p>
+				<p>We use an implentation of the Either monad from the
+					<a href="https://github.com/metasansana/afpl">afpl</a> library (that may change at some point)
+				which is loosely inspired by <code>monet.js</code> and the <code>fantasy-land</code> spec.</p>
+				<p>All preconditions return an Either, you can retrieve the value by apply
+					a function over the left or right side (using the afpl.Either#cata method)
+				or <code>map</code>/<code>chain</code> etc.</p>
+				<h3 id="failure">Failure</h3>
+				<p>Failure is the type used to represent a failed precondition,
+					it has an <code>explain(context?)</code> method that provides details of what precondition failed
+				(preconditions can be chained to get to run one after the other).</p>
+				<p>It&#39;s good practice to provide an identifier for your Failure rather than a whole
+					message, that way it can be customised later using templates. You pass
+					a context object to explain and it will expand the identifier with text
+				it finds in the context object.</p>
+				<p>Failure comes with three implementations that return a different type of explanation:</p>
+				<table>
+					<thead>
+						<tr>
+							<th>Type</th>
+							<th>Description                      </th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td> Failure</td>
+							<td>Used for any one value, returns a description of one failure.      </td>
+						</tr>
+						<tr>
+							<td> MapFailure</td>
+							<td>Used when a map (object,hash etc) has failures, has info for more than one                         </td>
+						</tr>
+						<tr>
+							<td> ListFailure</td>
+							<td>Used for arrays, takes a map of Failures here each key is a failed index.              </td>
+						</tr>
+					</tbody>
+				</table>
+				<p>When implementing your own preconditions, you don&#39;t have to touch <code>afpl</code> (as it may change).
+				Use the provided functions: <code>fail</code>, <code>mapFail</code>, <code>listFail</code> or <code>valid</code> on success.</p>
+				<p>See the commented source for more information.</p>
+				<h3 id="templates">Templates</h3>
+				<p>Failure classes recognize a small templating syntax using the module
+					<a href="https://github.com/quenktechnologies/polate">polate</a>. Anything between <code>{ }</code> is
+				treated as a context variable and is looked up, if not found, it is left as is.</p>
+				<p>For MapFailures a property <code>$key</code> is added to the context so templates can retrieve
+				the name of the property. With ListFailures, it is <code>$index</code>.  </p>
+				<p>Prefix a key in the context passed to a MapFailure&#39;s expand with the key name followed
+					by the precondition, example : <code>myKey.lengthCheck&#39; and that template will be given
+priority, if not any key corresponding to</code>myKey<code>will be used or</code>lengthCheck` if 
+				that does not exist. </p>
+				<p>Finally if none of the above exist, the identifier of the Failure is expanded and left as is.</p>
+				<h3 id="builtins">Builtins</h3>
+				<p>See the <a href="index.ts">index.ts</a> for a list of built in functions.
+					The most useful of which are the <code>map</code> and <code>list</code> which allow you to apply
+				preconditions to a javascript object or array.</p>
+				<h2 id="example">Example</h2>
+				<pre><code class="lang-ts">
+<span class="hljs-keyword">import</span> {
+    Preconditions,
+    map,
+    fail,
+    valid,
+    and,
+    <span class="hljs-built_in">string</span>,
+    upper,
+    <span class="hljs-built_in">number</span>,
+    range,
+    isin
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./'</span>;
+
+<span class="hljs-keyword">interface</span> User {
+
+    name: <span class="hljs-built_in">string</span>,
+    age: <span class="hljs-built_in">number</span>,
+    flags: Flags,
+    status: <span class="hljs-built_in">number</span>,
+
+}
+
+<span class="hljs-keyword">interface</span> Flags {
+
+    A: <span class="hljs-built_in">boolean</span>,
+    B: <span class="hljs-built_in">boolean</span>,
+    C: <span class="hljs-built_in">boolean</span>
+
+}
+
+<span class="hljs-keyword">type</span> UserUnion
+    = <span class="hljs-built_in">string</span>
+    | <span class="hljs-built_in">number</span>
+    | Flags
+    | <span class="hljs-built_in">any</span>[] <span class="hljs-comment">//necessary for range, as it measures arrays as well</span>
+    ;
+
+<span class="hljs-comment">//a custom precondition</span>
+<span class="hljs-keyword">const</span> len = <span class="hljs-function">(<span class="hljs-params">length: <span class="hljs-built_in">number</span></span>) =&gt;</span> (s: <span class="hljs-built_in">string</span>) =&gt; s.length &gt; length ?
+    fail&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;(<span class="hljs-string">'len'</span>, s, { length }) : valid&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;(s);
+
+<span class="hljs-keyword">const</span> user: Preconditions&lt;<span class="hljs-built_in">any</span>, UserUnion&gt; = {
+
+    name: and(<span class="hljs-built_in">string</span>, and(len(<span class="hljs-number">12</span>), upper)),
+    age: and(<span class="hljs-built_in">number</span>, range(<span class="hljs-number">20</span>, <span class="hljs-number">80</span>)),
+    status: isin([<span class="hljs-string">'active'</span>, <span class="hljs-string">'inactive'</span>])
+
+}
+
+<span class="hljs-comment">//indicate what value types to expect on the object keys and</span>
+<span class="hljs-comment">//the specify the resulting final object.</span>
+<span class="hljs-keyword">const</span> test = map&lt;<span class="hljs-built_in">any</span>, User&gt;(user);
+
+<span class="hljs-comment">//context for error messages</span>
+<span class="hljs-keyword">let</span> ctx = {
+
+    <span class="hljs-string">'name'</span>: <span class="hljs-string">'There was an error with name'</span>,
+    <span class="hljs-string">'name.len'</span>: <span class="hljs-string">'Name is longer than {length}'</span>,
+    <span class="hljs-string">'range'</span>: <span class="hljs-string">'{$key} is out of range {min}-{max}'</span>,
+    <span class="hljs-string">'status.isin'</span>: <span class="hljs-string">'Name must be one of ({enum})'</span>
+
+}
+
+test({ name: <span class="hljs-string">'Red Beans With Jerk Chicken And A Fresh Salad'</span>, age: <span class="hljs-literal">Infinity</span> })
+    .map(<span class="hljs-built_in">console</span>.log)
+    .orRight(<span class="hljs-function"><span class="hljs-params">f</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(f.expand(ctx)));
+
+<span class="hljs-comment">//The above logs </span>
+<span class="hljs-comment">//{ name: 'Name is longer than 12',</span>
+<span class="hljs-comment">//  age: 'age is out of range 20-80',</span>
+<span class="hljs-comment">//  status: 'Name must be one of (active,inactive)' }</span>
+
+test({ name: <span class="hljs-string">'sherman'</span>, age: <span class="hljs-number">21</span>, status: <span class="hljs-string">'active'</span> }).map(<span class="hljs-built_in">console</span>.log)
+
+<span class="hljs-comment">//The above logs</span>
+<span class="hljs-comment">//{ name: 'SHERMAN', age: 21, status: 'active' }</span>
+</code></pre>
+				<h2 id="license">License</h2>
+				<p>Apache-2.0 © Quenk Technologies Limited</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_async_.html">"<wbr>Async"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_sync_.html">"<wbr>Sync"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

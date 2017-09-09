@@ -41,13 +41,11 @@ it finds in the context object.
 
 Failure comes with three implementations that return a different type of explanation:
 
-| type         | Description                      |
-| ------------ | ---------------------------------
-| Failure      | Used for any one value, returns a description of one failure.
-| MapFailure   | Used when a map (object,hash etc) has failures,
-                 has info for more than one 
-| ListFailure  | Used for arrays, takes a map of Failures
-                  here each key is a failed index. 
+ Type         | Description                      
+ ------------ | ---------------------------------
+ Failure      | Used for any one value, returns a description of one failure.      
+ MapFailure   | Used when a map (object,hash etc) has failures, has info for more than one                         
+ ListFailure  | Used for arrays, takes a map of Failures here each key is a failed index.              
 
 When implementing your own preconditions, you don't have to touch `afpl` (as it may change).
 Use the provided functions: `fail`, `mapFail`, `listFail` or `valid` on success.
