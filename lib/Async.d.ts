@@ -1,6 +1,17 @@
-import * as afpl from 'afpl';
-import * as Sync from './Map';
+import * as Sync from './Sync';
 import * as Promise from 'bluebird';
+import { Either } from 'afpl';
+/**
+ *
+ * Async version of this module.
+ *
+ * Async wraps the {@link Sync.Precondition} in a Promise
+ * (currently only bluebird can be used) so preconditions can
+ * perform non-blocking IO.
+ *
+ * When working with async tests, use the corresponding logical functions and
+ * types from here. Wrap any async work in {@link async} to avoid subtle bugs.
+ */
 /**
  * A map of key precondition pairs
  */
@@ -16,57 +27,45 @@ export interface Precondition<A, B> {
     /**
      * apply this Precondition asynchronously.
      */
-    apply(value: A): Result<A, B>;
+    (value: A): Result<A, B>;
 }
+/**
+ * Result async.
+ */
 export declare type Result<A, B> = Promise<Sync.Result<A, B>>;
 /**
- * And
+ * @private
  */
-export declare class And<A, B> implements Precondition<A, B> {
-    left: Precondition<A, A>;
-    right: Precondition<A, B>;
-    constructor(left: Precondition<A, A>, right: Precondition<A, B>);
-    apply(value: A): Result<A, B>;
-}
-export declare class Func<A, B> implements Precondition<A, B> {
-    f: (value: A) => Result<A, B>;
-    constructor(f: (value: A) => Result<A, B>);
-    apply(value: A): Result<A, B>;
-}
 export declare type Reports<A, B> = Promise<Sync.Reports<A, B>>;
 /**
- * Map for async preconditions
+ * fail async
  */
-export declare class Map<A, C> implements Precondition<Sync.Values<A>, C> {
-    getConditions(): Preconditions<any, any>;
-    apply(value: Sync.Values<A>): Result<Sync.Values<A>, C>;
-}
+export declare const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) => Promise<Either<Sync.Failure<A>, B>>;
 /**
- * Hash is like Map except you specify the preconditions by passing
- * a plain old javascript object.
+ * mapFail async
  */
-export declare class Hash<A, C> extends Map<A, C> {
-    conditions: Preconditions<any, any>;
-    constructor(conditions: Preconditions<any, any>);
-    getConditions(): Preconditions<any, any>;
-}
-export declare const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) => Promise<afpl.Either<Sync.Failure<A>, B>>;
-export declare const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) => Promise<afpl.Either<Sync.MapFailure<A>, B>>;
-export declare const valid: <A, B>(b: B) => Promise<afpl.Either<Sync.Failure<A>, B>>;
+export declare const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) => Promise<Either<Sync.MapFailure<A>, B>>;
 /**
- * func
+ * valid async
  */
-export declare const func: <A, B>(f: (value: A) => Result<A, B>) => Precondition<A, B>;
+export declare const valid: <A, B>(b: B) => Promise<Either<Sync.Failure<A>, B>>;
 /**
- * or
+ * map async
  */
-export declare const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) => Precondition<A, B>;
+export declare const map: <A, B>(conditions: Preconditions<A, A>) => (value: Sync.Values<A>) => Promise<Either<Sync.Failure<Sync.Values<A>>, B>>;
 /**
- * and
+ * partial async
  */
-export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B>;
+export declare const partial: <A, B>(conditions: Preconditions<A, A>) => (value: Sync.Values<A>) => Promise<Either<Sync.Failure<Sync.Values<A>>, B>>;
 /**
- * set
+ * or async
  */
-export declare const set: <A, B>(v: B) => Precondition<A, B>;
-export declare const wrap: <A, B>(s: Sync.Precondition<A, B>) => Precondition<A, {}>;
+export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => (value: A) => Promise<Either<Sync.Failure<{}>, B>>;
+/**
+ * and async
+ */
+export declare const and: <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) => (value: A) => Promise<any>;
+/**
+ * async wraps the sync api so we can apply asynchronous tests.
+ */
+export declare const async: <A, B>(s: Sync.Precondition<A, B>) => (value: A) => Promise<any>;

@@ -1,6 +1,19 @@
 import * as afpl from 'afpl';
-import * as Sync from './Map';
+import * as Sync from './Sync';
 import * as Promise from 'bluebird';
+import { Either } from 'afpl';
+
+/**
+ *
+ * Async version of this module.
+ *
+ * Async wraps the {@link Sync.Precondition} in a Promise
+ * (currently only bluebird can be used) so preconditions can 
+ * perform non-blocking IO.
+ * 
+ * When working with async tests, use the corresponding logical functions and 
+ * types from here. Wrap any async work in {@link async} to avoid subtle bugs.
+ */
 
 /**
  * A map of key precondition pairs
@@ -21,152 +34,137 @@ export interface Precondition<A, B> {
     /**
      * apply this Precondition asynchronously.
      */
-    apply(value: A): Result<A, B>
+    (value: A): Result<A, B>
 
 }
 
+/**
+ * Result async.
+ */
 export type Result<A, B> = Promise<Sync.Result<A, B>>
 
 /**
- * And
+ * @private
  */
-export class And<A, B> implements Precondition<A, B> {
-
-    constructor(public left: Precondition<A, A>, public right: Precondition<A, B>) { }
-
-    apply(value: A): Result<A, B> {
-
-        return this
-            .left
-            .apply(value).
-            then(e => e.cata(Promise.resolve, v => this.right.apply(v)))
-
-    }
-
-}
-
-export class Func<A, B> implements Precondition<A, B> {
-
-    constructor(public f: (value: A) => Result<A, B>) { }
-
-    apply(value: A): Result<A, B> {
-
-        return this.f(value);
-
-    }
-
-}
-
 export type Reports<A, B> = Promise<Sync.Reports<A, B>>
 
+  /**
+   * fail async
+   */ 
+export const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) =>
+    Promise<Either<Sync.Failure<A>, B>> =
+    <A, B>(message: string, value: A, ctx: Sync.Context = {}) =>
+        Promise.resolve(Sync.fail<A, B>(message, value, ctx));
+
 /**
- * Map for async preconditions
+ * mapFail async
  */
-export class Map<A, C> implements Precondition<Sync.Values<A>, C> {
+export const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) =>
+    Promise<Either<Sync.MapFailure<A>, B>> =
+    <A, B>(errors: Sync.Failures<A>, value: Sync.Values<A>, contexts: Sync.Contexts = {}) =>
+        Promise.resolve(Sync.mapFail<A, B>(errors, value, contexts));
 
-    getConditions(): Preconditions<any, any> {
+/**
+ * valid async
+ */
+export const valid: <A, B>(b: B) => Promise<Either<Sync.Failure<A>, B>> =
+    <A, B>(b: B) => Promise.resolve(Sync.valid<A, B>(b))
 
-        return <any>this;
+/**
+ * map async
+ */
+export const map = <A, B>(conditions: Preconditions<A, A>) =>
+    (value: Sync.Values<A>) => {
 
-    }
-
-    apply(value: Sync.Values<A>): Result<Sync.Values<A>, C> {
-
-        let conditions = this.getConditions();
-
-        let init: Reports<A, any> =
+        let init: Reports<A, A> =
             Promise.resolve({ failures: {}, values: {} });
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, C>({}, value));
+            return Promise.resolve(Sync.mapFail<A, B>({}, value));
 
         } else {
 
             return afpl.util.reduce(conditions, (
-                p: Reports<A, any>,
-                condition: Precondition<any, any>,
+                p: Reports<A, A>,
+                f: Precondition<A, A>,
                 key: string) =>
-                p.then((r: Sync.Reports<A, any>) =>
-                    condition
-                        .apply(value[key])
-                        .then((e: Sync.Result<A, any>) =>
+                p.then((r: Sync.Reports<A, A>) =>
+                    f(value[key])
+                        .then((e: Sync.Result<A, A>) =>
                             Promise.resolve(e.cata(Sync.whenLeft(key, r),
                                 Sync.whenRight(key, r))))), init)
-                .then((r: Sync.Reports<A, any>) => {
+                .then((r: Sync.Reports<A, A>) => {
 
                     if (Object.keys(r.failures).length > 0)
-                        return Promise.resolve(Sync.mapFail<A, C>(r.failures, value));
+                        return Promise.resolve(Sync.mapFail<A, B>(r.failures, value));
                     else
                         return Promise
-                            .resolve(Sync.valid<Sync.Values<A>, C>(<C><any>r.values));
+                            .resolve(Sync.valid<Sync.Values<A>, B>(<B><any>r.values));
 
                 });
 
         }
     }
 
-}
-
 /**
- * Hash is like Map except you specify the preconditions by passing
- * a plain old javascript object.
+ * partial async
  */
-export class Hash<A, C> extends Map<A, C> {
+export const partial = <A, B>(conditions: Preconditions<A, A>) =>
+    (value: Sync.Values<A>) => {
 
-    constructor(public conditions: Preconditions<any, any>) { super(); }
+        let init: Reports<A, A> =
+            Promise.resolve({ failures: {}, values: {} });
 
-    getConditions(): Preconditions<any, any> {
 
-        return this.conditions;
+        if (typeof value !== 'object') {
 
+            return Promise.resolve(Sync.mapFail<A, B>({}, value));
+
+        } else {
+
+            return afpl.util.reduce(value,
+                (p: Reports<A, A>, a: A, key: string) =>
+                    p
+                        .then((r: Sync.Reports<A, A>) =>
+                            conditions.hasOwnProperty(key) ?
+
+                                conditions[key](a)
+                                    .then((e: Sync.Result<A, A>) =>
+                                        Promise.resolve(
+                                            e.cata(Sync.whenLeft(key, r),
+                                                Sync.whenRight(key, r)))) :
+
+                                Promise.resolve(r)), init)
+
+                .then((r: Sync.Reports<A, A>) => {
+
+                    if (Object.keys(r.failures).length > 0)
+                        return Promise.resolve(Sync.mapFail<A, B>(r.failures, value));
+                    else
+                        return Promise
+                            .resolve(Sync.valid<Sync.Values<A>, B>(<B><any>r.values));
+
+                });
+
+        }
     }
 
-}
-
-export const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) =>
-    Promise<afpl.Either<Sync.Failure<A>, B>> =
-    <A, B>(message: string, value: A, ctx: Sync.Context = {}) =>
-        Promise.resolve(Sync.fail<A, B>(message, value, ctx));
-
-export const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) =>
-    Promise<afpl.Either<Sync.MapFailure<A>, B>> =
-    <A, B>(errors: Sync.Failures<A>, value: Sync.Values<A>, contexts: Sync.Contexts = {}) =>
-        Promise.resolve(Sync.mapFail<A, B>(errors, value, contexts));
-
-export const valid: <A, B>(b: B) => Promise<afpl.Either<Sync.Failure<A>, B>> =
-    <A, B>(b: B) => Promise.resolve(Sync.valid<A, B>(b))
+/**
+ * or async
+ */
+export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
+    (value: A) => left(value).then(e =>
+        e.cata(() => right(value), valid))
 
 /**
- * func 
+ * and async
  */
-export const func: <A, B>(f: (value: A) => Result<A, B>) => Precondition<A, B> =
-    <A, B>(f: (value: A) => Result<A, B>) => new Func(f);
+export const and = <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
+    (value: A) => left(value).then(e => e.cata(Promise.resolve, v => right(v)))
 
 /**
- * or
+ * async wraps the sync api so we can apply asynchronous tests.
  */
-export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) => Precondition<A, B> =
-    <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
-        func((value: A) => left.apply(value).then(e =>
-            e.cata(() => right.apply(value), v => valid(v))))
-
-/**
- * and
- */
-export const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B> =
-    <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
-        func((value: A) => left.apply(value).then(e =>
-            e.cata<Result<A, B>>(
-                (f: Sync.Failure<A>) => Promise.resolve(afpl.Either.left(f)),
-                (v: A) => right.apply(v))));
-
-/**
- * set 
- */
-export const set: <A, B>(v: B) => Precondition<A, B> =
-    <B>(v: B) => func((_a: any) => valid(v));
-
-
-export const wrap = <A, B>(s: Sync.Precondition<A, B>) =>
-    func((value: A) => s.apply(value).cata(Promise.resolve, Promise.resolve));
+export const async = <A, B>(s: Sync.Precondition<A, B>) =>
+    (value: A) => s(value).cata(Promise.resolve, Promise.resolve);

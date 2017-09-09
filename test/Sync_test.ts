@@ -1,7 +1,6 @@
 import * as must from 'must/register';
-import * as help from './help';
-import * as conditions from '../src';
-import { Preconditions } from '../src';
+import * as conditions from '../src/Sync';
+import { Preconditions } from '../src/Sync';
 
 interface User {
 
@@ -11,7 +10,7 @@ interface User {
 
 }
 
-const user: Preconditions<any, User> = {
+const user: conditions.Preconditions<any, any> = {
 
     name: conditions.string,
     age: conditions.number,
@@ -19,7 +18,7 @@ const user: Preconditions<any, User> = {
 
 }
 
-const idUser = {
+const idUser: Preconditions<any, any> = {
 
     id: conditions.number,
     user: conditions.map(user)
@@ -37,58 +36,178 @@ interface IdUser {
     user: User
 
 }
-/*
-describe('map', function() {
 
-    it('should return a Failure for invalid data', function() {
+describe('Sync', function() {
 
-        must(conditions.map(new Condition())({ name: null, age: '', roles: '' }).takeLeft()).
-            be.instanceof(conditions.Failure);
+    describe('required', function() {
 
-    });
+        it('should fail if a value is not specified', function() {
 
-    it('should return valid data', function() {
+            let x;
 
-        must(conditions.map(new Map())({ name: 'string', age: 22, roles: [] }).takeRight()).
-            eql({ name: 'string', age: 22, roles: [] });
+            must(conditions.required('value').takeRight()).be('value');
+            must(conditions.required(x).takeLeft()).be.instanceOf(conditions.Failure);
 
-    });
-
-    it('should run all preconditions', function() {
-
-        must(conditions.map(new Map())({ name: 'string', age: 22 }).takeLeft()).be.instanceof(conditions.Failure);
+        });
 
     });
 
-    it('should work nested', () => {
+    describe('optional', () =>
+        it('should pass on to the test when not null', () => {
 
-        must(conditions.map(new Nested())({ id: 12, condition: { name: 'string', age: 22, roles: [] } }).takeRight())
-            .eql({ id: 12, condition: { name: 'string', age: 22, roles: [] } });
+            const test = (_: any) => conditions.valid('12');
+
+            must(conditions.optional(test)(undefined).takeRight()).eql(undefined)
+            must(conditions.optional(test)('earth').takeRight()).be('12')
+
+        }))
+
+    describe('number', function() {
+
+        it('should fail if the value specified is not a number', function() {
+
+            must(conditions.number(12).takeRight()).be(12);
+            must(conditions.number('12').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('string', function() {
+
+        it('should fail if the value specified is not a string', function() {
+
+            must(conditions.string('12').takeRight()).be('12');
+            must(conditions.string(12).takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('array', function() {
+
+        it('should fail if the value supplied is not an array', function() {
+
+            must(conditions.array([]).takeRight()).eql([]);
+            must(conditions.array('[]').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('equals', function() {
+
+        it('should fail if the value is not equal', function() {
+
+            must(conditions.equals(23)(23).takeRight()).be(23);
+            must(conditions.equals(23)('23').takeLeft()).be.instanceOf(conditions.Failure);
+
+        });
+
+    });
+
+    describe('whenTrue', () =>
+        it('should decide correctly', () => {
+
+            const left = (_: any) => conditions.valid('left');
+
+            const right = (_: any) => conditions.valid('right');
+
+            must(conditions.whenTrue(false, left, right)(12).takeRight()).eql('left');
+            must(conditions.whenTrue(true, left, right)(12).takeRight()).eql('right');
+
+        }))
+
+    describe('or', () => {
+        it('should act like a logical or', () => {
+
+            const left = (_: any) => conditions.fail('left', 'left');
+            const right = (_: any) => conditions.valid('right');
+
+            must(conditions.or(left, right)(12).takeRight()).eql('right');
+            must(conditions.or(right, right)(12).takeRight()).eql('right');
+
+        })
 
     })
 
-    it('should detect nested errors', () => {
+    describe('and', () => {
+        it('should work like a logical and', () => {
 
-        must(
-            conditions.map(new Nested())({
-                id: 'six', condition: { name: new Date(), age: 22, roles: [] }
-            }).takeLeft()
-                .expand()).eql({ id: 'number', condition: { name: 'string' } });
+            const left = (_: any) => conditions.fail('left', 'left');
+            const right = (_: any) => conditions.valid('right');
 
-    })
+            must(conditions.and(right, left)(12).takeLeft()).be.instanceOf(conditions.Failure);
+            must(conditions.or(right, right)(12).takeRight()).eql('right');
 
-    it('should allow for type recognition', () => {
-
-        let map = new Condition();
-
-        let user: User = conditions.map(map)({ name: 'Me', age: 21, roles: [] }).takeRight();
-
-        must(user).eql({ name: 'Me', age: 21, roles: [] });
+        })
 
     })
 
+    describe('map', function() {
+
+        it('should return a Failure for invalid data', function() {
+
+            must(conditions.map(user)({ name: null, age: '', roles: '' }).takeLeft()).
+                be.instanceof(conditions.Failure);
+
+        });
+
+        it('should return valid data', function() {
+
+            must(conditions.map(user)({ name: 'string', age: 22, roles: [] }).takeRight()).
+                eql({ name: 'string', age: 22, roles: [] });
+
+        });
+
+        it('should run all preconditions', function() {
+
+            must(conditions.map(user)({ name: 'string', age: 22 }).takeLeft()).be.instanceof(conditions.Failure);
+
+        });
+
+        it('should work nested', () => {
+
+            must(conditions.map(idUser)({ id: 12, user: { name: 'string', age: 22, roles: [] } }).takeRight())
+                .eql({ id: 12, user: { name: 'string', age: 22, roles: [] } });
+
+        })
+
+        it('should detect nested errors', () => {
+
+            must(
+                conditions.map(idUser)({
+                    id: 'six', user: { name: new Date(), age: 22, roles: [] }
+                }).takeLeft()
+                    .explain()).eql({ id: 'number', user: { name: 'string' } });
+
+        })
+
+        it('should allow for type recognition', () => {
+
+            let u: User =
+                conditions.map<any, User>(user)({ name: 'Me', age: 21, roles: [] })
+                    .takeRight();
+
+            let iu: IdUser = conditions.map<any, IdUser>(idUser)({
+                id: 4,
+                user: { name: 'Me', age: 21, roles: [] }
+            }).takeRight();
+
+            must(u).eql({
+                name: 'Me', age: 21, roles: []
+            });
+
+            must(iu).eql({
+                id: 4, user: {
+                    name: 'Me', age: 21, roles: []
+                }
+            });
+
+        })
+
+    })
 })
-
 
 describe('Failure', function() {
 
@@ -102,11 +221,11 @@ describe('Failure', function() {
 
     });
 
-    describe('expand', function() {
+    describe('explain', function() {
 
-        it('should expand templates', function() {
+        it('should explain templates', function() {
 
-            must(fail.expand(templates, { punc: '!' }))
+            must(fail.explain(templates, { punc: '!' }))
                 .be('Input "12" is not a number! I no feel joys!');
 
         });
@@ -117,7 +236,7 @@ describe('Failure', function() {
 
 describe('MapFailure', () => {
 
-    describe('expand', () => {
+    describe('explain', () => {
 
         let fail;
         let templates: { [key: string]: string };
@@ -141,7 +260,7 @@ describe('MapFailure', () => {
 
         it('should work', () => {
 
-            let r = fail.expand(templates, { her: 'Sara' });
+            let r = fail.explain(templates, { her: 'Sara' });
 
             must(r).eql({
                 name: 'There was a problem with name!',
@@ -154,94 +273,3 @@ describe('MapFailure', () => {
     });
 
 });
-
-describe('builtins', function() {
-
-    describe('required', function() {
-
-        it('should fail if a value is not specified', function() {
-
-            let x;
-
-            must(conditions.required().apply(null, 'value').takeRight()).be('value');
-            must(conditions.required().apply(null, x).takeLeft()).be.instanceOf(conditions.Failure);
-
-        });
-
-    });
-
-    describe('optional', () =>
-        it('should pass on to the test when not null', () => {
-
-            const test = { apply(_: any, __: any) { return conditions.valid('12') } };
-
-            must(conditions.optional(test).apply(null, undefined).takeRight()).eql(null)
-            must(conditions.optional(test).apply(null, 'earth').takeRight()).be('12')
-
-        }))
-
-    describe('number', function() {
-
-        it('should fail if the value specified is not a number', function() {
-
-            must(conditions.number().apply(null, 12).takeRight()).be(12);
-            must(conditions.number().apply(null, '12').takeLeft()).be.instanceOf(conditions.Failure);
-
-        });
-
-    });
-
-    describe('string', function() {
-
-        it('should fail if the value specified is not a string', function() {
-
-            must(conditions.string().apply(null, '12').takeRight()).be('12');
-            must(conditions.string().apply(null, 12).takeLeft()).be.instanceOf(conditions.Failure);
-
-        });
-
-    });
-
-    describe('list', function() {
-
-        it('should fail if the value supplied is not an array', function() {
-
-            must(conditions.list().apply(null, []).takeRight()).eql([]);
-            must(conditions.list().apply(null, '[]').takeLeft()).be.instanceOf(conditions.Failure);
-
-        });
-
-    });
-
-    describe('equals', function() {
-
-        it('should fail if the value is not equal', function() {
-
-            must(conditions.equals(23).apply(null, 23).takeRight()).be(23);
-            must(conditions.equals(23).apply(null, '23').takeLeft()).be.instanceOf(conditions.Failure);
-
-        });
-
-    });
-
-    describe('whenTrue', () =>
-        it('should decide correctly', () => {
-
-            const left = {
-                apply(_: any, __: any) { return conditions.valid('left'); }
-            }
-
-            const right = {
-                apply(_: any, __: any) { return conditions.valid('right'); }
-            }
-
-            must(conditions.whenTrue(false, left, right).apply(null, 12).takeRight()).eql('left');
-            must(conditions.whenTrue(true, left, right).apply(null, 12).takeRight()).eql('right');
-
-        }))
-
-})
-
-
-
-*/

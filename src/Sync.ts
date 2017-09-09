@@ -8,13 +8,15 @@ export { Async }
 /**
  * Precondition represents some condition that must be satisfied
  * in order for data to be considered a valid type.
+ *
+ * The left type class represents the original type and the
+ * right the final one.
  */
 export interface Precondition<A, B> {
 
     (value: A): Result<A, B>;
 
 }
-
 
 /**
  * Result is the result of a precondition.
@@ -37,7 +39,7 @@ export class Failure<A> {
 
     constructor(public message: string, public value?: A, public context: Context = {}) { }
 
-    expand(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
 
         let combined = (typeof c['$key'] === 'string') ?
             `${c.$key}.${this.message}` :
@@ -45,14 +47,18 @@ export class Failure<A> {
         let key = c.$key;
         let $value = this.value;
 
+        //@todo: fix stairway to hell
+
         return polate.polate(
             ((templates[combined]) ?
                 templates[combined] :
                 (templates[<string>key]) ?
                     templates[<string>key] :
-                    (templates[this.message]) ?
-                        templates[this.message] :
-                        this.message), afpl.util.merge(this.context, c, <any>{ $value }));
+                    (templates[this.message.split('.')[0]]) ?
+                        templates[this.message.split('.')[0]] :
+                        (templates[this.message]) ?
+                            templates[this.message] :
+                            this.message), afpl.util.merge(this.context, c, { $value }));
 
     }
 
@@ -68,7 +74,7 @@ export interface Contexts {
 }
 
 /**
- * Context of a failure, used to expand error messages.
+ * Context of a failure, used to explain error messages.
  */
 export interface Context {
 
@@ -88,11 +94,11 @@ export class ListFailure<A> extends Failure<A[]> {
         public value: A[],
         public contexts: Contexts = {}) { super('list', value, contexts); }
 
-    expand(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
 
         return afpl.util.reduce(this.failures, ((o, f, $index) =>
             afpl.util.merge(o, {
-                [$index]: f.expand(templates, afpl.util.merge(c, { $index }))
+                [$index]: f.explain(templates, afpl.util.merge(c, { $index }))
             })), {});
 
     }
@@ -109,11 +115,11 @@ export class MapFailure<A> extends Failure<Values<A>> {
         public value: Values<A>,
         public contexts: Contexts = {}) { super('map', value, contexts); }
 
-    expand(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
 
         return afpl.util.reduce(this.failures, (o, f, $key) =>
             afpl.util.merge(o, {
-                [$key]: f.expand(templates, afpl.util.merge(c, { $key }))
+                [$key]: f.explain(templates, afpl.util.merge(c, { $key }))
             }), {});
 
     }
@@ -121,7 +127,7 @@ export class MapFailure<A> extends Failure<Values<A>> {
 }
 
 /**
- * Values is the map of values to apply the preconditions to.
+ * Values is a map of values to apply a map {@link Precondition} to.
  */
 export interface Values<V> {
 
@@ -129,6 +135,9 @@ export interface Values<V> {
 
 }
 
+/**
+ * @private
+ */
 export interface Reports<M, V> {
 
     failures: Failures<M>
@@ -137,7 +146,11 @@ export interface Reports<M, V> {
 }
 
 /**
- * A map of key precondition pairs
+ * A map of key precondition pairs.
+ *
+ * The right type class should be the union
+ * of all possible values (or any) and the 
+ * right th union of all possible outcomes.
  */
 export interface Preconditions<A, B> {
 
@@ -145,30 +158,26 @@ export interface Preconditions<A, B> {
 
 }
 
-export const whenLeft:
-    <M, V>(
-        k: string,
-        r: Reports<M, V>) =>
-        (f: Failure<M>) =>
-            Reports<M, V> =
+/**
+ * @private
+ */
+export const whenLeft =
     <M, V>(key: string, { failures, values }: Reports<M, V>) =>
-        (f: Failure<M>): Reports<M, V> => ({
+        (f: Failure<M>) => ({
             values,
             failures: afpl.util.merge<Failures<M>, Failures<M>>(failures, {
                 [key]: f
             })
         });
 
-export const whenRight
-    : <M, V>(
-        k: string,
-        r: Reports<M, V>) =>
-        (v: V) =>
-            Reports<M, V> =
+/**
+ * @private
+ */
+export const whenRight =
     <M, V>(
         key: string,
         { failures, values }: Reports<M, V>) =>
-        (v: V): Reports<M, V> => (v == null) ?
+        (v: V) => (v == null) ?
             { failures, values } :
             ({
                 failures,
@@ -177,63 +186,90 @@ export const whenRight
                 })
             });
 
-export const left: <A, B>(a: A) => afpl.Either<A, B> = afpl.Either.left;
+/**
+ * left wraps a value in the left side of an Either
+ */
+export const left: <A, B>(a: A) => Either<A, B> = Either.left;
 
-export const right: <A, B>(b: B) => afpl.Either<A, B> = afpl.Either.right;
+/**
+ * right wraps a value in the right side of an Either
+ */
+export const right: <A, B>(b: B) => Either<A, B> = Either.right;
 
-export const fail: <A, B>(m: string, v: A, ctx?: Context) =>
-    afpl.Either<Failure<A>, B> =
-    <A, B>(message: string, value: A, ctx: Context = {}) =>
-        afpl.Either.left<Failure<A>, B>(new Failure(message, value, ctx));
+/**
+ * fail produces a new one to one Failure instance wrapped
+ * in the left side of an Either.
+ */
+export const fail = <A, B>(message: string, value: A, ctx: Context = {}) =>
+    left<Failure<A>, B>(new Failure(message, value, ctx));
 
-export const mapFail: <A, B>(e: Failures<A>, v: Values<A>, c?: Contexts) =>
-    afpl.Either<MapFailure<A>, B> =
+/**
+ * mapFail produces a new MapFailure wrapped in the left side
+ * of an Either from a map (object) of failures.
+ */
+export const mapFail =
     <A, B>(errors: Failures<A>, value: Values<A>, contexts: Contexts = {}) =>
-        afpl.Either.left<MapFailure<A>, B>(new MapFailure(errors, value, contexts));
+        left<MapFailure<A>, B>(new MapFailure(errors, value, contexts));
 
-export const valid: <A, B>(b: B) => afpl.Either<Failure<A>, B> =
-    <A, B>(b: B) => afpl.Either.right<Failure<A>, B>(b);
+/**
+ * listFail produces a new ListFailure wrapped in the left side
+ * of an Either
+ */
+export const listFail =
+    <A, B>(errors: Failures<A>, value: A[], contexts: Contexts = {}) =>
+        left<ListFailure<A>, B[]>(new ListFailure(errors, value, contexts));
+
+/**
+ * valid signals a precondition has passed and wraps the latest
+ * version of the value in the left side of an Either.
+ */
+export const valid = <A, B>(b: B) => right<Failure<A>, B>(b);
+
+/* Preconditions */
 
 /**
  * map accepts a javascript object whose properties are all preconditions
- * and returns a function that will apply each to input.
+ * and returns a function that will apply each to the corresponding key.
+ *
+ * The A type class is the type of values the passed object is expected to
+ * have and the B the resulting object/interface we get when all preconditions
+ * pass.
  */
-export const map: <A, AB, B>(conditions: Preconditions<A, AB>) => Precondition<Values<A>, B> =
+export const map = <A, B>(conditions: Preconditions<A, A>) => (value: Values<A>) => {
 
-    <A, AB, B>(conditions: Preconditions<any, any>) => (value: Values<A>) => {
+    let init: Reports<A, A> = { failures: {}, values: {} };
 
-        let init: Reports<A, AB> = { failures: {}, values: {} };
+    if (typeof value !== 'object') {
 
-        if (typeof value !== 'object') {
+        return mapFail<A, B>({}, value);
 
-            return mapFail<A, B>({}, value);
+    } else {
 
-        } else {
+        let reports = afpl.util.reduce<Precondition<A, A>, Reports<A, A>>(conditions,
+            (r: Reports<A, A>, p: Precondition<A, A>, k: string) =>
 
-            let reports = afpl.util.reduce(conditions,
-                (r: Reports<A, AB>, p: Precondition<A, AB>, k: string) =>
+                p(value[k])
+                    .cata(
+                    whenLeft(k, r),
+                    whenRight(k, r)), init);
 
-                    p.apply(null, value[k])
-                        .cata(
-                        whenLeft(k, r),
-                        whenRight(k, r)), init);
+        if (Object.keys(reports.failures).length > 0)
+            return mapFail<A, B>(reports.failures, value);
+        else
+            return valid<Values<A>, B>(<B><any>reports.values);
 
-            if (Object.keys(reports.failures).length > 0)
-                return mapFail<A, B>(reports.failures, value);
-            else
-                return valid<Values<A>, B>(reports.values);
-
-        }
     }
+}
 
 /**
  * partial is like map except it only applies to keys that exists
+ * on the passed value.
  */
 export const partial =
-    <A, AB, B>(conditions: Preconditions<A, AB>) =>
+    <A, B>(conditions: Preconditions<A, A>) =>
         (value: Values<A>) => {
 
-            let init: Reports<A, AB> = { failures: {}, values: {} };
+            let init: Reports<A, A> = { failures: {}, values: {} };
 
             if (typeof value !== 'object') {
 
@@ -242,22 +278,20 @@ export const partial =
             } else {
 
                 let reports = afpl.util.reduce(value,
-                    (r: Reports<A, AB>, value: A, k: string) =>
+                    (r: Reports<A, A>, a: A, k: string) =>
                         (conditions.hasOwnProperty(k)) ?
-                            conditions[k].apply(null, value)
+                            conditions[k](a)
                                 .cata(whenLeft(k, r), whenRight(k, r)) :
                             r, init);
 
                 if (Object.keys(reports.failures).length > 0)
                     return mapFail<A, B>(reports.failures, value);
                 else
-                    return valid<Values<A>, B>(reports.values);
+                    return valid<Values<A>, B>(<B><any>reports.values);
 
             }
 
         }
-
-
 /**
  * or
  */
@@ -265,28 +299,19 @@ export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
     Precondition<A, B> =
     <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
         (value: A) =>
-            left
-                .apply(null, value)
-                .cata(() => right.apply(null, value), (b: B) => valid(b));
+            left(value)
+                .cata(() => right(value), (b: B) => valid(b));
 
 /**
  * and
  */
-export const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) =>
-    Precondition<A, B> =
-    <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
-        (value: A) =>
-            left
-                .apply(null, value)
-                .cata(
-                afpl.Either.left,
-                (v: A) => right.apply(null, v));
+export const and = <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) =>
+    (value: A) => left(value).chain(right);
 
 /**
  * set 
  */
-export const set: <A, B>(v: B) => Precondition<A, B> =
-    <B>(v: B) => (_a: any) => valid(v);
+export const set = <A, B>(b: B) => (_a: A) => valid(b);
 
 /**
  * whenTrue does evaluates condition and decides
@@ -294,16 +319,15 @@ export const set: <A, B>(v: B) => Precondition<A, B> =
  *
  * The evaluation is done before apply is called.
  */
-export const whenTrue: <A, B>(
-    c: boolean,
-    l: Precondition<A, B>,
-    r: Precondition<A, B>) =>
-    (value: A) => Result<A, B> =
+export const whenTrue =
     <A, B>(
         condition: boolean,
         left: Precondition<A, B>,
         right: Precondition<A, B>) =>
-        (value: A) => (condition ? right.apply(null, value) : left.apply(null, value));
+        (value: A) =>
+            condition ?
+                right(value) :
+                left(value);
 
 /**
  * each applies a precondition for each member of an array.
@@ -313,7 +337,7 @@ export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
         (value: A[]) => {
 
             let r = value.reduce(({ failures, values }, a, k) =>
-                p.apply(null, a).cata(
+                p(a).cata(
                     (f: Failure<A>) => ({
                         values,
                         failures: afpl.util.merge(failures, { [k]: f })
@@ -324,44 +348,22 @@ export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
                     })), { failures: {}, values: [] });
 
             if (Object.keys(r.failures).length > 0)
-                return afpl.Either.left<ListFailure<A>, B[]>(new ListFailure(r.failures, value));
+                return listFail<A, B>(r.failures, value)
             else
                 return valid<A[], B[]>(r.values);
 
         }
 
 /**
- * isin requires the value to be enumerated in the supplied list.
- */
-export const isin: <A>(list: A[]) => Precondition<A, A> = <A>(list: A[]) =>
-    (value: A) =>
-        (list.indexOf(value) < 0) ?
-            fail('isin', value, { list }) :
-            valid(value)
-
-
-/**
- * object tests if the value is an js object.
- */
-export const object: <A>() => Precondition<A, A> =
-    <A>() =>
-        (value: A) =>
-            (typeof value === 'object' && (!Array.isArray(value))) ?
-                valid<A, A>(value) :
-                fail<A, A>('object', <any>value);
-
-/**
  * matches tests if the value satisfies a regular expression.
  */
-export const matches: (pattern: RegExp) => Precondition<string, string> =
-    (pattern: RegExp) =>
-        (value: string) =>
-            (!pattern.test(value)) ?
-                fail<string, string>('matches', value, { pattern: pattern.toString() }) :
-                valid<string, string>(value)
+export const matches = (pattern: RegExp) => (value: string) =>
+    (!pattern.test(value)) ?
+        fail<string, string>('matches', value, { pattern: pattern.toString() }) :
+        valid<string, string>(value)
 
 /**
- * Measurable types. 
+ * Measurable types for range tests.
  */
 export type Measurable<A>
     = string
@@ -388,16 +390,16 @@ export const range: <A>(min: number, max: number) => Precondition<Measurable<A>,
 
         }
 
+/**
+ * @private
+ */
 const isB = <B>(a: any, b: B): a is B => (a === b)
 
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */
-export const equals: <A, B>(target: B) => Precondition<A, B> =
-    <A, B>(target: B) =>
-        (value: A) => isB(value, target) ?
-            valid(target) :
-            fail('equals', value, { target });
+export const equals = <A, B>(target: B) => (value: A) => isB(value, target) ?
+    valid(target) : fail('equals', value, { target });
 
 /**
  * required requires a value to be specified
@@ -407,54 +409,63 @@ export const required = <A>(value: A) =>
         fail('notNull', value) :
         valid(value)
 
-
 /**
  * optional applies the tests given only if the value is != null
  */
-export const optional: <A, B>(t: Precondition<A, B>) => (v: A) => Precondition<A, B> =
-    <A, B>(p: Precondition<A, B>) =>
-        (value: A) =>
-            (value == null) ?
-                valid(null) :
-                p.apply(null, value);
+export const optional = <A, B>(p: Precondition<A, B>) => (value: A) =>
+    ((value == null) || (typeof value === 'string' && value === '')) ?
+        valid(value) : p(value);
 
 /**
  * upper transforms a string into uppercase
  */
-export const upper: Precondition<string, string> =
-    (s: string) => valid<string, string>(s.toUpperCase());
+export const upper = (s: string) => valid<string, string>(s.toUpperCase());
 
 /**
  * lower transforms a string into lowercase
  */
-export const lower: Precondition<string, string> =
+export const lower =
     (s: string) => valid<string, string>(s.toLowerCase());
 
 /**
  * number tests if a value is a number
  */
-export const number: Precondition<any, number> =
-    <A>(n: A) => (typeof n === 'number') ?
-        valid<any, number>(n) :
-        fail<any, number>('number', {});
+export const number = <A>(n: A) =>
+    (typeof n === 'number') ? valid<A, number>(n) :
+        fail<A, number>('number', n);
 
 /**
  * string tests if a value is a string
  */
-export const string: Precondition<any, string> =
-    <A>(a: A) => (typeof a === 'string') ?
-        valid<A, string>(a) :
-        fail<A, string>('string', a);
+export const string = <A>(a: A) => (typeof a === 'string') ?
+    valid<A, string>(a) : fail<A, string>('string', a);
 
 /**
  * array tests if the value is an array
  */
-export const array: Precondition<any, any[]> =
+export const array =
     <A, B>(a: A) =>
         (Array.isArray(a)) ?
             valid<A, B[]>(a) :
             fail<A, B[]>('array', a);
 
-export const cast: <A, B>(f: (a: A) => B) => Precondition<A, B> =
-    <A, B>(f: (a: A) => B) => (a: A) => valid(f(a));
+/**
+ * object tests if the value is an js object.
+ */
+export const object: <A>() => Precondition<A, A> =
+    <A>() =>
+        (value: A) =>
+            (typeof value === 'object' && (!Array.isArray(value))) ?
+                valid<A, A>(value) :
+                fail<A, A>('object', <any>value);
 
+/**
+ * isin requires the value to be enumerated in the supplied list.
+ */
+export const isin: <A>(list: A[]) => Precondition<A, A> = <A>(list: A[]) =>
+    (value: A) =>
+        (list.indexOf(value) < 0) ?
+            fail('isin', value, { enum: list }) :
+            valid(value)
+
+export const cast = <A, B>(f: (a: A) => B) => (a: A) => valid(f(a));

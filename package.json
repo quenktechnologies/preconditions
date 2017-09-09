@@ -2,12 +2,13 @@
   "name": "@quenk/preconditions",
   "version": "1.3.0",
   "description": "An async friendly version of a Criteria pattern.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "lib/Sync.js",
+  "types": "lib/Sync.d.ts",
   "repository": "https://github.com/quenktechnologies/preconditions",
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts mocha.opts test",
-    "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/tsc --project src"
+    "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/tsc --project src",
+    "docs": "./node_modules/.bin/typedoc -o docs --tsconfig src/tsconfig.json"
   },
   "keywords": [
     "criteria"
@@ -21,6 +22,7 @@
     "mocha": "^2.3.4",
     "must": "^0.13.1",
     "ts-node": "^3.3.0",
+    "typedoc": "^0.8.0",
     "typescript": "^2.4.2"
   },
   "engines": {
