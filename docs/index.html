@@ -122,7 +122,7 @@ precondition :: forall a b. a -&gt; Either (Failure a) b
 				treated as a context variable and is looked up, if not found, it is left as is.</p>
 				<p>For MapFailures a property <code>$key</code> is added to the context so templates can retrieve
 				the name of the property. With ListFailures, it is <code>$index</code>.  </p>
-				<p>Prefix a key in the context passed to a MapFailure&#39;s expand with the key name followed
+				<p>Prefix a key in the context passed to a MapFailure&#39;s explain with the key name followed
 					by the precondition, example : <code>myKey.lengthCheck&#39; and that template will be given
 priority, if not any key corresponding to</code>myKey<code>will be used or</code>lengthCheck` if 
 				that does not exist. </p>
@@ -198,7 +198,7 @@ priority, if not any key corresponding to</code>myKey<code>will be used or</code
 
 test({ name: <span class="hljs-string">'Red Beans With Jerk Chicken And A Fresh Salad'</span>, age: <span class="hljs-literal">Infinity</span> })
     .map(<span class="hljs-built_in">console</span>.log)
-    .orRight(<span class="hljs-function"><span class="hljs-params">f</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(f.expand(ctx)));
+    .orRight(<span class="hljs-function"><span class="hljs-params">f</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(f.explain(ctx)));
 
 <span class="hljs-comment">//The above logs </span>
 <span class="hljs-comment">//{ name: 'Name is longer than 12',</span>

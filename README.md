@@ -61,7 +61,7 @@ treated as a context variable and is looked up, if not found, it is left as is.
 For MapFailures a property `$key` is added to the context so templates can retrieve 
 the name of the property. With ListFailures, it is `$index`.  
 
-Prefix a key in the context passed to a MapFailure's expand with the key name followed
+Prefix a key in the context passed to a MapFailure's explain with the key name followed
 by the precondition, example : `myKey.lengthCheck' and that template will be given 
 priority, if not any key corresponding to `myKey` will be used or `lengthCheck` if 
 that does not exist. 
@@ -143,7 +143,7 @@ let ctx = {
 
 test({ name: 'Red Beans With Jerk Chicken And A Fresh Salad', age: Infinity })
     .map(console.log)
-    .orRight(f => console.log(f.expand(ctx)));
+    .orRight(f => console.log(f.explain(ctx)));
 
 //The above logs 
 //{ name: 'Name is longer than 12',
@@ -159,4 +159,3 @@ test({ name: 'sherman', age: 21, status: 'active' }).map(console.log)
 ## License
 
 Apache-2.0 © Quenk Technologies Limited
-
