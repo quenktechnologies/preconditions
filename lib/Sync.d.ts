@@ -153,7 +153,7 @@ export declare const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
 /**
  * and
  */
-export declare const and: <A, B>(left: Precondition<A, A>, right: Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
+export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
 /**
  * set
  */

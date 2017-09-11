@@ -177,7 +177,8 @@ describe('Sync', function() {
             const left = (_: any) => conditions.fail('left', 'left');
             const right = (_: any) => conditions.valid('right');
 
-            must(conditions.and(right, left)(12).takeLeft()).be.instanceOf(conditions.Failure);
+            must(conditions.and(right, left)(12).takeLeft().explain()).be('left');
+            must(conditions.and(left, right)(12).takeLeft().explain()).be('left');
             must(conditions.or(right, right)(12).takeRight()).eql('right');
 
         })
