@@ -84,17 +84,45 @@ describe('Sync', function() {
 
     });
 
-  describe('matches', function() {
+    describe('matches', function() {
 
-    it('should correctly test string', function() {
+        it('should correctly test string', function() {
 
-      let email = /.+\@.+\..+/;
-      must(conditions.matches(email)('m12@emale.com').takeRight()).be('m12@emale.com');
-      must(conditions.matches(email)('12').takeLeft()).be.instanceof(conditions.Failure);
+            let email = /.+\@.+\..+/;
+            must(conditions.matches(email)('m12@emale.com').takeRight()).be('m12@emale.com');
+            must(conditions.matches(email)('12').takeLeft()).be.instanceof(conditions.Failure);
+
+        });
 
     });
 
-  });
+    describe('range', function() {
+
+        it('should correctly test string, number or arrays', function() {
+
+            let test = conditions.range(3, 5);
+
+            must(test(1).takeLeft()).be.instanceof(conditions.Failure);
+            must(test(6).takeLeft()).be.instanceof(conditions.Failure);
+            must(test(3).takeRight()).be(3);
+            must(test(4).takeRight()).be(4);
+            must(test(5).takeRight()).be(5);
+
+            must(test([1]).takeLeft()).be.instanceof(conditions.Failure);
+            must(test([1, 1, 1, 1, 1, 1]).takeLeft()).be.instanceof(conditions.Failure);
+            must(test([1, 1, 1]).takeRight()).be(3);
+            must(test([1, 1, 1, 1]).takeRight()).be(4);
+            must(test([1, 1, 1, 1, 1]).takeRight()).be(5);
+
+            must(test('1').takeLeft()).be.instanceof(conditions.Failure);
+            must(test('111111').takeLeft()).be.instanceof(conditions.Failure);
+            must(test('111').takeRight()).be(3);
+            must(test('1111').takeRight()).be(4);
+            must(test('11111').takeRight()).be(5);
+
+        })
+
+    });
 
     describe('array', function() {
 
