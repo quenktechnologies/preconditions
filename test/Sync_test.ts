@@ -102,23 +102,23 @@ describe('Sync', function() {
 
             let test = conditions.range(3, 5);
 
-            must(test(1).takeLeft()).be.instanceof(conditions.Failure);
-            must(test(6).takeLeft()).be.instanceof(conditions.Failure);
+            must(test(1).takeLeft().explain()).be('range.min');
+            must(test(6).takeLeft().explain()).be('range.max');
             must(test(3).takeRight()).be(3);
             must(test(4).takeRight()).be(4);
             must(test(5).takeRight()).be(5);
 
-            must(test([1]).takeLeft()).be.instanceof(conditions.Failure);
-            must(test([1, 1, 1, 1, 1, 1]).takeLeft()).be.instanceof(conditions.Failure);
-            must(test([1, 1, 1]).takeRight()).be(3);
-            must(test([1, 1, 1, 1]).takeRight()).be(4);
-            must(test([1, 1, 1, 1, 1]).takeRight()).be(5);
+            must(test([1]).takeLeft().explain()).be('range.min');
+            must(test([1, 1, 1, 1, 1, 1]).takeLeft().explain()).be('range.max');
+            must(test([1, 1, 1]).takeRight()).eql([1,1,1]);
+            must(test([1, 1, 1, 1]).takeRight()).eql([1,1,1,1]);
+            must(test([1, 1, 1, 1, 1]).takeRight()).eql([1,1,1,1,1]);
 
-            must(test('1').takeLeft()).be.instanceof(conditions.Failure);
-            must(test('111111').takeLeft()).be.instanceof(conditions.Failure);
-            must(test('111').takeRight()).be(3);
-            must(test('1111').takeRight()).be(4);
-            must(test('11111').takeRight()).be(5);
+            must(test('1').takeLeft().explain()).be('range.min');
+            must(test('111111').takeLeft().explain()).be('range.max');
+            must(test('111').takeRight()).eql('111');
+            must(test('1111').takeRight()).eql('1111');
+            must(test('11111').takeRight()).eql('11111');
 
         })
 

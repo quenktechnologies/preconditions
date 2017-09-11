@@ -306,8 +306,8 @@ export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
  * and
  */
 export const and =
-  <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) =>
-  l(value).chain(r);
+    <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) =>
+        l(value).chain(r);
 
 /**
  * set 
@@ -377,19 +377,23 @@ export type Measurable<A>
  */
 export const range: <A>(min: number, max: number) => Precondition<Measurable<A>, Measurable<A>> =
     <A>(min: number = 0, max: number = Infinity) =>
-        (value: Measurable<A>) => {
+        (value: Measurable<A>) =>
 
-            let test = ((Array.isArray(value)) || (typeof value === 'string')) ?
-                value.length :
-                value;
+            (Array.isArray(value)) ?
+                ((value.length < min) ? fail<A[], A[]>('range.min', value) :
+                    (value.length > max) ? fail<A[], A[]>('range.max', value) :
+                        valid<A[], A[]>(value)) :
 
-            return (test < min) ?
-                fail<number, number>('range.min', test, { min, max }) :
-                (test > max) ?
-                    fail<number, number>('range.max', test, { min, max }) :
-                    valid<number, number>(test);
+                (typeof value === 'string') ?
+                    ((value.length < min) ? fail<string, string>('range.min', value) :
+                        (value.length > max) ? fail<string, string>('range.max', value) :
+                            valid<string, string>(value)) :
 
-        }
+                    (value < min) ?
+                        fail<number, number>('range.min', value, { min, max }) :
+                        (value > max) ?
+                            fail<number, number>('range.max', value, { min, max }) :
+                            valid<number, number>(value)
 
 /**
  * @private
