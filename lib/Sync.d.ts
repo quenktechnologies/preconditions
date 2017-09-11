@@ -158,7 +158,7 @@ export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) =
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export declare const every: <A>(...ps: Precondition<A, A>[]) => (value: A) => Either<Failure<A>, A>;
+export declare const every: <A, B>(...ps: Precondition<A, A | B>[]) => (value: A) => Either<Failure<A>, A | B>;
 /**
  * set
  */

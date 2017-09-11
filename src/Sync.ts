@@ -313,8 +313,8 @@ export const and =
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export const every = <A>(...ps: Precondition<A, A>[]) =>
-    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A>(value));
+export const every = <A,B>(...ps: Precondition<A, A|B>[]) =>
+    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A|B>(value));
 
 /**
  * set 
