@@ -8,7 +8,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts mocha.opts test",
     "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/tsc --project src",
-    "docs": "./node_modules/.bin/typedoc --out docs --tsconfig src/tsconfig.json"
+    "docs": "./node_modules/.bin/typedoc --ignoreCompilerErrors --out docs --tsconfig src/tsconfig.json"
   },
   "keywords": [
     "criteria"
