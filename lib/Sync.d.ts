@@ -160,9 +160,13 @@ export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) =
  */
 export declare const every: <A, B>(...ps: Precondition<A, A | B>[]) => (value: A) => Either<Failure<A>, A | B>;
 /**
- * set
+ * set the value to the value specified, no matter what
  */
 export declare const set: <A, B>(b: B) => (_a: A) => Either<Failure<{}>, B>;
+/**
+ * populated tests if an array or object is populated.
+ */
+export declare const populated: <A>(value: A) => Either<Failure<A>, A>;
 /**
  * whenTrue does evaluates condition and decides
  * whether to return left if false or right if true.

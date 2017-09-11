@@ -156,6 +156,29 @@ describe('Sync', function() {
 
     });
 
+    describe('populated', () => {
+
+        it('should work with arrays', () => {
+            must(conditions.populated([]).takeLeft().explain()).be('populated');
+            must(conditions.populated([1]).takeRight()).eql([1]);
+
+        })
+
+        it('should work with objects', () => {
+            must(conditions.populated({}).takeLeft().explain()).be('populated');
+            must(conditions.populated({ a: 2 }).takeRight()).eql({a:2});
+        })
+
+        it('should not crap out otherwise', () => {
+
+            must(conditions.populated(1).takeLeft().explain()).be('populated');
+            must(conditions.populated('').takeLeft().explain()).be('populated');
+            must(conditions.populated(false).takeLeft().explain()).be('populated');
+
+        });
+
+    });
+
     describe('whenTrue', () =>
         it('should decide correctly', () => {
 

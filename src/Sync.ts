@@ -313,13 +313,19 @@ export const and =
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export const every = <A,B>(...ps: Precondition<A, A|B>[]) =>
-    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A|B>(value));
+export const every = <A, B>(...ps: Precondition<A, A | B>[]) =>
+    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A | B>(value));
 
 /**
- * set 
+ * set the value to the value specified, no matter what 
  */
 export const set = <A, B>(b: B) => (_a: A) => valid(b);
+
+/**
+ * populated tests if an array or object is populated.
+ */
+export const populated = <A>(value: A) =>  Object.keys(value).length === 0 ?
+        fail<A, A>('populated', value) :        valid<A, A>(value);
 
 /**
  * whenTrue does evaluates condition and decides
