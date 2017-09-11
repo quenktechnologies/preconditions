@@ -84,6 +84,18 @@ describe('Sync', function() {
 
     });
 
+  describe('matches', function() {
+
+    it('should correctly test string', function() {
+
+      let email = /.+\@.+\..+/;
+      must(conditions.matches(email)('m12@emale.com').takeRight()).be('m12@emale.com');
+      must(conditions.matches(email)('12').takeLeft()).be.instanceof(conditions.Failure);
+
+    });
+
+  });
+
     describe('array', function() {
 
         it('should fail if the value supplied is not an array', function() {
