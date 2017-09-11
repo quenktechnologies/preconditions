@@ -155,6 +155,11 @@ export declare const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
  */
 export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
 /**
+ * every takes a set of preconditions and attempts to apply all
+ * one after the other to the input
+ */
+export declare const every: <A>(...ps: Precondition<A, A>[]) => (value: A) => Either<Failure<A>, A>;
+/**
  * set
  */
 export declare const set: <A, B>(b: B) => (_a: A) => Either<Failure<{}>, B>;
@@ -201,6 +206,7 @@ export declare const upper: (s: string) => Either<Failure<string>, string>;
  * lower transforms a string into lowercase
  */
 export declare const lower: (s: string) => Either<Failure<string>, string>;
+export declare const trim: (s: string) => Either<Failure<string>, string>;
 /**
  * number tests if a value is a number
  */

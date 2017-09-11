@@ -310,6 +310,13 @@ export const and =
         l(value).chain(r);
 
 /**
+ * every takes a set of preconditions and attempts to apply all
+ * one after the other to the input
+ */
+export const every = <A>(...ps: Precondition<A, A>[]) =>
+    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A>(value));
+
+/**
  * set 
  */
 export const set = <A, B>(b: B) => (_a: A) => valid(b);
@@ -431,6 +438,10 @@ export const upper = (s: string) => valid<string, string>(s.toUpperCase());
  */
 export const lower =
     (s: string) => valid<string, string>(s.toLowerCase());
+
+
+export const trim =
+    (s: string): Result<string, string> => valid<string, string>(s.trim());
 
 /**
  * number tests if a value is a number

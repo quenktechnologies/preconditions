@@ -96,6 +96,16 @@ describe('Sync', function() {
 
     });
 
+    describe('trim', function() {
+
+        it('should remove trailing whitespace', () => {
+
+            must(conditions.trim(' ole o zebra       ').takeRight()).be('ole o zebra');
+
+        });
+
+    });
+
     describe('range', function() {
 
         it('should correctly test string, number or arrays', function() {
@@ -110,9 +120,9 @@ describe('Sync', function() {
 
             must(test([1]).takeLeft().explain()).be('range.min');
             must(test([1, 1, 1, 1, 1, 1]).takeLeft().explain()).be('range.max');
-            must(test([1, 1, 1]).takeRight()).eql([1,1,1]);
-            must(test([1, 1, 1, 1]).takeRight()).eql([1,1,1,1]);
-            must(test([1, 1, 1, 1, 1]).takeRight()).eql([1,1,1,1,1]);
+            must(test([1, 1, 1]).takeRight()).eql([1, 1, 1]);
+            must(test([1, 1, 1, 1]).takeRight()).eql([1, 1, 1, 1]);
+            must(test([1, 1, 1, 1, 1]).takeRight()).eql([1, 1, 1, 1, 1]);
 
             must(test('1').takeLeft().explain()).be('range.min');
             must(test('111111').takeLeft().explain()).be('range.max');
@@ -184,6 +194,25 @@ describe('Sync', function() {
         })
 
     })
+
+    describe('every', function() {
+
+        const fails = (m: string) => (v: any) => conditions.fail(m, v);
+        const up = (n: number) => conditions.valid(n + 1);
+
+        it('should stop on first failure', () => {
+
+            must(conditions.every(up, up, up, fails('away'), up, up)(1).takeLeft().explain()).be('away');
+
+        });
+
+        it('should run everything', () => {
+
+            must(conditions.every(up, up, up, up, up, up, up, up, up)(1).takeRight()).be(10);
+
+        });
+
+    });
 
     describe('map', function() {
 
