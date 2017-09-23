@@ -44,7 +44,7 @@ export declare const fail: <A, B>(m: string, v: A, ctx?: Sync.Context) => Promis
 /**
  * mapFail async
  */
-export declare const mapFail: <A, B>(e: Sync.Failures<A>, v: Sync.Values<A>, c?: Sync.Contexts) => Promise<Either<Sync.MapFailure<A>, B>>;
+export declare const mapFail: <A extends Sync.Values<V>, V, B>(errors: Sync.Failures<V>, value: A, contexts?: Sync.Contexts) => Promise<Either<Sync.MapFailure<A, V>, B>>;
 /**
  * valid async
  */
@@ -52,11 +52,11 @@ export declare const valid: <A, B>(b: B) => Promise<Either<Sync.Failure<A>, B>>;
 /**
  * map async
  */
-export declare const map: <A, B>(conditions: Preconditions<A, A>) => (value: Sync.Values<A>) => Promise<Either<Sync.Failure<Sync.Values<A>>, B>>;
+export declare const map: <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => (value: A) => Promise<Either<Sync.Failure<A>, B>>;
 /**
  * partial async
  */
-export declare const partial: <A, B>(conditions: Preconditions<A, A>) => (value: Sync.Values<A>) => Promise<Either<Sync.Failure<Sync.Values<A>>, B>>;
+export declare const partial: <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => Precondition<A, B>;
 /**
  * or async
  */

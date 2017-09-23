@@ -2,6 +2,8 @@ import * as must from 'must/register';
 import * as conditions from '../src/Sync';
 import { Preconditions } from '../src/Sync';
 
+type Prim = string | number | number[] | Date;
+
 interface User {
 
     name: string,
@@ -166,7 +168,7 @@ describe('Sync', function() {
 
         it('should work with objects', () => {
             must(conditions.populated({}).takeLeft().explain()).be('populated');
-            must(conditions.populated({ a: 2 }).takeRight()).eql({a:2});
+            must(conditions.populated({ a: 2 }).takeRight()).eql({ a: 2 });
         })
 
         it('should not crap out otherwise', () => {
@@ -279,10 +281,10 @@ describe('Sync', function() {
         it('should allow for type recognition', () => {
 
             let u: User =
-                conditions.map<any, User>(user)({ name: 'Me', age: 21, roles: [] })
+                conditions.map<any, any, any, User>(user)({ name: 'Me', age: 21, roles: [] })
                     .takeRight();
 
-            let iu: IdUser = conditions.map<any, IdUser>(idUser)({
+            let iu: IdUser = conditions.map<any, any, any, IdUser>(idUser)({
                 id: 4,
                 user: { name: 'Me', age: 21, roles: [] }
             }).takeRight();
@@ -336,7 +338,7 @@ describe('MapFailure', () => {
 
         beforeEach(function() {
 
-            fail = new conditions.MapFailure<string | number | number[] | Date>({
+            fail = new conditions.MapFailure<{[key:string]:Prim}, Prim>({
                 name: new conditions.Failure('string', new Date()),
                 age: new conditions.Failure('range', 200, { min: 5, max: 122 }),
                 size: new conditions.Failure('enum', 'small')

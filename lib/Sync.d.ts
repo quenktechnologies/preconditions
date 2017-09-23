@@ -58,11 +58,11 @@ export declare class ListFailure<A> extends Failure<A[]> {
 /**
  * MapFailure is contains info on failures that occured while applying preconditions.
  */
-export declare class MapFailure<A> extends Failure<Values<A>> {
-    failures: Failures<A>;
-    value: Values<A>;
+export declare class MapFailure<A extends Values<V>, V> extends Failure<A> {
+    failures: Failures<V>;
+    value: A;
     contexts: Contexts;
-    constructor(failures: Failures<A>, value: Values<A>, contexts?: Contexts);
+    constructor(failures: Failures<V>, value: A, contexts?: Contexts);
     explain(templates?: {
         [key: string]: string;
     }, c?: Context): Expansion;
@@ -121,7 +121,7 @@ export declare const fail: <A, B>(message: string, value: A, ctx?: Context) => E
  * mapFail produces a new MapFailure wrapped in the left side
  * of an Either from a map (object) of failures.
  */
-export declare const mapFail: <A, B>(errors: Failures<A>, value: Values<A>, contexts?: Contexts) => Either<MapFailure<A>, B>;
+export declare const mapFail: <A extends Values<V>, V, B>(errors: Failures<V>, value: A, contexts?: Contexts) => Either<MapFailure<A, V>, B>;
 /**
  * listFail produces a new ListFailure wrapped in the left side
  * of an Either
@@ -140,29 +140,29 @@ export declare const valid: <A, B>(b: B) => Either<Failure<A>, B>;
  * have and the B the resulting object/interface we get when all preconditions
  * pass.
  */
-export declare const map: <A, B>(conditions: Preconditions<A, A>) => (value: Values<A>) => Either<Failure<Values<A>>, B>;
+export declare const map: <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => Precondition<A, B>;
 /**
  * partial is like map except it only applies to keys that exists
  * on the passed value.
  */
-export declare const partial: <A, B>(conditions: Preconditions<A, A>) => (value: Values<A>) => Either<Failure<Values<A>>, B>;
+export declare const partial: <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => (value: A) => Either<Failure<A>, B>;
 /**
  * or
  */
-export declare const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) => Precondition<A, B>;
+export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
 /**
  * and
  */
-export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
+export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B>;
 /**
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export declare const every: <A, B>(...ps: Precondition<A, A | B>[]) => (value: A) => Either<Failure<A>, A | B>;
+export declare const every: <A, B>(...ps: Precondition<A, B>[]) => Precondition<A, A | B>;
 /**
  * set the value to the value specified, no matter what
  */
-export declare const set: <A, B>(b: B) => (_a: A) => Either<Failure<{}>, B>;
+export declare const set: <A, B>(b: B) => Precondition<A, B>;
 /**
  * populated tests if an array or object is populated.
  */
@@ -173,7 +173,7 @@ export declare const populated: <A>(value: A) => Either<Failure<A>, A>;
  *
  * The evaluation is done before apply is called.
  */
-export declare const whenTrue: <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
+export declare const whenTrue: <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
 /**
  * each applies a precondition for each member of an array.
  */
@@ -181,7 +181,7 @@ export declare const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[
 /**
  * matches tests if the value satisfies a regular expression.
  */
-export declare const matches: (pattern: RegExp) => (value: string) => Either<Failure<string>, string>;
+export declare const matches: (pattern: RegExp) => Precondition<string, string>;
 /**
  * Measurable types for range tests.
  */
@@ -193,7 +193,7 @@ export declare const range: <A>(min: number, max: number) => Precondition<Measur
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */
-export declare const equals: <A, B>(target: B) => (value: A) => Either<Failure<{}>, B> | Either<Failure<A>, {}>;
+export declare const equals: <A, B>(target: B) => Precondition<A, B>;
 /**
  * required requires a value to be specified
  */
@@ -201,7 +201,7 @@ export declare const required: <A>(value: A) => Either<Failure<A>, {}> | Either<
 /**
  * optional applies the tests given only if the value is != null
  */
-export declare const optional: <A, B>(p: Precondition<A, B>) => (value: A) => Either<Failure<{}>, A> | Either<Failure<A>, B>;
+export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
 /**
  * upper transforms a string into uppercase
  */

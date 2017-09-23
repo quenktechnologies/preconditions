@@ -19,7 +19,7 @@ export interface Precondition<A, B> {
 }
 
 /**
- * Result is the result of a precondition.
+ * Result of a precondition.
  */
 export type Result<A, B> = Either<Failure<A>, B>;
 
@@ -39,7 +39,7 @@ export class Failure<A> {
 
     constructor(public message: string, public value?: A, public context: Context = {}) { }
 
-    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Explanation {
 
         let combined = (typeof c['$key'] === 'string') ?
             `${c.$key}.${this.message}` :
@@ -82,7 +82,10 @@ export interface Context {
 
 }
 
-export type Expansion
+/**
+ * Explanation of what wen wrong with a Precondition.
+ */
+export type Explanation
     = string
     | object
     ;
@@ -94,7 +97,7 @@ export class ListFailure<A> extends Failure<A[]> {
         public value: A[],
         public contexts: Contexts = {}) { super('list', value, contexts); }
 
-    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Explanation {
 
         return afpl.util.reduce(this.failures, ((o, f, $index) =>
             afpl.util.merge(o, {
@@ -108,14 +111,14 @@ export class ListFailure<A> extends Failure<A[]> {
 /**
  * MapFailure is contains info on failures that occured while applying preconditions.
  */
-export class MapFailure<A> extends Failure<Values<A>> {
+export class MapFailure<A extends Values<V>, V> extends Failure<A> {
 
     constructor(
-        public failures: Failures<A>,
-        public value: Values<A>,
+        public failures: Failures<V>,
+        public value: A,
         public contexts: Contexts = {}) { super('map', value, contexts); }
 
-    explain(templates: { [key: string]: string } = {}, c: Context = {}): Expansion {
+    explain(templates: { [key: string]: string } = {}, c: Context = {}): Explanation {
 
         return afpl.util.reduce(this.failures, (o, f, $key) =>
             afpl.util.merge(o, {
@@ -208,8 +211,8 @@ export const fail = <A, B>(message: string, value: A, ctx: Context = {}) =>
  * of an Either from a map (object) of failures.
  */
 export const mapFail =
-    <A, B>(errors: Failures<A>, value: Values<A>, contexts: Contexts = {}) =>
-        left<MapFailure<A>, B>(new MapFailure(errors, value, contexts));
+    <A extends Values<V>, V, B>(errors: Failures<V>, value: A, contexts: Contexts = {}) =>
+        left<MapFailure<A, V>, B>(new MapFailure(errors, value, contexts));
 
 /**
  * listFail produces a new ListFailure wrapped in the left side
@@ -235,59 +238,60 @@ export const valid = <A, B>(b: B) => right<Failure<A>, B>(b);
  * have and the B the resulting object/interface we get when all preconditions
  * pass.
  */
-export const map = <A, B>(conditions: Preconditions<A, A>) => (value: Values<A>) => {
+export const map = <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>)
+    : Precondition<A, B> => (value: A) => {
 
-    let init: Reports<A, A> = { failures: {}, values: {} };
+        let init: Reports<X, Y> = { failures: {}, values: {} };
 
-    if (typeof value !== 'object') {
+        if (typeof value !== 'object') {
 
-        return mapFail<A, B>({}, value);
+            return mapFail<A, X, B>({}, value);
 
-    } else {
+        } else {
 
-        let reports = afpl.util.reduce<Precondition<A, A>, Reports<A, A>>(conditions,
-            (r: Reports<A, A>, p: Precondition<A, A>, k: string) =>
+            let reports = afpl.util.reduce<Precondition<X, Y>, Reports<X, Y>>(conditions,
+                (r: Reports<X, Y>, p: Precondition<X, Y>, k: string) =>
 
-                p(value[k])
-                    .cata(
-                    whenLeft(k, r),
-                    whenRight(k, r)), init);
+                    p(value[k])
+                        .cata(
+                        whenLeft(k, r),
+                        whenRight(k, r)), init);
 
-        if (Object.keys(reports.failures).length > 0)
-            return mapFail<A, B>(reports.failures, value);
-        else
-            return valid<Values<A>, B>(<B><any>reports.values);
+            if (Object.keys(reports.failures).length > 0)
+                return mapFail<A, X, B>(reports.failures, value);
+            else
+                return valid<A, B>(<B><any>reports.values);
 
+        }
     }
-}
 
 /**
  * partial is like map except it only applies to keys that exists
  * on the passed value.
  */
 export const partial =
-    <A, B>(conditions: Preconditions<A, A>) =>
-        (value: Values<A>) => {
+    <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) =>
+        (value: A) => {
 
-            let init: Reports<A, A> = { failures: {}, values: {} };
+            let init: Reports<X, Y> = { failures: {}, values: {} };
 
             if (typeof value !== 'object') {
 
-                return mapFail<A, B>({}, value);
+                return mapFail<A, X, B>({}, value);
 
             } else {
 
                 let reports = afpl.util.reduce(value,
-                    (r: Reports<A, A>, a: A, k: string) =>
+                    (r: Reports<X, Y>, x: X, k: string) =>
                         (conditions.hasOwnProperty(k)) ?
-                            conditions[k](a)
+                            conditions[k](x)
                                 .cata(whenLeft(k, r), whenRight(k, r)) :
                             r, init);
 
                 if (Object.keys(reports.failures).length > 0)
-                    return mapFail<A, B>(reports.failures, value);
+                    return mapFail<A, X, B>(reports.failures, value);
                 else
-                    return valid<Values<A>, B>(<B><any>reports.values);
+                    return valid<A, B>(<B><any>reports.values);
 
             }
 
@@ -295,37 +299,39 @@ export const partial =
 /**
  * or
  */
-export const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) =>
-    Precondition<A, B> =
-    <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
-        (value: A) =>
-            left(value)
-                .cata(() => right(value), (b: B) => valid(b));
+export const or =
+    <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
+        : Precondition<A, B> =>
+        (value: A) => left(value).orElse(() => right(value));
 
 /**
  * and
  */
 export const and =
-    <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => (value: A) =>
-        l(value).chain(r);
+    <A, B>(l: Precondition<A, A>, r: Precondition<A, B>)
+        : Precondition<A, B> =>
+        (value: A) => l(value).chain(r);
 
 /**
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export const every = <A, B>(...ps: Precondition<A, A | B>[]) =>
+export const every = <A, B>(...ps: Precondition<A, | B>[])
+    : Precondition<A, A | B> =>
     (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A | B>(value));
 
 /**
  * set the value to the value specified, no matter what 
  */
-export const set = <A, B>(b: B) => (_a: A) => valid(b);
+export const set = <A, B>(b: B): Precondition<A, B> => (_a: A) => valid<A, B>(b);
 
 /**
  * populated tests if an array or object is populated.
  */
-export const populated = <A>(value: A) =>  Object.keys(value).length === 0 ?
-        fail<A, A>('populated', value) :        valid<A, A>(value);
+export const populated = <A>(value: A) =>
+    Object.keys(value).length === 0 ?
+        fail<A, A>('populated', value) :
+        valid<A, A>(value);
 
 /**
  * whenTrue does evaluates condition and decides
@@ -337,11 +343,8 @@ export const whenTrue =
     <A, B>(
         condition: boolean,
         left: Precondition<A, B>,
-        right: Precondition<A, B>) =>
-        (value: A) =>
-            condition ?
-                right(value) :
-                left(value);
+        right: Precondition<A, B>): Precondition<A, B> =>
+        (value: A) => condition ? right(value) : left(value);
 
 /**
  * each applies a precondition for each member of an array.
@@ -371,13 +374,13 @@ export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
 /**
  * matches tests if the value satisfies a regular expression.
  */
-export const matches = (pattern: RegExp) => (value: string) =>
+export const matches = (pattern: RegExp): Precondition<string, string> => (value: string) =>
     (!pattern.test(value)) ?
         fail<string, string>('matches', value, { pattern: pattern.toString() }) :
         valid<string, string>(value)
 
 /**
- * Measurable types for range tests.
+ * Measurable are types that can be used in the range Precondition.
  */
 export type Measurable<A>
     = string
@@ -416,8 +419,10 @@ const isB = <B>(a: any, b: B): a is B => (a === b)
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */
-export const equals = <A, B>(target: B) => (value: A) => isB(value, target) ?
-    valid(target) : fail('equals', value, { target });
+export const equals = <A, B>(target: B): Precondition<A, B> =>
+    (value: A) => isB(value, target) ?
+        valid<A, B>(target) :
+        fail<A, B>('equals', value, { target });
 
 /**
  * required requires a value to be specified
@@ -430,9 +435,11 @@ export const required = <A>(value: A) =>
 /**
  * optional applies the tests given only if the value is != null
  */
-export const optional = <A, B>(p: Precondition<A, B>) => (value: A) =>
-    ((value == null) || (typeof value === 'string' && value === '')) ?
-        valid(value) : p(value);
+export const optional = <A, B>(p: Precondition<A, A | B>)
+    : Precondition<A, A | B> =>
+    (value: A) =>
+        ((value == null) || (typeof value === 'string' && value === '')) ?
+            valid<A, A>(value) : p(value);
 
 /**
  * upper transforms a string into uppercase
