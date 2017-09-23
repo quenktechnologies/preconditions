@@ -460,7 +460,7 @@ export const trim =
  * number tests if a value is a number
  */
 export const number = <A>(n: A) =>
-    (typeof n === 'number') ? valid<A, number>(n) :
+    ((typeof n === 'number') && (!isNaN(n))) ? valid<A, number>(n) :
         fail<A, number>('number', n);
 
 /**

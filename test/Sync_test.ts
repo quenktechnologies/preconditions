@@ -73,6 +73,12 @@ describe('Sync', function() {
 
         });
 
+      it('should not pass NaN', function() {
+
+        must(conditions.number(NaN).takeLeft()).be.instanceOf(conditions.Failure);
+
+      });
+
     });
 
     describe('string', function() {
@@ -338,7 +344,7 @@ describe('MapFailure', () => {
 
         beforeEach(function() {
 
-            fail = new conditions.MapFailure<{[key:string]:Prim}, Prim>({
+            fail = new conditions.MapFailure<{ [key: string]: Prim }, Prim>({
                 name: new conditions.Failure('string', new Date()),
                 age: new conditions.Failure('range', 200, { min: 5, max: 122 }),
                 size: new conditions.Failure('enum', 'small')
