@@ -349,8 +349,8 @@ export const whenTrue =
 /**
  * each applies a precondition for each member of an array.
  */
-export const each = 
-  <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
+export const each =
+    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
         (value: A[]) => {
 
             let r = value.reduce(({ failures, values }, a, k) =>
@@ -481,21 +481,18 @@ export const array =
 /**
  * object tests if the value is an js object.
  */
-export const object: <A>() => Precondition<A, A> =
-    <A>() =>
-        (value: A) =>
-            (typeof value === 'object' && (!Array.isArray(value))) ?
-                valid<A, A>(value) :
-                fail<A, A>('object', <any>value);
+export const object = <A>(value: A) =>
+    (typeof value === 'object' && (!Array.isArray(value))) ?
+        valid<A, A>(value) :
+        fail<A, A>('object', <any>value);
 
 /**
  * isin requires the value to be enumerated in the supplied list.
  */
-export const isin: <A>(list: A[]) => Precondition<A, A> = <A>(list: A[]) =>
-    (value: A) =>
-        (list.indexOf(value) < 0) ?
-            fail('isin', value, { enum: list }) :
-            valid(value)
+export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
+    (list.indexOf(value) < 0) ?
+        fail<A, A>('isin', value, { enum: list }) :
+        valid<A, A>(value)
 
 export const cast = <A, B>(f: (a: A) => B)
     : Precondition<A, B> =>

@@ -12,7 +12,7 @@ export interface Precondition<A, B> {
     (value: A): Result<A, B>;
 }
 /**
- * Result is the result of a precondition.
+ * Result of a precondition.
  */
 export declare type Result<A, B> = Either<Failure<A>, B>;
 /**
@@ -31,7 +31,7 @@ export declare class Failure<A> {
     constructor(message: string, value?: A, context?: Context);
     explain(templates?: {
         [key: string]: string;
-    }, c?: Context): Expansion;
+    }, c?: Context): Explanation;
 }
 /**
  * Contexts is a map of Contexts.
@@ -45,7 +45,10 @@ export interface Contexts {
 export interface Context {
     [key: string]: any;
 }
-export declare type Expansion = string | object;
+/**
+ * Explanation of what wen wrong with a Precondition.
+ */
+export declare type Explanation = string | object;
 export declare class ListFailure<A> extends Failure<A[]> {
     failures: Failures<A>;
     value: A[];
@@ -53,7 +56,7 @@ export declare class ListFailure<A> extends Failure<A[]> {
     constructor(failures: Failures<A>, value: A[], contexts?: Contexts);
     explain(templates?: {
         [key: string]: string;
-    }, c?: Context): Expansion;
+    }, c?: Context): Explanation;
 }
 /**
  * MapFailure is contains info on failures that occured while applying preconditions.
@@ -65,7 +68,7 @@ export declare class MapFailure<A extends Values<V>, V> extends Failure<A> {
     constructor(failures: Failures<V>, value: A, contexts?: Contexts);
     explain(templates?: {
         [key: string]: string;
-    }, c?: Context): Expansion;
+    }, c?: Context): Explanation;
 }
 /**
  * Values is a map of values to apply a map {@link Precondition} to.
@@ -183,7 +186,7 @@ export declare const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[
  */
 export declare const matches: (pattern: RegExp) => Precondition<string, string>;
 /**
- * Measurable types for range tests.
+ * Measurable are types that can be used in the range Precondition.
  */
 export declare type Measurable<A> = string | number | A[];
 /**
@@ -226,9 +229,9 @@ export declare const array: <A, B>(a: A) => Either<Failure<A>, B[]>;
 /**
  * object tests if the value is an js object.
  */
-export declare const object: <A>() => Precondition<A, A>;
+export declare const object: <A>(value: A) => Either<Failure<A>, A>;
 /**
  * isin requires the value to be enumerated in the supplied list.
  */
 export declare const isin: <A>(list: A[]) => Precondition<A, A>;
-export declare const cast: <A, B>(f: (a: A) => B) => (a: A) => Either<Failure<{}>, B>;
+export declare const cast: <A, B>(f: (a: A) => B) => Precondition<A, B>;
