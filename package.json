@@ -1,6 +1,6 @@
 {
   "name": "@quenk/preconditions",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "An async friendly version of a Criteria pattern.",
   "main": "lib/Sync.js",
   "types": "lib/Sync.d.ts",
