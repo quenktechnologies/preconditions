@@ -349,8 +349,8 @@ export const whenTrue =
 /**
  * each applies a precondition for each member of an array.
  */
-export const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]> =
-    <A, B>(p: Precondition<A, B>) =>
+export const each = 
+  <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
         (value: A[]) => {
 
             let r = value.reduce(({ failures, values }, a, k) =>
@@ -497,4 +497,6 @@ export const isin: <A>(list: A[]) => Precondition<A, A> = <A>(list: A[]) =>
             fail('isin', value, { enum: list }) :
             valid(value)
 
-export const cast = <A, B>(f: (a: A) => B) => (a: A) => valid(f(a));
+export const cast = <A, B>(f: (a: A) => B)
+    : Precondition<A, B> =>
+    (a: A) => valid<A, B>(f(a));
