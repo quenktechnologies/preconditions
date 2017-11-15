@@ -391,7 +391,7 @@ export type Measurable<A>
 /**
  * range tests if a string, number or array falls within a range
  */
-export const range: <A>(min: number, max: number) => Precondition<Measurable<A>, Measurable<A>> =
+export const range: (min: number, max: number) => <A>(value:Measurable<A>)=> Result<Measurable<A>, Measurable<A>>=
     (min: number = 0, max: number = Infinity) =>
         <A>(value: Measurable<A>) =>
 

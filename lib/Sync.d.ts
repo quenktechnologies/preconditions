@@ -192,7 +192,7 @@ export declare type Measurable<A> = string | number | A[];
 /**
  * range tests if a string, number or array falls within a range
  */
-export declare const range: <A>(min: number, max: number) => Precondition<Measurable<A>, Measurable<A>>;
+export declare const range: (min: number, max: number) => <A>(value: Measurable<A>) => Result<Measurable<A>, Measurable<A>>;
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */
