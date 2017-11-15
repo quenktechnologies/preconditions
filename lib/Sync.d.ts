@@ -186,13 +186,13 @@ export declare const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[
  */
 export declare const matches: (pattern: RegExp) => Precondition<string, string>;
 /**
- * Measurable are types that can be used in the range Precondition.
+ * range tests if a number length falls within a range.
  */
-export declare type Measurable<A> = string | number | A[];
+export declare const range: (min: number, max: number) => Precondition<number, number>;
 /**
- * range tests if a string, number or array falls within a range
+ * length tests whether the length of an array falls within a range.
  */
-export declare const range: (min: number, max: number) => <A>(value: Measurable<A>) => Result<Measurable<A>, Measurable<A>>;
+export declare const length: <A>(min: number, max: number) => Precondition<A[] | string, A[] | string>;
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */

@@ -380,37 +380,28 @@ export const matches = (pattern: RegExp): Precondition<string, string> => (value
         valid<string, string>(value)
 
 /**
- * Measurable are types that can be used in the range Precondition.
+ * range tests if a number length falls within a range.
  */
-export type Measurable<A>
-    = string
-    | number
-    | A[]
-    ;
+export const range: (min: number, max: number) => Precondition<number, number> =
+    (min: number = 0, max: number = Infinity) => (value: number) => (value < min) ?
+        fail<number, number>('range.min', value, { min, max }) :
+        (value > max) ?
+            fail<number, number>('range.max', value, { min, max }) :
+            valid<number, number>(value)
 
 /**
- * range tests if a string, number or array falls within a range
+ * length tests whether the length of an array falls within a range.
  */
-export const range: (min: number, max: number) => <A>(value:Measurable<A>)=> Result<Measurable<A>, Measurable<A>>=
-    (min: number = 0, max: number = Infinity) =>
-        <A>(value: Measurable<A>) =>
+export const length: <A>(min: number, max: number) => Precondition<A[] | string, A[] | string> =
+    (min: number = 0, max: number = Infinity) => <A>(value: A[] | string) =>
+        (Array.isArray(value)) ?
+            ((value.length < min) ? fail<A[], A[]>('length.min', value) :
+                (value.length > max) ? fail<A[], A[]>('length.max', value) :
+                    valid<A[], A[]>(value)) :
 
-            (Array.isArray(value)) ?
-                ((value.length < min) ? fail<A[], A[]>('range.min', value) :
-                    (value.length > max) ? fail<A[], A[]>('range.max', value) :
-                        valid<A[], A[]>(value)) :
-
-                (typeof value === 'string') ?
-                    ((value.length < min) ? fail<string, string>('range.min', value) :
-                        (value.length > max) ? fail<string, string>('range.max', value) :
-                            valid<string, string>(value)) :
-
-                    (value < min) ?
-                        fail<number, number>('range.min', value, { min, max }) :
-                        (value > max) ?
-                            fail<number, number>('range.max', value, { min, max }) :
-                            valid<number, number>(value)
-
+            ((value.length < min) ? fail<string, string>('length.min', value) :
+                (value.length > max) ? fail<string, string>('length.max', value) :
+                    valid<string, string>(value));
 /**
  * @private
  */

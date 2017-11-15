@@ -126,14 +126,24 @@ describe('Sync', function() {
             must(test(4).takeRight()).be(4);
             must(test(5).takeRight()).be(5);
 
-            must(test([1]).takeLeft().explain()).be('range.min');
-            must(test([1, 1, 1, 1, 1, 1]).takeLeft().explain()).be('range.max');
+        })
+
+    });
+
+  describe('length', function() {
+
+        it('should correctly test string, number or arrays', function() {
+
+            let test = conditions.length(3, 5);
+
+            must(test([1]).takeLeft().explain()).be('length.min');
+            must(test([1, 1, 1, 1, 1, 1]).takeLeft().explain()).be('length.max');
             must(test([1, 1, 1]).takeRight()).eql([1, 1, 1]);
             must(test([1, 1, 1, 1]).takeRight()).eql([1, 1, 1, 1]);
             must(test([1, 1, 1, 1, 1]).takeRight()).eql([1, 1, 1, 1, 1]);
 
-            must(test('1').takeLeft().explain()).be('range.min');
-            must(test('111111').takeLeft().explain()).be('range.max');
+            must(test('1').takeLeft().explain()).be('length.min');
+            must(test('111111').takeLeft().explain()).be('length.max');
             must(test('111').takeRight()).eql('111');
             must(test('1111').takeRight()).eql('1111');
             must(test('11111').takeRight()).eql('11111');
