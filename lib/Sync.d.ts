@@ -143,12 +143,12 @@ export declare const valid: <A, B>(b: B) => Either<Failure<A>, B>;
  * have and the B the resulting object/interface we get when all preconditions
  * pass.
  */
-export declare const map: <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => Precondition<A, B>;
+export declare const map: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * partial is like map except it only applies to keys that exists
  * on the passed value.
  */
-export declare const partial: <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => (value: A) => Either<Failure<A>, B>;
+export declare const partial: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => (value: A) => Either<Failure<A>, B>;
 /**
  * or
  */
@@ -161,7 +161,7 @@ export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) =
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export declare const every: <A, B>(...ps: Precondition<A, B>[]) => Precondition<A, A | B>;
+export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]) => Precondition<A, B>;
 /**
  * set the value to the value specified, no matter what
  */
@@ -185,14 +185,11 @@ export declare const each: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[
  * matches tests if the value satisfies a regular expression.
  */
 export declare const matches: (pattern: RegExp) => Precondition<string, string>;
+export declare type Measureable = string | number | any[];
 /**
- * range tests if a number length falls within a range.
+ * range tests whether the length of an array, string or number falls within a range.
  */
-export declare const range: (min: number, max: number) => Precondition<number, number>;
-/**
- * length tests whether the length of an array falls within a range.
- */
-export declare const length: <A>(min: number, max: number) => Precondition<A[] | string, A[] | string>;
+export declare const range: <A extends Measureable>(min: number, max: number) => Precondition<A, A>;
 /**
  * equals tests if the value is equal to the value specified (strictly).
  */

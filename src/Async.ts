@@ -75,31 +75,31 @@ export const valid: <A, B>(b: B) => Promise<Either<Sync.Failure<A>, B>> =
 /**
  * map async
  */
-export const map = <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) =>
+export const map = <A extends Sync.Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) =>
     (value: A) => {
 
-        let init: Reports<X, Y> =
+        let init: Reports<AB, AB> =
             Promise.resolve({ failures: {}, values: {} });
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, X, B>({}, value));
+            return Promise.resolve(Sync.mapFail<A, AB, B>({}, value));
 
         } else {
 
             return afpl.util.reduce(conditions, (
-                p: Reports<X, Y>,
-                f: Precondition<X, Y>,
+                p: Reports<AB, AB>,
+                f: Precondition<AB, AB>,
                 key: string) =>
-                p.then((r: Sync.Reports<X, Y>) =>
+                p.then((r: Sync.Reports<AB, AB>) =>
                     f(value[key])
-                        .then((e: Sync.Result<X, Y>) =>
+                        .then((e: Sync.Result<AB, AB>) =>
                             Promise.resolve(e.cata(Sync.whenLeft(key, r),
                                 Sync.whenRight(key, r))))), init)
-                .then((r: Sync.Reports<X, Y>) => {
+                .then((r: Sync.Reports<AB, AB>) => {
 
                     if (Object.keys(r.failures).length > 0)
-                        return Promise.resolve(Sync.mapFail<A, X, B>(r.failures, value));
+                        return Promise.resolve(Sync.mapFail<A, AB, B>(r.failures, value));
                     else
                         return Promise
                             .resolve(Sync.valid<A, B>(<B><any>r.values));
@@ -112,38 +112,38 @@ export const map = <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions
 /**
  * partial async
  */
-export const partial = <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>)
+export const partial = <A extends Sync.Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
     : Precondition<A, B> =>
     (value: A) => {
 
-        let init: Reports<X, Y> =
+        let init: Reports<AB, AB> =
             Promise.resolve({ failures: {}, values: {} });
 
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, X, B>({}, value));
+            return Promise.resolve(Sync.mapFail<A, AB, B>({}, value));
 
         } else {
 
             return afpl.util.reduce(value,
-                (p: Reports<X, Y>, x: X, key: string) =>
+                (p: Reports<AB, AB>, x: AB, key: string) =>
                     p
-                        .then((r: Sync.Reports<X, Y>) =>
+                        .then((r: Sync.Reports<AB, AB>) =>
                             conditions.hasOwnProperty(key) ?
 
                                 conditions[key](x)
-                                    .then((e: Sync.Result<X, Y>) =>
+                                    .then((e: Sync.Result<AB, AB>) =>
                                         Promise.resolve(
                                             e.cata(Sync.whenLeft(key, r),
                                                 Sync.whenRight(key, r)))) :
 
                                 Promise.resolve(r)), init)
 
-                .then((r: Sync.Reports<X, Y>) => {
+                .then((r: Sync.Reports<AB, AB>) => {
 
                     if (Object.keys(r.failures).length > 0)
-                        return Promise.resolve(Sync.mapFail<A, X, B>(r.failures, value));
+                        return Promise.resolve(Sync.mapFail<A, AB, B>(r.failures, value));
                     else
                         return Promise
                             .resolve(Sync.valid<A, B>(<B><any>r.values));

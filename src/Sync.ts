@@ -238,19 +238,19 @@ export const valid = <A, B>(b: B) => right<Failure<A>, B>(b);
  * have and the B the resulting object/interface we get when all preconditions
  * pass.
  */
-export const map = <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>)
+export const map = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
     : Precondition<A, B> => (value: A) => {
 
-        let init: Reports<X, Y> = { failures: {}, values: {} };
+        let init: Reports<AB, AB> = { failures: {}, values: {} };
 
         if (typeof value !== 'object') {
 
-            return mapFail<A, X, B>({}, value);
+            return mapFail<A, AB, B>({}, value);
 
         } else {
 
-            let reports = afpl.util.reduce<Precondition<X, Y>, Reports<X, Y>>(conditions,
-                (r: Reports<X, Y>, p: Precondition<X, Y>, k: string) =>
+            let reports = afpl.util.reduce<Precondition<AB, AB>, Reports<AB, AB>>(conditions,
+                (r: Reports<AB, AB>, p: Precondition<AB, AB>, k: string) =>
 
                     p(value[k])
                         .cata(
@@ -258,7 +258,7 @@ export const map = <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y
                         whenRight(k, r)), init);
 
             if (Object.keys(reports.failures).length > 0)
-                return mapFail<A, X, B>(reports.failures, value);
+                return mapFail<A, AB, B>(reports.failures, value);
             else
                 return valid<A, B>(<B><any>reports.values);
 
@@ -270,26 +270,26 @@ export const map = <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y
  * on the passed value.
  */
 export const partial =
-    <A extends Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) =>
+    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) =>
         (value: A) => {
 
-            let init: Reports<X, Y> = { failures: {}, values: {} };
+            let init: Reports<AB, AB> = { failures: {}, values: {} };
 
             if (typeof value !== 'object') {
 
-                return mapFail<A, X, B>({}, value);
+                return mapFail<A, AB, B>({}, value);
 
             } else {
 
                 let reports = afpl.util.reduce(value,
-                    (r: Reports<X, Y>, x: X, k: string) =>
+                    (r: Reports<AB, AB>, x: AB, k: string) =>
                         (conditions.hasOwnProperty(k)) ?
                             conditions[k](x)
                                 .cata(whenLeft(k, r), whenRight(k, r)) :
                             r, init);
 
                 if (Object.keys(reports.failures).length > 0)
-                    return mapFail<A, X, B>(reports.failures, value);
+                    return mapFail<A, AB, B>(reports.failures, value);
                 else
                     return valid<A, B>(<B><any>reports.values);
 
@@ -316,10 +316,13 @@ export const and =
  * every takes a set of preconditions and attempts to apply all
  * one after the other to the input
  */
-export const every = <A, B>(...ps: Precondition<A, | B>[])
-    : Precondition<A, A | B> =>
-    (value: A) => ps.reduce((p, c) => p.chain(c), right<Failure<A>, A | B>(value));
-
+export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[])
+    : Precondition<A, B> => (value: A) =>
+        p(value)
+            .chain((b: B) =>
+                list
+                    .reduce((e, f) => e.chain(f), right<Failure<B>, B>(b))
+                    .cata(f => fail<A, B>(f.message, value), b => valid<A, B>(b)));
 /**
  * set the value to the value specified, no matter what 
  */
@@ -379,29 +382,35 @@ export const matches = (pattern: RegExp): Precondition<string, string> => (value
         fail<string, string>('matches', value, { pattern: pattern.toString() }) :
         valid<string, string>(value)
 
-/**
- * range tests if a number length falls within a range.
- */
-export const range: (min: number, max: number) => Precondition<number, number> =
-    (min: number = 0, max: number = Infinity) => (value: number) => (value < min) ?
-        fail<number, number>('range.min', value, { min, max }) :
-        (value > max) ?
-            fail<number, number>('range.max', value, { min, max }) :
-            valid<number, number>(value)
+export type Measureable
+    = string
+    | number
+    | any[]
+    ;
 
 /**
- * length tests whether the length of an array falls within a range.
+ * range tests whether the length of an array, string or number falls within a range.
  */
-export const length: <A>(min: number, max: number) => Precondition<A[] | string, A[] | string> =
-    (min: number = 0, max: number = Infinity) => <A>(value: A[] | string) =>
+export const range: <A extends Measureable>(min: number, max: number) => Precondition<A, A> =
+    <A extends Measureable>(min: number = 0, max: number = Infinity) => (value: A) =>
         (Array.isArray(value)) ?
-            ((value.length < min) ? fail<A[], A[]>('length.min', value) :
-                (value.length > max) ? fail<A[], A[]>('length.max', value) :
-                    valid<A[], A[]>(value)) :
+            ((value.length < min) ? fail<A, A>('range.min', <A>value, { min, max }) :
+                (value.length > max) ? fail<A, A>('range.max', <A>value, { min, max }) :
+                    valid<A, A>(<A>value)) :
 
-            ((value.length < min) ? fail<string, string>('length.min', value) :
-                (value.length > max) ? fail<string, string>('length.max', value) :
-                    valid<string, string>(value));
+            (typeof value === 'number') ?
+                (value < min) ?
+                    fail<A, A>('range.min', <A>value, { min, max }) :
+                    (value > max) ?
+                        fail<A, A>('range.max', value, { min, max }) :
+                        valid<A, A>(value) :
+
+                (typeof value === 'string') ?
+                    (((<string>value).length < min) ? fail<A, A>('range.min', <A>value) :
+                        ((<string>value).length > max) ? fail<A, A>('range.max', <A>value) :
+                            valid<A, A>(<A>value)) :
+                    fail<A, A>('invalid', value)
+
 /**
  * @private
  */

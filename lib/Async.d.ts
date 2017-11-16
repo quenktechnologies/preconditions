@@ -52,11 +52,11 @@ export declare const valid: <A, B>(b: B) => Promise<Either<Sync.Failure<A>, B>>;
 /**
  * map async
  */
-export declare const map: <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => (value: A) => Promise<Either<Sync.Failure<A>, B>>;
+export declare const map: <A extends Sync.Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => (value: A) => Promise<Either<Sync.Failure<A>, B>>;
 /**
  * partial async
  */
-export declare const partial: <A extends Sync.Values<X>, X, Y, B>(conditions: Preconditions<X, Y>) => Precondition<A, B>;
+export declare const partial: <A extends Sync.Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * or async
  */
