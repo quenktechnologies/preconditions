@@ -337,17 +337,35 @@ export const populated = <A>(value: A) =>
         valid<A, A>(value);
 
 /**
- * whenTrue does evaluates condition and decides
- * whether to return left if false or right if true.
- *
- * The evaluation is done before apply is called.
+ * when conditionally applies one of two preconditions depending
+ * on the outcome of a test function.
+ */
+export const when = <A>(
+    test: (a: A) => boolean,
+    applied: Precondition<A, A>,
+    otherwise: Precondition<A, A>): Precondition<A, A> =>
+    (value: A) => (test(value) === true) ? applied(value) : otherwise(value);
+
+
+/**
+ * whenTrue conditionally applies applied or otherwise depending
+ * on whether condition is true or not.
  */
 export const whenTrue =
     <A, B>(
         condition: boolean,
-        left: Precondition<A, B>,
-        right: Precondition<A, B>): Precondition<A, B> =>
-        (value: A) => condition ? right(value) : left(value);
+        applied: Precondition<A, B>,
+        otherwise: Precondition<A, B>): Precondition<A, B> =>
+        (value: A) => (condition === true) ? applied(value) : otherwise(value);
+
+/**
+ * whenFalse (opposite of whenTrue).
+ */
+export const whenFalse = <A, B>(
+    condition: boolean,
+    applied: Precondition<A, B>,
+    otherwise: Precondition<A, B>): Precondition<A, B> =>
+    (value: A) => (condition === false) ? applied(value) : otherwise(value);
 
 /**
  * each applies a precondition for each member of an array.
@@ -497,3 +515,4 @@ export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
 export const cast = <A, B>(f: (a: A) => B)
     : Precondition<A, B> =>
     (a: A) => valid<A, B>(f(a));
+

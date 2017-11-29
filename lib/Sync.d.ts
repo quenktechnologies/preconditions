@@ -171,12 +171,19 @@ export declare const set: <A, B>(b: B) => Precondition<A, B>;
  */
 export declare const populated: <A>(value: A) => Either<Failure<A>, A>;
 /**
- * whenTrue does evaluates condition and decides
- * whether to return left if false or right if true.
- *
- * The evaluation is done before apply is called.
+ * when conditionally applies one of two preconditions depending
+ * on the outcome of a test function.
  */
-export declare const whenTrue: <A, B>(condition: boolean, left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
+export declare const when: <A>(test: (a: A) => boolean, applied: Precondition<A, A>, otherwise: Precondition<A, A>) => Precondition<A, A>;
+/**
+ * whenTrue conditionally applies applied or otherwise depending
+ * on whether condition is true or not.
+ */
+export declare const whenTrue: <A, B>(condition: boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
+/**
+ * whenFalse (opposite of whenTrue).
+ */
+export declare const whenFalse: <A, B>(condition: boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
  * each applies a precondition for each member of an array.
  */
