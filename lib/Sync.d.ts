@@ -245,4 +245,4 @@ export declare const cast: <A, B>(f: (a: A) => B) => Precondition<A, B>;
 /**
  * unwrap applies a precondition received from a function.
  */
-export declare const unwrap: <A>(p: () => Precondition<A, A>) => (value: A) => Either<Failure<A>, A>;
+export declare const unwrap: <A, B>(p: () => Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;

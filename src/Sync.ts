@@ -523,5 +523,5 @@ export const cast = <A, B>(f: (a: A) => B)
  * unwrap applies a precondition received from a function.
  */
 export const unwrap =
-    <A>(p: () => Precondition<A, A>) => (value: A) => p()(value);
+    <A,B>(p: () => Precondition<A, B>) => (value: A) => p()(value);
 
