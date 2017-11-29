@@ -340,12 +340,11 @@ export const populated = <A>(value: A) =>
  * when conditionally applies one of two preconditions depending
  * on the outcome of a test function.
  */
-export const when = <A>(
+export const when = <A, B>(
     test: (a: A) => boolean,
-    applied: Precondition<A, A>,
-    otherwise: Precondition<A, A>): Precondition<A, A> =>
+    applied: Precondition<A, B>,
+    otherwise: Precondition<A, B>): Precondition<A, B> =>
     (value: A) => (test(value) === true) ? applied(value) : otherwise(value);
-
 
 /**
  * whenTrue conditionally applies applied or otherwise depending
@@ -523,5 +522,5 @@ export const cast = <A, B>(f: (a: A) => B)
  * unwrap applies a precondition received from a function.
  */
 export const unwrap =
-    <A,B>(p: () => Precondition<A, B>) => (value: A) => p()(value);
+    <A, B>(p: () => Precondition<A, B>) => (value: A) => p()(value);
 

@@ -174,7 +174,7 @@ export declare const populated: <A>(value: A) => Either<Failure<A>, A>;
  * when conditionally applies one of two preconditions depending
  * on the outcome of a test function.
  */
-export declare const when: <A>(test: (a: A) => boolean, applied: Precondition<A, A>, otherwise: Precondition<A, A>) => Precondition<A, A>;
+export declare const when: <A, B>(test: (a: A) => boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
  * whenTrue conditionally applies applied or otherwise depending
  * on whether condition is true or not.
