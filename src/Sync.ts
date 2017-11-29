@@ -512,7 +512,16 @@ export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
         fail<A, A>('isin', value, { enum: list }) :
         valid<A, A>(value)
 
+/**
+ * cast a value from one type to another using a cast function.
+ */
 export const cast = <A, B>(f: (a: A) => B)
     : Precondition<A, B> =>
     (a: A) => valid<A, B>(f(a));
+
+/**
+ * unwrap applies a precondition received from a function.
+ */
+export const unwrap =
+    <A>(p: () => Precondition<A, A>) => (value: A) => p()(value);
 

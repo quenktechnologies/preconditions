@@ -187,7 +187,6 @@ describe('Sync', function() {
 
     });
 
-
     describe('when', () =>
         it('should decide correctly', () => {
 
@@ -203,8 +202,8 @@ describe('Sync', function() {
     describe('whenTrue|False', () =>
         it('should decide correctly', () => {
 
-            const double = (n:number) => conditions.valid(n * 2);
-            const half = (n: number) => conditions.valid(n/2);
+            const double = (n: number) => conditions.valid(n * 2);
+            const half = (n: number) => conditions.valid(n / 2);
 
             must(conditions.whenTrue(true, double, half)(12).takeRight()).eql(24);
             must(conditions.whenTrue(false, double, half)(12).takeRight()).eql(6);
@@ -320,6 +319,20 @@ describe('Sync', function() {
         })
 
     })
+
+    describe('unwrap', function() {
+
+        it('should apply the wrapped precondition', function() {
+
+            let p = conditions.unwrap(() => (n: number) => (n === 12) ?
+                conditions.valid('valid') : conditions.fail('invalid', 12));
+
+            must(p(6).takeLeft().message).be('invalid');
+            must(p(12).takeRight()).be('valid');
+
+        });
+
+    });
 })
 
 describe('Failure', function() {

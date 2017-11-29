@@ -238,4 +238,11 @@ export declare const object: <A>(value: A) => Either<Failure<A>, A>;
  * isin requires the value to be enumerated in the supplied list.
  */
 export declare const isin: <A>(list: A[]) => Precondition<A, A>;
+/**
+ * cast a value from one type to another using a cast function.
+ */
 export declare const cast: <A, B>(f: (a: A) => B) => Precondition<A, B>;
+/**
+ * unwrap applies a precondition received from a function.
+ */
+export declare const unwrap: <A>(p: () => Precondition<A, A>) => (value: A) => Either<Failure<A>, A>;
