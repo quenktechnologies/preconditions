@@ -296,6 +296,35 @@ export const partial =
             }
 
         }
+
+/**
+ * visit applies the same Precondition to each property of an object.
+ */
+export const visit =
+    <A extends Values<AB>, AB, B>(condition: Precondition<AB, AB>) =>
+        (value: A) => {
+
+            let init: Reports<AB, AB> = { failures: {}, values: {} };
+
+            if (typeof value !== 'object') {
+
+                return mapFail<A, AB, B>({}, value);
+
+            } else {
+
+                let reports = afpl.util.reduce(value,
+                    (r: Reports<AB, AB>, x: AB, k: string) =>
+                        condition(x).cata(whenLeft(k, r), whenRight(k, r)), init);
+
+                if (Object.keys(reports.failures).length > 0)
+                    return mapFail<A, AB, B>(reports.failures, value);
+                else
+                    return valid<A, B>(<B><any>reports.values);
+
+            }
+
+        }
+
 /**
  * or
  */

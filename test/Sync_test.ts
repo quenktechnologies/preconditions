@@ -191,8 +191,8 @@ describe('Sync', function() {
         it('should decide correctly', () => {
 
             const test = (n: number) => n === 12;
-            const ok = (n: number) => conditions.valid(n);
-            const notOk = (n: number) => conditions.valid(`Got ${n}`);
+            const ok = (n: number) => conditions.valid<number, number|string>(n);
+            const notOk = (n: number) => conditions.valid<number, string>(`Got ${n}`);
 
             must(conditions.when(test, ok, notOk)(12).takeRight()).eql(12);
             must(conditions.when(test, ok, notOk)(10).takeRight()).eql('Got 10');
@@ -319,6 +319,18 @@ describe('Sync', function() {
         })
 
     })
+
+    describe('visit', function() {
+
+        it('it should apply to each property of an object', function() {
+
+            let p = conditions.visit((n: number) => conditions.valid(n * 2));
+
+            must(p({ one: 1, two: 2, three: 3 }).takeRight()).eql({ one: 2, two: 4, three: 6 });
+
+        });
+
+    });
 
     describe('unwrap', function() {
 

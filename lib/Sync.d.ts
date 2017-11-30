@@ -150,6 +150,10 @@ export declare const map: <A extends Values<AB>, AB, B>(conditions: Precondition
  */
 export declare const partial: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => (value: A) => Either<Failure<A>, B>;
 /**
+ * visit applies the same Precondition to each property of an object.
+ */
+export declare const visit: <A extends Values<AB>, AB, B>(condition: Precondition<AB, AB>) => (value: A) => Either<Failure<A>, B>;
+/**
  * or
  */
 export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
