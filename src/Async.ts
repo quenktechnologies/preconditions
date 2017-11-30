@@ -83,7 +83,7 @@ export const map = <A extends Sync.Values<AB>, AB, B>(conditions: Preconditions<
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, AB, B>({}, value));
+            return Promise.resolve(Sync.fail<A, B>('invalid', value));
 
         } else {
 
@@ -122,7 +122,7 @@ export const partial = <A extends Sync.Values<AB>, AB, B>(conditions: Preconditi
 
         if (typeof value !== 'object') {
 
-            return Promise.resolve(Sync.mapFail<A, AB, B>({}, value));
+            return Promise.resolve(Sync.fail<A, B>('invalid', value));
 
         } else {
 

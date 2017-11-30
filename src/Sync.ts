@@ -245,7 +245,7 @@ export const map = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, A
 
         if (typeof value !== 'object') {
 
-            return mapFail<A, AB, B>({}, value);
+            return fail<A, B>('invalid', value);
 
         } else {
 
@@ -277,7 +277,7 @@ export const partial =
 
             if (typeof value !== 'object') {
 
-                return mapFail<A, AB, B>({}, value);
+                return fail<A, B>('invalid', value);
 
             } else {
 
@@ -308,7 +308,7 @@ export const visit =
 
             if (typeof value !== 'object') {
 
-                return mapFail<A, AB, B>({}, value);
+                return fail<A, B>('invalid', value);
 
             } else {
 
