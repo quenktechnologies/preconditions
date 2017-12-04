@@ -2,6 +2,7 @@
   "name": "@quenk/preconditions",
   "version": "3.0.2",
   "description": "An async friendly version of a Criteria pattern.",
+  "main":"lib/index.js",
   "types": "lib/index.d.ts",
   "repository": "https://github.com/quenktechnologies/preconditions",
   "scripts": {
