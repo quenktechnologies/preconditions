@@ -90,6 +90,11 @@ import {
     isin
 } from './';
 
+import {exists, failure, success} from '@quenk/preconditions';
+import { Preconditions, restrict } from '@quenk/preconditions/lib/object';
+import { isString, upper } from '@quenk/preconditions/lib/string';
+import { isNumber, range } from '@quenk/preconditions/lib/number';
+
 interface User {
 
     name: string,
@@ -116,13 +121,13 @@ type UserUnion
 
 //a custom precondition
 const len = (length: number) => (s: string) => s.length > length ?
-    fail<string, string>('len', s, { length }) : valid<string, string>(s);
+    failure<string, string>('len', s, { length }) : success<string, string>(s);
 
 const user: Preconditions<any, UserUnion> = {
 
-    name: and(string, and(len(12), upper)),
-    age: and(number, range(20, 80)),
-    status: isin(['active', 'inactive'])
+    name: and(isString, and(len(12), upper)),
+    age: and(isNumber, range(20, 80)),
+    status: exists(['active', 'inactive'])
 
 }
 
