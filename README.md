@@ -43,8 +43,8 @@ Failure comes with three implementations that return a different type of explana
  Type         | Description                      
  ------------ | ---------------------------------
  Failure      | Used for any one value, returns a description of one failure.      
- MapFailure   | Used when a map (object,hash etc) has failures, has info for more than one                         
- ListFailure  | Used for arrays, takes a map of Failures here each key is a failed index.              
+ ObjectFailure| Used when a map (object,hash etc) has failures, has info for more than one                         
+ ArrayFailure | Used for arrays, takes a map of Failures here each key is a failed index.              
 
 When implementing your own preconditions, you don't have to touch `afpl` (as it may change).
 Use the provided functions: `fail`, `mapFail`, `listFail` or `valid` on success.
@@ -57,10 +57,10 @@ Failure classes recognize a small templating syntax using the module
 [polate](https://github.com/quenktechnologies/polate). Anything between `{ }` is 
 treated as a context variable and is looked up, if not found, it is left as is.
 
-For MapFailures a property `$key` is added to the context so templates can retrieve 
-the name of the property. With ListFailures, it is `$index`.  
+For ObjectFailures a property `$key` is added to the context so templates can retrieve 
+the name of the property. With ArrayFailures, it is `$index`.  
 
-Prefix a key in the context passed to a MapFailure's explain with the key name followed
+Prefix a key in the context passed to a ObjectFailure's explain with the key name followed
 by the precondition, example : `myKey.lengthCheck' and that template will be given 
 priority, if not any key corresponding to `myKey` will be used or `lengthCheck` if 
 that does not exist. 
