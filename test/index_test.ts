@@ -12,6 +12,8 @@ import {
     or,
     and,
     unwrap,
+    caseOf,
+    match,
     whenFalse
 } from '../src';
 
@@ -133,29 +135,70 @@ describe('index', function() {
         });
 
     });
-})
 
-describe('Failure', function() {
+    describe('caseOf', function() {
 
-    let fail;
-    let templates: { [key: string]: string };
+        it('should match primitives', function() {
 
-    beforeEach(function() {
+            let s = caseOf('hello', () => success('string'));
+            let scons = caseOf(String, () => success('String'));
 
-        fail = new Failure('string', 12, { feels: 'joys' });
-        templates = { string: 'Input "{$value}" is not a number! I no feel {feels}{punc}' };
+            let n = caseOf(12, () => success('number'));
+            let ncons = caseOf(Number, () => success('Number'))
 
-    });
+            let b = caseOf(false, () => success('boolean'));
+            let bcons = caseOf(Boolean, () => success('Boolean'));
 
-    describe('explain', function() {
+            must(s('hello').takeRight()).eql('string');
+            must(s('chello').takeLeft().explain()).eql('caseOf');
+            must(scons('ferimpusds').takeRight()).eql('String');
+            must(scons(<any>12).takeLeft().explain()).eql('caseOf');
 
-        it('should explain templates', function() {
+            must(n(12).takeRight()).eql('number');
+            must(n('12').takeLeft().explain()).eql('caseOf');
+            must(ncons(123243).takeRight()).eql('Number');
+            must(ncons(<any>'adf').takeLeft().explain()).eql('caseOf');
 
-            must(fail.explain(templates, { punc: '!' }))
-                .be('Input "12" is not a number! I no feel joys!');
+            must(b(false).takeRight()).eql('boolean');
+            must(b('false').takeLeft().explain()).eql('caseOf');
+            must(bcons(true).takeRight()).eql('Boolean');
+            must(bcons(<any>Date).takeLeft().explain()).eql('caseOf');
+
+        });
+
+        it('should work with shapes', function() {
+
+            let p =
+                caseOf({
+                    name: String,
+                    value: 12, config: { flags: Array, active: Boolean }
+                }, () => success('shapes'));
+
+            must(p('gum').takeLeft().explain()).eql('caseOf');
+            must(p({}).takeLeft().explain()).eql('caseOf');
+            must(p([]).takeLeft().explain()).eql('caseOf');
+            must(p({ name: 'Hup', value: 12 }).takeLeft().explain()).eql('caseOf');
+            must(p({ name: 'Zum', value: 12, config: { flags: [], active: 12 } }).takeLeft().explain()).eql('caseOf');
+            must(p({ name: 'Zum', value: 12, config: { flags: [], active: false } }).takeRight()).eql('shapes');
 
         });
 
     });
 
-});
+    describe('match', function() {
+
+        it('should only run one case', function() {
+
+            let p = match(
+                caseOf(true, v => success(`${v} -> true`)),
+                caseOf(String, v => success<string, string>(`${v} -> String`)),
+                caseOf({ name: String }, v => success(`${v} -> name`)),
+                caseOf('quenk', v => success(`${v} -> quenk`)));
+
+            must(p('quenk').takeRight()).eql('quenk -> String');
+
+        });
+
+    });
+
+})

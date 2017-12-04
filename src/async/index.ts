@@ -91,4 +91,3 @@ export const resolve = Promise.resolve;
  * reject wraps a value in a rejected Promise.
  */
 export const reject = Promise.reject;
-

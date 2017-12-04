@@ -1,5 +1,5 @@
 import { Failure } from './Failure';
-import { Either } from 'afpl';
+import { Either, Right } from 'afpl/lib/monad/Either';
 
 export { Failure };
 
@@ -36,6 +36,17 @@ export interface Context {
 export type Explanation
     = string
     | object
+    ;
+
+/**
+ * Type is used by caseOf to pattern match a value.
+ */
+export type Type<T>
+    = string
+    | number
+    | boolean
+    | object
+    | { new (): T }
     ;
 
 /**
@@ -100,7 +111,7 @@ export const whenFalse = <A, B>(
  * equals tests if the value is equal to the value specified (strictly).
  */
 export const equals = <A, B>(target: B): Precondition<A, B> =>
-    (value: A) => (<any>target === value)  ?
+    (value: A) => (<any>target === value) ?
         success<A, B>(target) :
         failure<A, B>('equals', value, { target });
 
@@ -154,7 +165,7 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]
  */
 export const exists = <A>(list: A[]): Precondition<A, A> => (value: A) =>
     (list.indexOf(value) < 0) ?
-        failure<A, A>('exists', value, {value, list }) :
+        failure<A, A>('exists', value, { value, list }) :
         success<A, A>(value)
 
 /**
@@ -162,3 +173,50 @@ export const exists = <A>(list: A[]): Precondition<A, A> => (value: A) =>
  */
 export const unwrap =
     <A, B>(p: () => Precondition<A, B>) => (value: A) => p()(value);
+
+const _prims = ['string', 'number', 'boolean'];
+
+const _kindOf = <A>(t: Type<A>, value: A): boolean =>
+    ((_prims.indexOf(typeof t) > -1) && (value === t)) ?
+        true :
+        ((typeof t === 'function') &&
+            (((<Function>t === String) && (typeof value === 'string')) ||
+                ((<Function>t === Number) && (typeof value === 'number')) ||
+                ((<Function>t === Boolean) && (typeof value === 'boolean')) ||
+                ((<Function>t === Array) && (Array.isArray(value))) ||
+                (value instanceof <Function>t))) ?
+            true :
+            ((typeof t === 'object') && (typeof value === 'object')) ?
+                Object
+                    .keys(t)
+                    .every(k =>  value.hasOwnProperty(k) ?
+                        _kindOf((<any>t)[k], (<any>value)[k]) : false) :
+                false;
+
+/**
+ * caseOf allows for the selective application of a precondition
+ * based on the type or structure of the value.
+ *
+ * Pattern matching works as follows:
+ * string -> Matches on the value of the string.
+ * number -> Matches on the value of the number.
+ * boolean -> Matches on the value of the boolean.
+ * object -> Each key of the object is matched on the value, all must match.
+ * function -> Treated as a constructor and results in an instanceof check.
+ *             For String,Number and Boolean, this uses the typeof check.
+ */
+export const caseOf = <A, B>(t: Type<A>, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+    _kindOf(t, value) ? p(value) : failure<A, B>('caseOf', value, { type: t });
+
+/**
+ * match preforms a type/structure matching on the input
+ * value in order to decide which precondition to apply.
+ *
+ * Preconditions must be wrapped in a 'caseOf' precondition.
+ */
+export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[])
+    : Precondition<A, B> => (value: A) => list.reduce((e, f) =>
+        (e instanceof Right) ?
+            e :
+            e.orElse(r => (r.message === 'caseOf') ?
+                f(value) : e), p(value));
