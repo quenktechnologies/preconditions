@@ -1,5 +1,5 @@
 import { Failure } from './Failure';
-import { Either } from 'afpl';
+import { Either } from 'afpl/lib/monad/Either';
 export { Failure };
 /**
  * Precondition represents some condition that must be satisfied
@@ -25,6 +25,12 @@ export interface Context {
  * Explanation of what went wrong with a Precondition.
  */
 export declare type Explanation = string | object;
+/**
+ * Type is used by caseOf to pattern match a value.
+ */
+export declare type Type<T> = string | number | boolean | object | {
+    new (): T;
+};
 /**
  * left wraps a value in the left side of an Either
  */
@@ -94,3 +100,23 @@ export declare const exists: <A>(list: A[]) => Precondition<A, A>;
  * unwrap applies a precondition received from a function.
  */
 export declare const unwrap: <A, B>(p: () => Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
+/**
+ * caseOf allows for the selective application of a precondition
+ * based on the type or structure of the value.
+ *
+ * Pattern matching works as follows:
+ * string -> Matches on the value of the string.
+ * number -> Matches on the value of the number.
+ * boolean -> Matches on the value of the boolean.
+ * object -> Each key of the object is matched on the value, all must match.
+ * function -> Treated as a constructor and results in an instanceof check.
+ *             For String,Number and Boolean, this uses the typeof check.
+ */
+export declare const caseOf: <A, B>(t: Type<A>, p: Precondition<A, B>) => Precondition<A, B>;
+/**
+ * match preforms a type/structure matching on the input
+ * value in order to decide which precondition to apply.
+ *
+ * Preconditions must be wrapped in a 'caseOf' precondition.
+ */
+export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
