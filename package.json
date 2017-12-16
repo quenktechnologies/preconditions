@@ -8,7 +8,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts mocha.opts test",
     "build": "rm -R lib; mkdir -p lib; ./node_modules/.bin/tsc --project src",
-    "docs": "rm -R docs/*; mkdir -p docs && cd src && ../node_modules/.bin/typedoc --ignoreCompilerErrors --mode modules --out ../docs . && cd - && echo 'DO NOT DELETE!' > docs/.nojekyll"
+    "docs": "rm -R docs; cd src && ../node_modules/.bin/typedoc --ignoreCompilerErrors --mode modules --out docs . && mv docs .. && cd - && echo 'DO NOT DELETE!' > docs/.nojekyll"
   },
   "keywords": [
     "criteria"
