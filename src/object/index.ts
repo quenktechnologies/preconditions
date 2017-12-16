@@ -154,7 +154,7 @@ export const where = <A extends Values<AB>, AB, B>(
  */
 export const restrict = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
     : Precondition<A, B> => (value: A) => {
-        console.error('restriction ', value);
+
         let init: Reports<AB, AB> = { failures: {}, values: {} };
 
         let reports = util.reduce<Precondition<AB, AB>, Reports<AB, AB>>(
