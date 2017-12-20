@@ -46,6 +46,7 @@ export type Type<T>
     | number
     | boolean
     | object
+    | { [key: string]: any }
     | { new (): T }
     ;
 
@@ -189,7 +190,7 @@ const _kindOf = <A>(t: Type<A>, value: A): boolean =>
             ((typeof t === 'object') && (typeof value === 'object')) ?
                 Object
                     .keys(t)
-                    .every(k =>  value.hasOwnProperty(k) ?
+                    .every(k => value.hasOwnProperty(k) ?
                         _kindOf((<any>t)[k], (<any>value)[k]) : false) :
                 false;
 

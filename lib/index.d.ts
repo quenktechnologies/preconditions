@@ -29,6 +29,8 @@ export declare type Explanation = string | object;
  * Type is used by caseOf to pattern match a value.
  */
 export declare type Type<T> = string | number | boolean | object | {
+    [key: string]: any;
+} | {
     new (): T;
 };
 /**
