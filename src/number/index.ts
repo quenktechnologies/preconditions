@@ -17,7 +17,7 @@ export const range =
 export const isNumber: Precondition<any, number> =
     <A>(n: A) => ((typeof n === 'number') && (!isNaN(n))) ?
         success<A, number>(n) :
-        failure<A, number>('number', n);
+        failure<A, number>('isNumber', n);
 
 /**
  * toNumber casts a string to a number.

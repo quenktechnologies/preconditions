@@ -122,3 +122,7 @@ export declare const caseOf: <A, B>(t: Type<A>, p: Precondition<A, B>) => Precon
  * Preconditions must be wrapped in a 'caseOf' precondition.
  */
 export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
+/**
+ * isin requires the value passed to be a member of a provided list.
+ */
+export declare const isin: <A>(list: A[]) => Precondition<A, A>;

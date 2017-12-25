@@ -50,7 +50,7 @@ export const notEmpty: Precondition<string, string> =
  */
 export const isString: Precondition<any, string> =
     <A>(a: A) => (typeof a === 'string') ?
-        success<A, string>(a) : failure<A, string>('string', a);
+        success<A, string>(a) : failure<A, string>('isString', a);
 
 /**
  * toString casts a value into a string.
