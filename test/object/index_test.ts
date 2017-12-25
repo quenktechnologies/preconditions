@@ -52,6 +52,14 @@ const partialInvalidAccessErrors = {
     network: 'check', user: { age: 'check' }, previous: { age: 'check' }
 };
 
+const noDataErrors = {
+
+    name: 'check',
+    age: 'check',
+    roles: 'check'
+
+};
+
 const check = <A>(type: string): Precondition<A, A> => (value: A) =>
     (type === 'prim') ?
         typeof value !== 'object' ?
@@ -99,6 +107,11 @@ const shouldApplyEveryCondtion = (condition: Precondition<object, object>) =>
         .explain({}))
         .eql(partialValidAccessErrors);
 
+const shouldFailtWhenNoData = (condition: Precondition<object, object>) =>
+    must(condition({}).takeLeft()
+        .explain({}))
+        .eql(noDataErrors);
+
 describe('object', function() {
 
     describe('isObject', function() {
@@ -115,7 +128,7 @@ describe('object', function() {
 
     });
 
-    describe('restrict', function() {
+    describe('rpartialValidAccessErroruestrict', function() {
 
         const access: Preconditions<any, any> = {
 
@@ -125,6 +138,9 @@ describe('object', function() {
             get previous() { return every(isObject, restrict(user)); }
 
         }
+
+        it('should fail when no data provided ',
+            () => shouldFailtWhenNoData(restrict(user)));
 
         it('should fail invalid data',
             () => shouldFailInvalidData(restrict(user)))

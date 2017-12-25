@@ -221,3 +221,12 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
             e :
             e.orElse(r => (r.message === 'caseOf') ?
                 f(value) : e), p(value));
+
+/**
+ * isin requires the value passed to be a member of a provided list.
+ */
+export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
+    list.indexOf(value) > -1 ? 
+    success<A, A>(value) : 
+    failure<A, A>('isin', value);
+
