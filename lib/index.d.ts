@@ -82,6 +82,10 @@ export declare const notNull: <A>(value: A) => Either<Failure<A>, {}> | Either<F
  */
 export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
 /**
+ * identity always succeeds with the original value passed.
+ */
+export declare const identity: Precondition<any, any>;
+/**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
 export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;

@@ -134,6 +134,11 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
             success<A, A>(value) : p(value);
 
 /**
+ * identity always succeeds with the original value passed.
+ */
+export const identity : Precondition<any, any> = <A>(value:A)=> success<A,A>(value) ;
+
+/**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
 export const or =

@@ -5,6 +5,7 @@ import {
     failure,
     notNull,
     optional,
+  identity,
     equals,
     when,
     whenTrue,
@@ -200,5 +201,9 @@ describe('index', function() {
         });
 
     });
+
+    describe('identity', ()=> 
+      it('should succeed with the value given', ()=>
+        must(identity(12).takeRight()).eql(12)));
 
 })
