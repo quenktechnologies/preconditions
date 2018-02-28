@@ -29,6 +29,7 @@
     "node": "^4.0.0"
   },
   "dependencies": {
+    "@quenk/kindof": "^1.2.0",
     "@quenk/polate": "^1.2.0",
     "afpl": "^0.12.0",
     "bluebird": "^3.5.0"

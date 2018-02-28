@@ -1,7 +1,8 @@
 import * as sync from '../';
 import * as Promise from 'bluebird';
+import { Pattern } from '@quenk/kindof';
 import { Failure as SyncFailure } from '../';
-import { Either } from 'afpl';
+import { Either } from 'afpl/lib/monad/Either';
 export { Either };
 /**
  *
@@ -51,6 +52,14 @@ export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  * optional (async version).
  */
 export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
+/**
+ * caseOf (async version).
+ */
+export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precondition<A, B>;
+/**
+ * match (async version).
+ */
+export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
 /**
  * async wraps the sync api so they can be used with async preconditions safely.
  * @param <A> The type of the input value of the precondition.

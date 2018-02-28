@@ -1,7 +1,8 @@
 import * as sync from '../';
 import * as Promise from 'bluebird';
+import { Pattern, kindOf } from '@quenk/kindof';
 import { Failure as SyncFailure } from '../';
-import { Either } from 'afpl';
+import { Either, Right } from 'afpl/lib/monad/Either';
 
 export { Either }; //shuts typescript up.
 
@@ -79,9 +80,30 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<A | B, 
  */
 export const optional = <A, B>(p: Precondition<A, A | B>)
     : Precondition<A, A | B> =>
-    (value: A) => 
+    (value: A) =>
         ((value == null) || (typeof value === 'string' && value === '')) ?
             success<A, A>(value) : p(value);
+
+/**
+ * caseOf (async version).
+ */
+export const caseOf = <A, B>(t: Pattern, p: Precondition<A, B>)
+    : Precondition<A, B> => (value: A) => 
+        kindOf(value,t) ? p(value) : failure<A, B>('caseOf', value, { type: t });
+
+/**
+ * match (async version).
+ */
+export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[])
+    : Precondition<A, B> =>
+    (value: A) => list.reduce((pe, f) =>
+        pe
+            .then(e => (e instanceof Right) ? Promise.resolve(e) :
+                Promise
+                    .resolve(e.takeLeft())
+                    .then(r => (r.message === 'caseOf') ?
+                        f(value) :
+                        failure<A, B>(r.message, value, r.context))), p(value));
 
 /**
  * async wraps the sync api so they can be used with async preconditions safely.
