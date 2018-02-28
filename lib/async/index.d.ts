@@ -48,6 +48,10 @@ export declare const and: <A, B, C>(left: Precondition<A, B>, right: Preconditio
  */
 export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<A | B, B>[]) => Precondition<A, B>;
 /**
+ * optional (async version).
+ */
+export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
+/**
  * async wraps the sync api so they can be used with async preconditions safely.
  * @param <A> The type of the input value of the precondition.
  * @param <B> The type of the final value of the precondition.

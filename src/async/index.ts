@@ -75,6 +75,15 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<A | B, 
                 )), p(value));
 
 /**
+ * optional (async version).
+ */
+export const optional = <A, B>(p: Precondition<A, A | B>)
+    : Precondition<A, A | B> =>
+    (value: A) => 
+        ((value == null) || (typeof value === 'string' && value === '')) ?
+            success<A, A>(value) : p(value);
+
+/**
  * async wraps the sync api so they can be used with async preconditions safely.
  * @param <A> The type of the input value of the precondition.
  * @param <B> The type of the final value of the precondition.
