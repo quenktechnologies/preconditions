@@ -32,6 +32,7 @@
     "@quenk/kindof": "^1.2.0",
     "@quenk/polate": "^1.2.0",
     "afpl": "^0.12.0",
-    "bluebird": "^3.5.0"
+    "bluebird": "^3.5.1",
+    "update": "^0.7.4"
   }
 }
