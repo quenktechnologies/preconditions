@@ -136,7 +136,7 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
 /**
  * identity always succeeds with the original value passed.
  */
-export const identity : Precondition<any, any> = <A>(value:A)=> success<A,A>(value) ;
+export const identity: Precondition<any, any> = <A>(value: A) => success<A, A>(value);
 
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
@@ -231,7 +231,6 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
  * isin requires the value passed to be a member of a provided list.
  */
 export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
-    list.indexOf(value) > -1 ? 
-    success<A, A>(value) : 
-    failure<A, A>('isin', value);
-
+    list.indexOf(value) > -1 ?
+        success<A, A>(value) :
+        failure<A, A>('isin', value);

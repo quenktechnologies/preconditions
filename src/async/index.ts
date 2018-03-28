@@ -114,6 +114,13 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
 export const async = <A, B>(p: sync.Precondition<A, B>) => (a: A) => resolve(p(a));
 
 /**
+ * identity precondtion.
+ *
+ * Succeeds with whatever value is passed.
+ */
+export const identity = <A>(value:A) => success<A,A>(value);
+
+/**
  * resolve wraps a value in a Promise.
  */
 export const resolve = Promise.resolve;

@@ -4,7 +4,8 @@ import {
     success,
     optional,
     caseOf,
-    match
+    match,
+  identity
 } from '../src/async';
 
 describe('async', function() {
@@ -78,6 +79,17 @@ describe('async', function() {
         });
 
     });
+
+  describe('identity', function() {
+
+    it('should return the value passed', function() {
+
+        return  identity(12)
+                .then(v => must(v.takeRight()).eql(12));
+
+    });
+
+  });
 
 
 

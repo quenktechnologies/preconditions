@@ -68,6 +68,12 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  */
 export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<Either<SyncFailure<A>, B>>;
 /**
+ * identity precondtion.
+ *
+ * Succeeds with whatever value is passed.
+ */
+export declare const identity: <A>(value: A) => Promise<Either<SyncFailure<A>, A>>;
+/**
  * resolve wraps a value in a Promise.
  */
 export declare const resolve: typeof Promise.resolve;
