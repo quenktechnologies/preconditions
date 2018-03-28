@@ -10,7 +10,7 @@
         "allowUnreachableCode": true,
         "noUnusedParameters": true,
         "noUnusedLocals": true,
-        "noImplicitAny":true,
+        "noImplicitAny": true,
         "sourceMap": true,
         "declaration": true,
         "types": ["node"],

@@ -57,11 +57,16 @@ export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
 
 /**
  * and (async version).
+ *
+ * TODO: using the any type until Either is fixed in afpl.
  */
-export const and = <A, B, C>(
-    left: Precondition<A, B>,
-    right: Precondition<B, C>): Precondition<A, C> =>
-    (value: A) => left(value).then(e => e.cata(Promise.resolve, v => right(v)));
+export const and = <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
+    : Precondition<A | B, C> => (value: A) =>
+        l(value).then((e: sync.Result<A, B>): Result<A | B, C> =>
+            e
+                .map(b => r(b))
+                .orRight((f: sync.Failure<A>) => <any>failure<A, B>(f.message, value, f.context))
+                .takeRight());
 
 /**
  * every (async version).
@@ -88,8 +93,8 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
  * caseOf (async version).
  */
 export const caseOf = <A, B>(t: Pattern, p: Precondition<A, B>)
-    : Precondition<A, B> => (value: A) => 
-        kindOf(value,t) ? p(value) : failure<A, B>('caseOf', value, { type: t });
+    : Precondition<A, B> => (value: A) =>
+        kindOf(value, t) ? p(value) : failure<A, B>('caseOf', value, { type: t });
 
 /**
  * match (async version).
@@ -118,7 +123,7 @@ export const async = <A, B>(p: sync.Precondition<A, B>) => (a: A) => resolve(p(a
  *
  * Succeeds with whatever value is passed.
  */
-export const identity = <A>(value:A) => success<A,A>(value);
+export const identity = <A>(value: A) => success<A, A>(value);
 
 /**
  * resolve wraps a value in a Promise.

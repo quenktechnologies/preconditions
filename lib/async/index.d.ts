@@ -28,22 +28,24 @@ export declare type Failure<A> = Promise<SyncFailure<A>>;
  * @param a The original value.
  * @param ctx Context for the error message.
  */
-export declare const failure: <A, B>(message: string, a: A, ctx: sync.Context) => Promise<Either<SyncFailure<A>, B>>;
+export declare const failure: <A, B>(message: string, a: A, ctx: sync.Context) => Promise<Either<sync.Failure<A>, B>>;
 /**
  * success flags an async precondition as succeeding.
  * @param <A> The type of the original value.
  * @param <B> The type of the expected valid value.
  * @param b The new value after applying the precondition.
  */
-export declare const success: <A, B>(b: B) => Promise<Either<SyncFailure<A>, B>>;
+export declare const success: <A, B>(b: B) => Promise<Either<sync.Failure<A>, B>>;
 /**
  * or (async version).
  */
-export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => (value: A) => Promise<Either<SyncFailure<{}>, B>>;
+export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => (value: A) => Promise<Either<sync.Failure<{}>, B>>;
 /**
  * and (async version).
+ *
+ * TODO: using the any type until Either is fixed in afpl.
  */
-export declare const and: <A, B, C>(left: Precondition<A, B>, right: Precondition<B, C>) => Precondition<A, C>;
+export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>) => Precondition<A | B, C>;
 /**
  * every (async version).
  */
@@ -66,13 +68,13 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  * @param <B> The type of the final value of the precondition.
  * @param a The input value.
  */
-export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<Either<SyncFailure<A>, B>>;
+export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<Either<sync.Failure<A>, B>>;
 /**
  * identity precondtion.
  *
  * Succeeds with whatever value is passed.
  */
-export declare const identity: <A>(value: A) => Promise<Either<SyncFailure<A>, A>>;
+export declare const identity: <A>(value: A) => Promise<Either<sync.Failure<A>, A>>;
 /**
  * resolve wraps a value in a Promise.
  */

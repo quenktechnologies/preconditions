@@ -3,12 +3,12 @@ import * as sync from './';
 import { merge } from 'afpl/lib/util';
 import { Failure } from '../';
 import { Precondition, success } from '../async';
-import { left } from '../';
 import { Contexts, Failures } from '../object';
 import { ArrayFailure } from './ArrayFailure';
 import { Either } from 'afpl/lib/monad/Either';
+import { Result as SyncResult, left } from '../';
 
-export { Either, success};
+export { Either, success };
 
 /**
  * @private
@@ -33,7 +33,7 @@ export const filter = <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
                 Promise
                     .resolve(
                     results
-                        .map(r =>
+                        .map((r: SyncResult<A, B>) =>
                             r
                                 .orRight((): null => null)
                                 .takeRight())
@@ -49,7 +49,7 @@ export const map =
             Promise
                 .all(value.map(p))
                 .then(results => results
-                    .reduce(([fails, succs]: [Failures<A>, B[]], curr, key) =>
+                    .reduce(([fails, succs]: [Failures<A>, B[]], curr: SyncResult<A, B>, key) =>
                         curr.cata(
                             (f: Failure<A>) => [merge(fails, { [key]: f }), succs],
                             (b: B) => [fails, succs.concat(b)]), [<Failures<A>>{}, <B[]>[]]))

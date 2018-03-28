@@ -15,11 +15,11 @@ export interface Reports<M, V> {
  * failure
  */
 export declare const failure: <A, B>(errors: Failures<A>, value: A[], contexts: Contexts) => Either<ArrayFailure<A>, B[]>;
-export declare const onFailure: <A, B>(key: number, {failures, values}: Reports<A, B>) => (f: Failure<A>) => {
+export declare const onFailure: <A, B>(key: number, { failures, values }: Reports<A, B>) => (f: Failure<A>) => {
     values: B[];
     failures: {};
 };
-export declare const onSuccess: <A, B>({failures, values}: Reports<A, B>) => (b: B) => {
+export declare const onSuccess: <A, B>({ failures, values }: Reports<A, B>) => (b: B) => {
     failures: Failures<A>;
     values: B[];
 };

@@ -1,5 +1,6 @@
 import * as Promise from 'bluebird';
 import * as asynch from '../../async';
+import * as sync from '../..';
 import { Either } from 'afpl/lib/monad/Either';
 import { Failure } from '../..';
 import { Values, Reports as SyncReports } from '../';
@@ -17,7 +18,7 @@ export declare type Reports<A, B> = Promise<SyncReports<A, B>>;
 /**
  * @private
  */
-export declare const review: <A extends Values<AB>, AB, B>(value: A) => (r: SyncReports<AB, AB>) => Promise<Either<Failure<A>, B>>;
+export declare const review: <A extends Values<AB>, AB, B>(value: A) => (r: SyncReports<AB, AB>) => Promise<asynch.Either<sync.Failure<A>, B>>;
 /**
  * @private
  */
@@ -25,7 +26,7 @@ export declare const reports: <A>() => Promise<SyncReports<A, A>>;
 /**
  * @private
  */
-export declare const finish: <A>(key: string, r: SyncReports<A, A>) => (e: Either<Failure<A>, A>) => Promise<SyncReports<A, A>>;
+export declare const finish: <A>(key: string, r: SyncReports<A, A>) => (e: asynch.Either<sync.Failure<A>, A>) => Promise<SyncReports<A, A>>;
 /**
  * restrict (async version).
  */

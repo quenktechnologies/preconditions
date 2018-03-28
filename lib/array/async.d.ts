@@ -2,7 +2,6 @@ import * as Promise from 'bluebird';
 import * as sync from './';
 import { Precondition, success } from '../async';
 import { Contexts, Failures } from '../object';
-import { ArrayFailure } from './ArrayFailure';
 import { Either } from 'afpl/lib/monad/Either';
 export { Either, success };
 /**
@@ -12,7 +11,7 @@ export declare type Reports<M, V> = Promise<sync.Reports<M, V>>;
 /**
  * failure
  */
-export declare const failure: <A, B>(errors: Failures<A>, value: A[], contexts: Contexts) => Promise<Either<ArrayFailure<A>, B[]>>;
+export declare const failure: <A, B>(errors: Failures<A>, value: A[], contexts: Contexts) => Promise<sync.Either<sync.ArrayFailure<A>, B[]>>;
 /**
  * filter (async version).
  */

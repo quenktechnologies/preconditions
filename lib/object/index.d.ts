@@ -50,11 +50,11 @@ export interface Predicates<A> {
 /**
  * @private
  */
-export declare const onFailure: <M, V>(key: string, {failures, values}: Reports<M, V>) => (f: Failure<M>) => Reports<M, V>;
+export declare const onFailure: <M, V>(key: string, { failures, values }: Reports<M, V>) => (f: Failure<M>) => Reports<M, V>;
 /**
  * @private
  */
-export declare const onSuccess: <M, V>(key: string, {failures, values}: Reports<M, V>) => (v: V) => Reports<M, V>;
+export declare const onSuccess: <M, V>(key: string, { failures, values }: Reports<M, V>) => (v: V) => Reports<M, V>;
 /**
  * @private
  */
