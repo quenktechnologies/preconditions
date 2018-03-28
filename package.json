@@ -1,6 +1,6 @@
 {
   "name": "@quenk/preconditions",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "An async friendly version of a Criteria pattern.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
