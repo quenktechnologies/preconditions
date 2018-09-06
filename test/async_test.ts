@@ -5,7 +5,8 @@ import {
     optional,
     caseOf,
     match,
-  identity
+    identity,
+    fail
 } from '../src/async';
 
 describe('async', function() {
@@ -80,17 +81,20 @@ describe('async', function() {
 
     });
 
-  describe('identity', function() {
+    describe('identity', function() {
 
-    it('should return the value passed', function() {
+        it('should return the value passed', function() {
 
-        return  identity(12)
+            return identity(12)
                 .then(v => must(v.takeRight()).eql(12));
+
+        });
 
     });
 
-  });
-
-
+    describe('fail', () =>
+        it('should fail all the time', () =>
+            (fail('testing')(12))
+          .then(r => must(r.takeLeft().explain()).be('testing'))));
 
 })

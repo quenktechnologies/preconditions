@@ -38,7 +38,7 @@ export const failure =
     <A, B>(
         message: string,
         a: A,
-        ctx: sync.Context): Result<A, B> =>
+        ctx: sync.Context = {}): Result<A, B> =>
         resolve(sync.failure<A, B>(message, a, ctx));
 
 /**
@@ -124,6 +124,14 @@ export const async = <A, B>(p: sync.Precondition<A, B>) => (a: A) => resolve(p(a
  * Succeeds with whatever value is passed.
  */
 export const identity = <A>(value: A) => success<A, A>(value);
+
+export const id = identity;
+
+/**
+ * fail always fails with reason no matter the value supplied.
+ */
+export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
+    failure<A, A>(reason, value);
 
 /**
  * resolve wraps a value in a Promise.

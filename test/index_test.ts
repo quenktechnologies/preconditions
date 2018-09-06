@@ -5,7 +5,7 @@ import {
     failure,
     notNull,
     optional,
-  identity,
+    identity,
     equals,
     when,
     whenTrue,
@@ -15,7 +15,8 @@ import {
     unwrap,
     caseOf,
     match,
-    whenFalse
+    whenFalse,
+    fail
 } from '../src';
 
 describe('index', function() {
@@ -202,8 +203,12 @@ describe('index', function() {
 
     });
 
-    describe('identity', ()=> 
-      it('should succeed with the value given', ()=>
-        must(identity(12).takeRight()).eql(12)));
+    describe('identity', () =>
+        it('should succeed with the value given', () =>
+            must(identity(12).takeRight()).eql(12)));
+
+    describe('fail', () =>
+        it('should fail all the time', () =>
+            must((fail('testing')(12)).takeLeft().explain()).be('testing')));
 
 })

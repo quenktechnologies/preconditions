@@ -47,7 +47,7 @@ export type Type<T>
     | boolean
     | object
     | { [key: string]: any }
-    | { new (): T }
+    | { new(): T }
     ;
 
 /**
@@ -138,6 +138,8 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
  */
 export const identity: Precondition<any, any> = <A>(value: A) => success<A, A>(value);
 
+export const id = identity;
+
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
@@ -162,8 +164,8 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]
     : Precondition<A, B> => (value: A) =>
         p(value)
             .cata<any>(
-            f => left(f),
-            v => list.reduce((e, f) => e.chain(f), right(v))
+                f => left(f),
+                v => list.reduce((e, f) => e.chain(f), right(v))
             );
 
 /**
@@ -234,3 +236,9 @@ export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
     list.indexOf(value) > -1 ?
         success<A, A>(value) :
         failure<A, A>('isin', value);
+
+/**
+ * fail always fails with reason no matter the value supplied.
+ */
+export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
+    failure<A, A>(reason, value);

@@ -28,7 +28,7 @@ export declare type Failure<A> = Promise<SyncFailure<A>>;
  * @param a The original value.
  * @param ctx Context for the error message.
  */
-export declare const failure: <A, B>(message: string, a: A, ctx: sync.Context) => Promise<Either<sync.Failure<A>, B>>;
+export declare const failure: <A, B>(message: string, a: A, ctx?: sync.Context) => Promise<Either<sync.Failure<A>, B>>;
 /**
  * success flags an async precondition as succeeding.
  * @param <A> The type of the original value.
@@ -75,6 +75,11 @@ export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Prom
  * Succeeds with whatever value is passed.
  */
 export declare const identity: <A>(value: A) => Promise<Either<sync.Failure<A>, A>>;
+export declare const id: <A>(value: A) => Promise<Either<sync.Failure<A>, A>>;
+/**
+ * fail always fails with reason no matter the value supplied.
+ */
+export declare const fail: <A>(reason: string) => Precondition<A, A>;
 /**
  * resolve wraps a value in a Promise.
  */

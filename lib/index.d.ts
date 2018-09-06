@@ -85,6 +85,7 @@ export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition
  * identity always succeeds with the original value passed.
  */
 export declare const identity: Precondition<any, any>;
+export declare const id: Precondition<any, any>;
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
@@ -130,3 +131,7 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  * isin requires the value passed to be a member of a provided list.
  */
 export declare const isin: <A>(list: A[]) => Precondition<A, A>;
+/**
+ * fail always fails with reason no matter the value supplied.
+ */
+export declare const fail: <A>(reason: string) => Precondition<A, A>;
