@@ -1,13 +1,13 @@
 import * as Promise from 'bluebird';
 import { merge } from '@quenk/noni/lib/data/record';
 import { left, either } from '@quenk/noni/lib/data/either';
-import { Reports as SyncReports } from './failure';
-import { Failure as F } from '../failure';
-import { Precondition  } from '../async';
-import { success } from '../async/result';
+import { Reports as SyncReports } from '../array/failure';
 import { Contexts, Failures } from '../record/failure';
-import { Failure } from './failure';
+import { Failure } from '../array/failure';
+import { Failure as F } from '../failure';
+import { Precondition } from '../async';
 import { Result as SyncResult } from '../result';
+import { success } from './failure';
 
 /**
  * @private

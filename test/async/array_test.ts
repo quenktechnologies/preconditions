@@ -1,6 +1,6 @@
 import * as must from 'must/register';
-import { filter, map } from '../../src/array/async';
-import { success, failure } from '../../src/async/result';
+import { filter, map } from '../../src/async/array';
+import { success, failure } from '../../src/async/failure';
 
 const num = <A>(n: A) => (typeof n === 'number') ? success(n) : failure('num', n, {});
 const invalidList = [0, 1, 2, 3, 'four', 5, 'six', 7, 'eight', 9];

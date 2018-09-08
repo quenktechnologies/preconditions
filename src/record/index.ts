@@ -4,7 +4,7 @@ import { Precondition } from '../';
 import { Failure as F } from '../failure';
 import { success, failure as fail } from '../result';
 import { combineKeys} from '../util';
-import { Reports, review } from './result';
+import { Reports, review } from './failure';
 
 /**
  * Values is a map of values to apply a map [[Precondition]] to.

@@ -1,13 +1,13 @@
 import * as Promise from 'bluebird';
 import * as must from 'must/register';
-import {success} from '../src/async/result';
+import { success } from '../../src/async/failure';
 import {
     optional,
     caseOf,
     match,
     identity,
     fail
-} from '../src/async';
+} from '../../src/async';
 
 describe('async', function() {
 
@@ -41,7 +41,7 @@ describe('async', function() {
                         .then(() => s('chello'))
                         .then(r => must(r.takeLeft().explain()).eql('caseOf'))
                         .then(() => scons('ferimpusds'))
-                        .then(r => console.error(r) || must(r.takeRight()).eql('String'))
+                        .then(r =>  must(r.takeRight()).eql('String'))
                         .then(() => scons(<any>12))
                         .then(r => must(r.takeLeft().explain()).eql('caseOf'))
                         .then(() => n(12))
@@ -95,6 +95,6 @@ describe('async', function() {
     describe('fail', () =>
         it('should fail all the time', () =>
             (fail('testing')(12))
-          .then(r => must(r.takeLeft().explain()).be('testing'))));
+                .then(r => must(r.takeLeft().explain()).be('testing'))));
 
 })

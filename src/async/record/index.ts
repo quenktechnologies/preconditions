@@ -1,13 +1,13 @@
 import * as Promise from 'bluebird';
 import { reduce } from '@quenk/noni/lib/data/record';
 import { either } from '@quenk/noni/lib/data/either';
+import { Reports as SyncReports } from '../../record/failure';
+import { onSuccess, onFailure } from '../../record';
+import { combineKeys } from '../../util';
+import { Values } from '../../record';
 import { Result as SyncResult } from '../../result';
 import { Precondition } from '../../async';
-import { Reports as SyncReports  } from '../result';
-import { onSuccess, onFailure } from '../';
-import { combineKeys } from '../../util';
-import { Values } from '../';
-import {review} from './result';
+import { review } from './failure';
 
 /**
  * Preconditions is a record of asynchronous preconditions.

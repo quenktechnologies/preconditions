@@ -9,7 +9,7 @@ import { Right, either, left, right } from '@quenk/noni/lib/data/either';
 import { cons } from '@quenk/noni/lib/data/function';
 import { Result as SyncResult } from '../result';
 import { Failure as SyncFailure } from '../failure';
-import { Result, failure, success } from './result';
+import { Result, failure, success } from './failure';
 
 /**
  * Precondition (async version).
@@ -108,3 +108,8 @@ export const id = identity;
  */
 export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
     failure<A, A>(reason, value);
+
+/**
+ * log the value to the console.
+ */
+export const log = <A>(value:A) => console.error(value) || success(value);

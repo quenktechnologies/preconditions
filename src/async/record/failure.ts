@@ -1,13 +1,13 @@
 import * as Promise from 'bluebird';
-import { Result } from '../../async/result';
-import { Reports as SyncReports, failure } from '../result';
+import { Result } from '../failure';
+import { Reports as SyncReports, failure } from '../../record/failure';
 import { success } from '../../result';
-import { Values } from '../';
+import { Values } from '../../record';
 
 /**
  * @private
  */
-export type Reports<A, B> = Promise<SyncReports<A, B>>
+export type Reports<A, B> = Promise<SyncReports<A, B>>;
 
 /**
  * @private
