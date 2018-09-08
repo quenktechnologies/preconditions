@@ -143,7 +143,7 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]
     : Precondition<A, B> => (value: A) =>
         either<Failure<A>, B, Result<A, B>>
             ((f: Failure<A>) => left(f))
-((v: B) => <Result<A,B>>list.reduce((e, f) => e.chain(f), right(<B>v)))
+            ((v: B) => <Result<A, B>>list.reduce((e, f) => e.chain(f), right(<B>v)))
             (p(value));
 
 /**
@@ -209,3 +209,8 @@ const _kindOf = <A>(t: Type<A>, value: A): boolean =>
                     .every(k => value.hasOwnProperty(k) ?
                         _kindOf((<any>t)[k], (<any>value)[k]) : false) :
                 false;
+
+/**
+ * log the value to the console.
+ */
+export const log = <A>(value: A) => console.error(value) || success(value);
