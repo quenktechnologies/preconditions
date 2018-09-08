@@ -1,14 +1,14 @@
 import * as must from 'must/register';
-import * as conditions from '../src';
+import {Failure} from '../src/failure';
 
-describe('Failure', function() {
+describe('failure', function() {
 
     let fail;
     let templates: { [key: string]: string };
 
     beforeEach(function() {
 
-        fail = new conditions.Failure('string', 12, { feels: 'joys' });
+        fail = new Failure('string', 12, { feels: 'joys' });
         templates = { string: 'Input "{$value}" is not a number! I no feel {feels}{punc}' };
 
     });

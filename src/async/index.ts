@@ -1,18 +1,15 @@
+/**
+ * The promise module provides primitives for async preconditions
+ * via bluebirds Promise API.
+ */
 import * as sync from '../';
 import * as Promise from 'bluebird';
 import { Pattern, kindOf } from '@quenk/kindof';
-import { Failure as SyncFailure } from '../';
-import { Either, Right } from 'afpl/lib/monad/Either';
-
-export { Either }; //shuts typescript up.
-
-/**
- *
- * Async provides types and functions for operating on data 
- * asynchronously.
- * 
- * Bluebird promises are used in place of native promises.
- */
+import { Right, either, left, right } from '@quenk/noni/lib/data/either';
+import { cons } from '@quenk/noni/lib/data/function';
+import { Result as SyncResult } from '../result';
+import { Failure as SyncFailure } from '../failure';
+import { Result, failure, success } from './result';
 
 /**
  * Precondition (async version).
@@ -20,41 +17,19 @@ export { Either }; //shuts typescript up.
 export type Precondition<A, B> = (a: A) => Result<A, B>;
 
 /**
- * Result (async version).
+ * async wraps the sync api so they can be used with async preconditions safely.
  */
-export type Result<A, B> = Promise<sync.Result<A, B>>
-
-export type Failure<A> = Promise<SyncFailure<A>>;
-
-/**
- * failure flags an async precondtion as failing.
- * @param <A> The type of the original value.
- * @param <B> The type of the expected valid value.
- * @param message The error message.
- * @param a The original value.
- * @param ctx Context for the error message.
- */
-export const failure =
-    <A, B>(
-        message: string,
-        a: A,
-        ctx: sync.Context = {}): Result<A, B> =>
-        resolve(sync.failure<A, B>(message, a, ctx));
-
-/**
- * success flags an async precondition as succeeding.
- * @param <A> The type of the original value.
- * @param <B> The type of the expected valid value.
- * @param b The new value after applying the precondition.
- */
-export const success = <A, B>(b: B) => resolve(sync.success<A, B>(b));
+export const async =
+    <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise.resolve(p(a));
 
 /**
  * or (async version).
  */
-export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
-    (value: A) => left(value).then(e => e.cata(() => right(value), success));
-
+export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
+    : Precondition<A, B> => (value: A) =>
+        left(value).then((e: SyncResult<A, B>) =>
+            (either<SyncFailure<A>, B, Result<A, B>>
+                (cons(right(value)))(success)(e)));
 /**
  * and (async version).
  *
@@ -62,23 +37,32 @@ export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) =>
  */
 export const and = <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
     : Precondition<A | B, C> => (value: A) =>
-        l(value).then((e: sync.Result<A, B>): Result<A | B, C> =>
-            e
-                .map(b => r(b))
-                .orRight((f: sync.Failure<A>) => <any>failure<A, B>(f.message, value, f.context))
+        l(value).then((e: SyncResult<A, B>): Result<A | B, C> =>
+            (<SyncResult<A, any>>e.map(b => r(b)))
+                .orRight((f: SyncFailure<A>) => <any>failure<A, B>(f.message, value, f.context))
                 .takeRight());
 
 /**
  * every (async version).
  */
-export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<A | B, B>[])
-    : Precondition<A, B> => (value: A) =>
-        list.reduce((promise, condition: Precondition<B, B>) =>
-            promise
-                .then(e => e.cata<any>(
-                    f => Promise.resolve(sync.left(f)),
-                    b => condition(b)
-                )), p(value));
+export const every =
+    <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[])
+        : Precondition<A, B> => (value: A) =>
+            p(value).then((e: SyncResult<A, B>) =>
+                either<SyncFailure<any>, B, Result<any, B>>(evl)
+                    (ev(list))(e));
+
+const ev = <B>(list: Precondition<B, B>[]) => (b: B): Result<B, B> =>
+    list.reduce((p: Result<B, B>, c: Precondition<B, B>) =>
+        p.then(ev2(c)),
+        Promise.resolve(right(b)));
+
+const ev2 = <B>(p: Precondition<B, B>) => (e: SyncResult<B, B>) =>
+    either<SyncFailure<B>, B, Result<B, B>>
+        (evl)
+        ((b: B) => p(b))(e);
+
+const evl = <B>(f: SyncFailure<B>): Result<B, B> => Promise.resolve(left(f))
 
 /**
  * optional (async version).
@@ -111,14 +95,6 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
                         failure<A, B>(r.message, value, r.context))), p(value));
 
 /**
- * async wraps the sync api so they can be used with async preconditions safely.
- * @param <A> The type of the input value of the precondition.
- * @param <B> The type of the final value of the precondition.
- * @param a The input value.
- */
-export const async = <A, B>(p: sync.Precondition<A, B>) => (a: A) => resolve(p(a));
-
-/**
  * identity precondtion.
  *
  * Succeeds with whatever value is passed.
@@ -132,13 +108,3 @@ export const id = identity;
  */
 export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
     failure<A, A>(reason, value);
-
-/**
- * resolve wraps a value in a Promise.
- */
-export const resolve = Promise.resolve;
-
-/**
- * reject wraps a value in a rejected Promise.
- */
-export const reject = Promise.reject;

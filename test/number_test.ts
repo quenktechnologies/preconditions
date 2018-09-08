@@ -1,6 +1,6 @@
 import * as must from 'must/register';
-import { Failure } from '../../src';
-import { isNumber, toNumber, range } from '../../src/number';
+import { Failure } from '../src/failure';
+import { isNumber, toNumber, range } from '../src/number';
 
 describe('number', function() {
 
@@ -25,7 +25,7 @@ describe('number', function() {
 
         it('should fail if not a number', function() {
 
-            must(toNumber( Date).takeLeft().explain()).eql('NaN');
+            must(toNumber(Date).takeLeft().explain()).eql('NaN');
 
         });
 

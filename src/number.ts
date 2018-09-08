@@ -1,4 +1,5 @@
-import { Precondition, failure, success } from '../';
+import { Precondition } from './';
+import { failure, success } from './result';
 
 /**
  * range tests whether a number falls within a specified range.

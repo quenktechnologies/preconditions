@@ -1,7 +1,7 @@
 import * as Promise from 'bluebird';
 import * as must from 'must/register';
+import {success} from '../src/async/result';
 import {
-    success,
     optional,
     caseOf,
     match,

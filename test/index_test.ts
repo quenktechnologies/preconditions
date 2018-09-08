@@ -1,8 +1,8 @@
 import * as must from 'must/register';
+import { Failure } from '../src/failure';
+import { success, failure } from '../src/result';
+import { unwrap } from '../src/util';
 import {
-    Failure,
-    success,
-    failure,
     notNull,
     optional,
     identity,
@@ -12,7 +12,6 @@ import {
     every,
     or,
     and,
-    unwrap,
     caseOf,
     match,
     whenFalse,

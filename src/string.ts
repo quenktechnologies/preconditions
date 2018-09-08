@@ -1,4 +1,5 @@
-import { Precondition, failure, success } from '../';
+import { Precondition } from './';
+import { failure, success } from './result';
 
 /**
  * matches tests if the value satisfies a regular expression.

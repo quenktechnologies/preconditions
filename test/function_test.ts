@@ -1,6 +1,6 @@
 import * as must from 'must/register';
-import { Failure } from '../../src';
-import { isFunction } from '../../src/function';
+import { Failure } from '../src/failure';
+import { isFunction } from '../src/function';
 
 const fun = <A>(a: A) => a;
 

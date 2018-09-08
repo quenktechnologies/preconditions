@@ -1,7 +1,7 @@
 import * as must from 'must/register';
-import * as preconditions from '../../src';
-import { restrict, disjoint, union, intersect, map } from '../../src/object'
-import { isObject, Preconditions } from '../../src/object';
+import * as preconditions from '../../src/result';
+import { restrict, disjoint, union, intersect, map } from '../../src/record'
+import { isObject, Preconditions } from '../../src/record';
 import { Precondition, every } from '../../src';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };

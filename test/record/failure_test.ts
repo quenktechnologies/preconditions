@@ -1,10 +1,10 @@
 import * as must from 'must/register';
-import * as conditions from '../../src';
-import { ObjectFailure } from '../../src/object';
+import * as conditions from '../../src/failure';
+import { Failure } from '../../src/record/failure';
 
 type Prim = string | number | number[] | Date;
 
-describe('ObjectFailure', () => {
+describe('Failure', () => {
 
     describe('explain', () => {
 
@@ -13,7 +13,7 @@ describe('ObjectFailure', () => {
 
         beforeEach(function() {
 
-            fail = new ObjectFailure<{ [key: string]: Prim }, Prim>({
+            fail = new Failure<{ [key: string]: Prim }, Prim>({
                 name: new conditions.Failure('string', new Date()),
                 age: new conditions.Failure('range', 200, { min: 5, max: 122 }),
                 size: new conditions.Failure('enum', 'small')
