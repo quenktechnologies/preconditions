@@ -1,8 +1,8 @@
 import * as Promise from 'bluebird';
 import {Record} from '@quenk/noni/lib/data/record';
-import { Reports as SyncReports, failure } from '../../record/failure';
-import { success } from '../../failure';
-import { Result } from '../failure';
+import { Reports as SyncReports, failure } from '../../record/result';
+import { success } from '../../result';
+import { Result } from '../result';
 
 /**
  * @private

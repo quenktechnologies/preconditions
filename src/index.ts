@@ -7,8 +7,7 @@
  * however some primitivies are provided to make things easier.
  */
 import { Right, left, right, either } from '@quenk/noni/lib/data/either';
-import { Result, failure, success } from './failure';
-import { Failure } from './failure';
+import { Result, Failure, failure, success } from './result';
 
 /**
  * Precondition represents some condition that must be satisfied
@@ -91,7 +90,7 @@ export const equals = <A, B>(target: B): Precondition<A, B> =>
 /**
  * notNull will fail if the value is null or undefined.
  */
-export const notNull = <A>(value: A) : Result<A,A>=>
+export const notNull = <A>(value: A): Result<A, A> =>
     ((value == null) || ((typeof value === 'string') && (value === ''))) ?
         failure('notNull', value) :
         success(value)

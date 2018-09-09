@@ -1,8 +1,8 @@
-import * as preconditions from '../failure';
+import * as preconditions from '../result';
 import { Record, merge, reduce } from '@quenk/noni/lib/data/record';
 import { left } from '@quenk/noni/lib/data/either';
-import { Failure as F, ErrorTemplates, Context, Explanation } from '../failure';
-import { success } from '../failure';
+import { Failure as F, ErrorTemplates, Context, Explanation } from '../result';
+import { success } from '../result';
 
 /**
  * Failures is a map of Failures.

@@ -3,9 +3,9 @@ import {
     Result as SyncResult,
     failure as syncFailure,
     success as syncSuccess
-} from '../failure';
-import { Failure as SyncFailure } from '../failure';
-import { Context } from '../failure';
+} from '../result';
+import { Failure as SyncFailure } from '../result';
+import { Context } from '../result';
 
 export type Failure<A> = Promise<SyncFailure<A>>;
 

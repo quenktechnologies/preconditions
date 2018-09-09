@@ -1,10 +1,10 @@
 import { Record, merge, reduce } from '@quenk/noni/lib/data/record';
 import { either } from '@quenk/noni/lib/data/either';
 import { Precondition } from '../';
-import { Failure as F } from '../failure';
-import { success, failure as fail } from '../failure';
+import { Failure as F } from '../result';
+import { success, failure as fail } from '../result';
 import { combineKeys } from '../util';
-import { Reports, review } from './failure';
+import { Reports, review } from './result';
 
 /**
  * A map of key precondition pairs.
