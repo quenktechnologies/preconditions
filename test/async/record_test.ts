@@ -1,12 +1,12 @@
 import * as Promise from 'bluebird';
 import * as must from 'must/register';
-import * as preconditions from '../../src/failure';
+import * as preconditions from '../../src/result';
 import * as Async from '../../src/async/record';
 import { restrict, disjoint, union, intersect, map } from '../../src/async/record';
 import { isObject } from '../../src/record';
 import { every, async as wrap } from '../../src/async';
 import { Precondition } from '../../src/async';
-import { Result } from '../../src/async/failure';
+import { Result } from '../../src/async/result';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 

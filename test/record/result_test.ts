@@ -1,6 +1,6 @@
 import * as must from 'must/register';
-import * as conditions from '../../src/failure';
-import { Failure } from '../../src/record/failure';
+import * as conditions from '../../src/result';
+import { Failure } from '../../src/record/result';
 
 type Prim = string | number | number[] | Date;
 

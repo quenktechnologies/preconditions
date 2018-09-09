@@ -1,5 +1,5 @@
 import * as must from 'must/register';
-import { Failure } from '../src/failure';
+import { Failure } from '../src/result';
 import { isNumber, toNumber, range } from '../src/number';
 
 describe('number', function() {

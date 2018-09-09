@@ -1,6 +1,6 @@
 import * as must from 'must/register';
 import { isString, matches, trim, range, notEmpty, toString } from '../src/string';
-import { Failure } from '../src/failure';
+import { Failure } from '../src/result';
 
 describe('string', function() {
 

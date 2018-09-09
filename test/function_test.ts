@@ -1,5 +1,5 @@
 import * as must from 'must/register';
-import { Failure } from '../src/failure';
+import { Failure } from '../src/result';
 import { isFunction } from '../src/function';
 
 const fun = <A>(a: A) => a;
