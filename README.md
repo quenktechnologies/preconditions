@@ -12,12 +12,13 @@ npm install --save @quenk/preconditions
 A precondition is a function that when applied to a value
 returns either a Failure or the final form of the value.
 
-This module defines  a synchronous and asynchronous version:
+This module defines provides two precondition types, synchronous and asynchronous.
 
 ```typescript
-
+//Sync
 type Precondition<A,B> = (a:A) => Either<Failure<A>, B>;
 
+//Async
 type Precondition<A,B> = (a:A) => Promise<Either<Failure<A>, B>>
 
 ```

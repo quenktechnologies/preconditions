@@ -112,7 +112,7 @@ const shouldFailtWhenNoData = (condition: Precondition<object, object>) =>
         .explain({}))
         .eql(noDataErrors);
 
-describe('object', function() {
+describe('record', function() {
 
     describe('isObject', function() {
 
@@ -128,7 +128,7 @@ describe('object', function() {
 
     });
 
-    describe('rpartialValidAccessErroruestrict', function() {
+    describe('restrict', function() {
 
         const access: Preconditions<any, any> = {
 
