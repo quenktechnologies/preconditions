@@ -5,7 +5,7 @@ import { Reports as SyncReports } from '../../record/failure';
 import { onSuccess, onFailure } from '../../record';
 import { combineKeys } from '../../util';
 import { Values } from '../../record';
-import { Result as SyncResult } from '../../result';
+import { Result as SyncResult } from '../../failure';
 import { Precondition } from '../../async';
 import { review } from './failure';
 

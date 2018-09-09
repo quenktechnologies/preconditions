@@ -6,7 +6,7 @@ import { Contexts, Failures } from '../record/failure';
 import { Failure } from '../array/failure';
 import { Failure as F } from '../failure';
 import { Precondition } from '../async';
-import { Result as SyncResult } from '../result';
+import { Result as SyncResult } from '../failure';
 import { success } from './failure';
 
 /**

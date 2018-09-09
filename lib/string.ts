@@ -1,5 +1,5 @@
 import { Precondition } from './';
-import { failure, success } from './result';
+import { failure, success } from './failure';
 
 /**
  * matches tests if the value satisfies a regular expression.

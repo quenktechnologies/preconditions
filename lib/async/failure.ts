@@ -3,7 +3,7 @@ import {
     Result as SyncResult,
     failure as syncFailure,
     success as syncSuccess
-} from '../result';
+} from '../failure';
 import { Failure as SyncFailure } from '../failure';
 import { Context } from '../failure';
 

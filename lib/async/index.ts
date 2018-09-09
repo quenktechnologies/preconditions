@@ -7,7 +7,7 @@ import * as Promise from 'bluebird';
 import { Pattern, kindOf } from '@quenk/kindof';
 import { Right, either, left, right } from '@quenk/noni/lib/data/either';
 import { cons } from '@quenk/noni/lib/data/function';
-import { Result as SyncResult } from '../result';
+import { Result as SyncResult } from '../failure';
 import { Failure as SyncFailure } from '../failure';
 import { Result, failure, success } from './failure';
 

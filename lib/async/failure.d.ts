@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import { Result as SyncResult } from '../result';
+import { Result as SyncResult } from '../failure';
 import { Failure as SyncFailure } from '../failure';
 import { Context } from '../failure';
 export declare type Failure<A> = Promise<SyncFailure<A>>;

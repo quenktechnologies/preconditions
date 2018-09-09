@@ -1,4 +1,4 @@
-import { Result } from './result';
+import { Result } from './failure';
 import { Failure } from './failure';
 /**
  * Precondition represents some condition that must be satisfied

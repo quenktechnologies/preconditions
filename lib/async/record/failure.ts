@@ -1,7 +1,7 @@
 import * as Promise from 'bluebird';
 import { Result } from '../failure';
 import { Reports as SyncReports, failure } from '../../record/failure';
-import { success } from '../../result';
+import { success } from '../../failure';
 import { Values } from '../../record';
 
 /**

@@ -1,5 +1,5 @@
 import { Precondition } from './';
-import { failure, success } from './result';
+import { failure, success } from './failure';
 
 /**
  * range tests whether a number falls within a specified range.

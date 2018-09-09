@@ -1,5 +1,5 @@
 import { Precondition } from './';
-import { failure, success } from './result';
+import { failure, success } from './failure';
 
 /**
  * isBoolean tests if a value is a boolean.
