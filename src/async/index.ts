@@ -36,10 +36,10 @@ export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
  * TODO: using the any type until Either is fixed in afpl.
  */
 export const and = <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
-    : Precondition<A | B, C> => (value: A) =>
-        l(value).then((e: SyncResult<A, B>): Result<A | B, C> =>
+    : Precondition<A | B, C> => (value: A | B) =>
+        l(<A>value).then((e: SyncResult<A, B>): Result<A | B, C> =>
             (<SyncResult<A, any>>e.map(b => r(b)))
-                .orRight((f: SyncFailure<A>) => <any>failure<A, B>(f.message, value, f.context))
+                .orRight((f: SyncFailure<A>) => <any>failure<A | B, B>(f.message, value, f.context))
                 .takeRight());
 
 /**
@@ -112,4 +112,5 @@ export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
 /**
  * log the value to the console.
  */
-export const log = <A>(value:A) => console.error(value) || success(value);
+export const log = <A>(value: A): Result<A, A> =>
+    console.log(value) || success(value);

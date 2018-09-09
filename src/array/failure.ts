@@ -28,10 +28,10 @@ export class Failure<A> extends F<A[]> {
 
     explain(templates: ErrorTemplates = {}, c: Context = {}): Explanation {
 
-        return reduce(this.failures, {}, ((o, f: Failure<A>, $index) =>
-            merge(o, {
+        return reduce(this.failures, {},
+            (p: { [key: string]: string | object }, f: F<A>, $index: string) => merge(p, {
                 [$index]: f.explain(templates, merge(c, { $index }))
-            })));
+            }));
 
     }
 

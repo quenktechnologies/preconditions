@@ -75,7 +75,7 @@ export class Failure<A> {
         templates[this.message.split('.')[0]] :
         (templates[this.message]) ?
         templates[this.message] :
-        this.message), merge(merge(this.context, context), { $value }));
+        this.message), merge(merge(this.context, context), <Context>{ $value }));
 
   }
 

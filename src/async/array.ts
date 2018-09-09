@@ -34,7 +34,7 @@ export const filter =
                         results
                             .map((r: SyncResult<A, B>) =>
                                 r
-                                    .orRight((): null => null)
+                                    .orRight((): any => null)
                                     .takeRight())
                             .filter(b => b != null)))
             .then(values => success<A[], B[]>(values));
@@ -49,7 +49,7 @@ export const map =
                 .all(value.map(p))
                 .then(results => results
                     .reduce(([fails, succs]: [Failures<A>, B[]], curr: SyncResult<A, B>, key) =>
-                        either((f: F<A>) => [merge(fails, { [key]: f }), succs])
+                      either<any,any,any>((f: F<A>) => [merge(fails, { [key]: f }), succs])
                             ((b: B) => [fails, succs.concat(b)])
                             (curr), [<Failures<A>>{}, <B[]>[]]))
                 .then(([fails, succs]: [Failures<A>, B[]]) => Object.keys(fails).length > 0 ?

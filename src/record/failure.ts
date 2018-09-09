@@ -1,8 +1,8 @@
 import * as preconditions from '../failure';
 import { merge, reduce } from '@quenk/noni/lib/data/record';
-import {left} from '@quenk/noni/lib/data/either';
-import { ErrorTemplates, Context, Explanation } from '../failure';
-import {success} from '../result';
+import { left } from '@quenk/noni/lib/data/either';
+import { Failure as F, ErrorTemplates, Context, Explanation } from '../failure';
+import { success } from '../result';
 import { Values } from '.';
 
 /**
@@ -48,10 +48,11 @@ export class Failure<A extends Values<V>, V>
 
     explain(templates: ErrorTemplates = {}, c: Context = {}): Explanation {
 
-        return reduce(this.failures, {}, (o, f: preconditions.Failure<A>, $key) =>
-            merge(o, {
-                [$key]: f.explain(templates, merge(c, { $key }))
-            }));
+        return reduce(this.failures, {},
+            (o: { [key: string]: string | object }, f: F<V>, $key: string) =>
+                merge(o, {
+                    [$key]: f.explain(templates, merge(c, { $key }))
+                }));
 
     }
 

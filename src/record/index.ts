@@ -3,7 +3,7 @@ import { either } from '@quenk/noni/lib/data/either';
 import { Precondition } from '../';
 import { Failure as F } from '../failure';
 import { success, failure as fail } from '../result';
-import { combineKeys} from '../util';
+import { combineKeys } from '../util';
 import { Reports, review } from './failure';
 
 /**
@@ -99,7 +99,7 @@ export const restrict = <A extends Values<AB>, AB, B>(conditions: Preconditions<
         let reports =
             reduce(conditions, init,
                 (r: Reports<AB, AB>, p: Precondition<AB, AB>, k: string) =>
-                    either(onFailure(k, r))(onSuccess(k, r))(p(value[k])));
+                    either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(p(value[k])));
 
         return review<A, AB, B>(reports, value);
 
@@ -120,7 +120,7 @@ export const disjoint = <A extends Values<AB>, AB, B>(conditions: Preconditions<
         let reports = reduce(value, init,
             (r: Reports<AB, AB>, x: AB, k: string) =>
                 (conditions.hasOwnProperty(k)) ?
-                    either(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
+                    either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
                     onSuccess(k, r)(x));
 
         return review<A, AB, B>(reports, value);
@@ -144,8 +144,8 @@ export const intersect =
             let reports = reduce(value, init,
                 (r: Reports<AB, AB>, x: AB, k: string) =>
                     (conditions.hasOwnProperty(k)) ?
-                        either(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
-                        onSuccess(k, r)(null));
+                        either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
+                        onSuccess(k, r)(<any>null));
 
             return review<A, AB, B>(reports, value);
 
@@ -168,7 +168,7 @@ export const union =
 
             let reports = keys.reduce((r: Reports<AB, AB>, k: string) =>
                 conditions.hasOwnProperty(k) ?
-                    either(onFailure(k, r))(onSuccess(k, r))(conditions[k](value[k])) :
+              either<any,any,any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](value[k])) :
                     onSuccess(k, r)(value[k]), init);
 
             return review<A, AB, B>(reports, value);
@@ -189,7 +189,7 @@ export const map =
             let reports = reduce(value, init,
                 (r: Reports<AB, AB>, x: AB, k: string) =>
 
-                    either(onFailure(k, r))(onSuccess(k, r))(condition(x)));
+              either<any,any,any>(onFailure(k, r))(onSuccess(k, r))(condition(x)));
 
             return review<A, AB, B>(reports, value);
 

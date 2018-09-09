@@ -1,5 +1,5 @@
 import { Precondition } from '../';
-import { either } from '@quenk/noni/lib/data/either';
+import { Right, either } from '@quenk/noni/lib/data/either';
 import { id } from '@quenk/noni/lib/data/function';
 import { merge } from '@quenk/noni/lib/data/record';
 import { success, failure as fail } from '../result';
@@ -37,8 +37,10 @@ export const range = <A>(min: number, max: number) => (value: A[]) =>
 export const filter =
     <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) =>
         success<A[], B[]>(
-          value.map(a => (either(() => null)(id)(p(a))))
-          .filter((x: B) => x != null));
+            value
+                .map(p)
+                .filter((e) => (e instanceof Right))
+                .map(either<any, B, B>(id)(id)));
 
 /**
  * map applies a precondition to each member of an array.
@@ -47,17 +49,18 @@ export const filter =
  * the entire array is considered a failure.
  */
 export const map =
-    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
-        (value: A[]) => review(value, value.reduce((reports, a, k) =>
-            (either(onFailure(k, reports))(onSuccess(reports))(p(a))),
+    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) =>
+        review(value, value.reduce((reports, a, k) =>
+            (either<any, any, any>(onFailure(k, reports))(onSuccess<A, B>(reports))(p(a))),
             { failures: {}, values: [] }));
 
 export const onFailure =
-    <A, B>(key: number, { failures, values }: Reports<A, B>) => (f: Failure<A>) =>
+    <A, B>(key: number, { failures, values }: Reports<A, B>) => (f: Failure<A>)
+        : Reports<A, B> =>
         ({ values, failures: merge(failures, { [key]: f }) });
 
 export const onSuccess =
-    <A, B>({ failures, values }: Reports<A, B>) => (b: B) =>
+    <A, B>({ failures, values }: Reports<A, B>) => (b: B): Reports<A, B> =>
         ({ failures, values: values.concat(b) })
 
 

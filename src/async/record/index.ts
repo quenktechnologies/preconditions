@@ -34,7 +34,7 @@ export const reports = <A>(): Reports<A, A> =>
  */
 export const finish = <A>(key: string, r: SyncReports<A, A>) =>
     (e: SyncResult<A, A>) =>
-        Promise.resolve(either(onFailure(key, r))(onSuccess(key, r))(e));
+    Promise.resolve(either<any,any,any>(onFailure(key, r))(onSuccess(key, r))(e));
 
 /**
  * restrict (async version).
@@ -87,7 +87,7 @@ export const intersect =
                         conditions.hasOwnProperty(key) ?
                             conditions[key](x)
                                 .then(finish(key, r)) :
-                            Promise.resolve(onSuccess(key, r)(null))))
+                      Promise.resolve(onSuccess(key, r)(<any>null))))
 
                 .then(review<A, AB, B>(value));
 

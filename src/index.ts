@@ -91,7 +91,7 @@ export const equals = <A, B>(target: B): Precondition<A, B> =>
 /**
  * notNull will fail if the value is null or undefined.
  */
-export const notNull = <A>(value: A) =>
+export const notNull = <A>(value: A) : Result<A,A>=>
     ((value == null) || ((typeof value === 'string') && (value === ''))) ?
         failure('notNull', value) :
         success(value)
@@ -143,7 +143,8 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]
     : Precondition<A, B> => (value: A) =>
         either<Failure<A>, B, Result<A, B>>
             ((f: Failure<A>) => left(f))
-            ((v: B) => <Result<A, B>>list.reduce((e, f) => e.chain(f), right(<B>v)))
+            ((v: B) => <Result<A, B>>list.reduce((e: Result<A, B>, f) =>
+                <Result<A, B>>e.chain(f), <Result<A, B>>right(<B>v)))
             (p(value));
 
 /**
@@ -213,4 +214,5 @@ const _kindOf = <A>(t: Type<A>, value: A): boolean =>
 /**
  * log the value to the console.
  */
-export const log = <A>(value: A) => console.error(value) || success(value);
+export const log = <A>(value: A): Result<A, A> =>
+    console.log(value) || success(value);
