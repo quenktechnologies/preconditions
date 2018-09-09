@@ -1,10 +1,9 @@
 import * as Promise from 'bluebird';
-import { reduce } from '@quenk/noni/lib/data/record';
+import { Record, reduce } from '@quenk/noni/lib/data/record';
 import { either } from '@quenk/noni/lib/data/either';
 import { Reports as SyncReports } from '../../record/failure';
 import { onSuccess, onFailure } from '../../record';
 import { combineKeys } from '../../util';
-import { Values } from '../../record';
 import { Result as SyncResult } from '../../failure';
 import { Precondition } from '../../async';
 import { review } from './failure';
@@ -34,13 +33,13 @@ export const reports = <A>(): Reports<A, A> =>
  */
 export const finish = <A>(key: string, r: SyncReports<A, A>) =>
     (e: SyncResult<A, A>) =>
-    Promise.resolve(either<any,any,any>(onFailure(key, r))(onSuccess(key, r))(e));
+        Promise.resolve(either<any, any, any>(onFailure(key, r))(onSuccess(key, r))(e));
 
 /**
  * restrict (async version).
  */
 export const restrict =
-    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>): Precondition<A, B> =>
+    <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>): Precondition<A, B> =>
         (value: A) =>
             reduce(conditions, reports(), (
                 p: Reports<AB, AB>,
@@ -53,7 +52,7 @@ export const restrict =
 /**
  * disjoint (async version).
  */
-export const disjoint = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
+export const disjoint = <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>)
     : Precondition<A, B> =>
     (value: A) =>
 
@@ -74,7 +73,7 @@ export const disjoint = <A extends Values<AB>, AB, B>(conditions: Preconditions<
  * intersect (async version).
  */
 export const intersect =
-    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
+    <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>)
         : Precondition<A, B> =>
         (value: A) =>
 
@@ -87,7 +86,7 @@ export const intersect =
                         conditions.hasOwnProperty(key) ?
                             conditions[key](x)
                                 .then(finish(key, r)) :
-                      Promise.resolve(onSuccess(key, r)(<any>null))))
+                            Promise.resolve(onSuccess(key, r)(<any>null))))
 
                 .then(review<A, AB, B>(value));
 
@@ -95,7 +94,7 @@ export const intersect =
  * union (async version).
  */
 export const union =
-    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
+    <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>)
         : Precondition<A, B> =>
         (value: A) =>
             combineKeys(conditions, value)
@@ -111,7 +110,7 @@ export const union =
  * map (async version).
  */
 export const map =
-    <A extends Values<AB>, AB, B>(condition: Precondition<AB, AB>)
+    <A extends Record<AB>, AB, B>(condition: Precondition<AB, AB>)
         : Precondition<A, B> =>
         (value: A) =>
             reduce(value, reports(), (p: Reports<AB, AB>, x: AB, key: string) =>

@@ -1,6 +1,6 @@
 import * as Promise from 'bluebird';
+import { Record } from '@quenk/noni/lib/data/record';
 import { Reports as SyncReports } from '../../record/failure';
-import { Values } from '../../record';
 import { Precondition } from '../../async';
 /**
  * Preconditions is a record of asynchronous preconditions.
@@ -23,20 +23,20 @@ export declare const finish: <A>(key: string, r: SyncReports<A, A>) => (e: impor
 /**
  * restrict (async version).
  */
-export declare const restrict: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
+export declare const restrict: <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * disjoint (async version).
  */
-export declare const disjoint: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
+export declare const disjoint: <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * intersect (async version).
  */
-export declare const intersect: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
+export declare const intersect: <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * union (async version).
  */
-export declare const union: <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
+export declare const union: <A extends Record<AB>, AB, B>(conditions: Preconditions<AB, AB>) => Precondition<A, B>;
 /**
  * map (async version).
  */
-export declare const map: <A extends Values<AB>, AB, B>(condition: Precondition<AB, AB>) => Precondition<A, B>;
+export declare const map: <A extends Record<AB>, AB, B>(condition: Precondition<AB, AB>) => Precondition<A, B>;

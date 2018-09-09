@@ -1,8 +1,8 @@
 import * as Promise from 'bluebird';
-import { Result } from '../failure';
+import {Record} from '@quenk/noni/lib/data/record';
 import { Reports as SyncReports, failure } from '../../record/failure';
 import { success } from '../../failure';
-import { Values } from '../../record';
+import { Result } from '../failure';
 
 /**
  * @private
@@ -12,7 +12,7 @@ export type Reports<A, B> = Promise<SyncReports<A, B>>;
 /**
  * @private
  */
-export const review = <A extends Values<AB>, AB, B>(value: A) =>
+export const review = <A extends Record<AB>, AB, B>(value: A) =>
     (r: SyncReports<AB, AB>): Result<A, B> =>
         (Object.keys(r.failures).length > 0) ?
             Promise.resolve(failure<A, AB, B>(r.failures, value, {})) :

@@ -1,19 +1,10 @@
-import { merge, reduce } from '@quenk/noni/lib/data/record';
+import { Record, merge, reduce } from '@quenk/noni/lib/data/record';
 import { either } from '@quenk/noni/lib/data/either';
 import { Precondition } from '../';
 import { Failure as F } from '../failure';
 import { success, failure as fail } from '../failure';
 import { combineKeys } from '../util';
 import { Reports, review } from './failure';
-
-/**
- * Values is a map of values to apply a map [[Precondition]] to.
- */
-export interface Values<V> {
-
-    [key: string]: V
-
-}
 
 /**
  * A map of key precondition pairs.
@@ -55,35 +46,22 @@ export const onFailure =
 /**
  * @private
  */
-export const onSuccess =
-    <M, V>(
-        key: string,
-        { failures, values }: Reports<M, V>) =>
-        (v: V): Reports<M, V> => (v == null) ?
-            { failures, values } :
-            ({
-                failures,
-                values: merge(values, { [key]: v })
-            });
+export const onSuccess = <M, V>(
+    key: string,
+    { failures, values }: Reports<M, V>) =>
+    (v: V): Reports<M, V> => (v == null) ?
+        { failures, values } :
+        ({
+            failures,
+            values: merge(values, { [key]: v })
+        });
 
 /**
  * isObject tests if the value is an js object (and not an Array).
  */
-export const isObject =
-    <A>(value: A) =>
-        (typeof value === 'object' && (!Array.isArray(value))) ?
-            success<any, A>(value) : fail<any, A>('isObject', value);
-
-/**
- * where applies a precondition to an object, only if a record
- * of predicates all pass.
- * 
- */
-export const where = <A extends Values<AB>, AB, B>(
-    tests: Predicates<A>,
-    p: Precondition<A, B>,
-    otherwise: Precondition<A, B>): Precondition<A, B> =>
-    (value: A) => Object.keys(tests).every(k => tests[k](value)) ? p(value) : otherwise(value);
+export const isObject = <A>(value: A) =>
+    (typeof value === 'object' && (!Array.isArray(value))) ?
+        success<any, A>(value) : fail<any, A>('isObject', value);
 
 /**
  * restrict applies a record of preconditions to an input object keeping
@@ -91,17 +69,20 @@ export const where = <A extends Values<AB>, AB, B>(
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const restrict = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
-    : Precondition<A, B> => (value: A) => {
+export const restrict = <P, A extends Record<P>, Q, B extends Record<Q>>
+    (conditions: Preconditions<P, Q>): Precondition<A, B> => (value: A) => {
 
-        let init: Reports<AB, AB> = { failures: {}, values: {} };
+        let init: Reports<P, Q> = { failures: {}, values: {} };
 
         let reports =
             reduce(conditions, init,
-                (r: Reports<AB, AB>, p: Precondition<AB, AB>, k: string) =>
-                    either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(p(value[k])));
+                (r: Reports<P, Q>, p: Precondition<P, Q>, k: string) =>
+                    either<any, any, any>
+                        (onFailure(k, r))
+                        (onSuccess(k, r))
+                        (p(value[k])));
 
-        return review<A, AB, B>(reports, value);
+        return review<A, P, B>(reports, value);
 
     }
 
@@ -112,18 +93,20 @@ export const restrict = <A extends Values<AB>, AB, B>(conditions: Preconditions<
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const disjoint = <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>)
-    : Precondition<A, B> => (value: A) => {
+export const disjoint = <P, A extends Record<P>, Q, B extends Record<Q>>
+    (conditions: Preconditions<P, Q>): Precondition<A, B> => (value: A) => {
 
-        let init: Reports<AB, AB> = { failures: {}, values: {} };
+        let init: Reports<P, Q> = { failures: {}, values: {} };
 
-        let reports = reduce(value, init,
-            (r: Reports<AB, AB>, x: AB, k: string) =>
-                (conditions.hasOwnProperty(k)) ?
-                    either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
-                    onSuccess(k, r)(x));
+        let reports = reduce(value, init, (r: Reports<P, Q>, x: P, k: string) =>
+            (conditions.hasOwnProperty(k)) ?
+                either<any, any, any>
+                    (onFailure(k, r))
+                    (onSuccess(k, r))
+                    (conditions[k](x)) :
+                onSuccess(k, r)(<any>x));
 
-        return review<A, AB, B>(reports, value);
+        return review<A, P, B>(reports, value);
 
     }
 
@@ -135,21 +118,22 @@ export const disjoint = <A extends Values<AB>, AB, B>(conditions: Preconditions<
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const intersect =
-    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>): Precondition<A, B> =>
-        (value: A) => {
+export const intersect = <P, A extends Record<P>, Q, B extends Record<Q>>
+    (conditions: Preconditions<P, Q>): Precondition<A, B> => (value: A) => {
 
-            let init: Reports<AB, AB> = { failures: {}, values: {} };
+        let init: Reports<P, Q> = { failures: {}, values: {} };
 
-            let reports = reduce(value, init,
-                (r: Reports<AB, AB>, x: AB, k: string) =>
-                    (conditions.hasOwnProperty(k)) ?
-                        either<any, any, any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](x)) :
-                        onSuccess(k, r)(<any>null));
+        let reports = reduce(value, init, (r: Reports<P, Q>, x: P, k: string) =>
+            (conditions.hasOwnProperty(k)) ?
+                either<any, any, any>
+                    (onFailure(k, r))
+                    (onSuccess(k, r))
+                    (conditions[k](x)) :
+                onSuccess(k, r)(<any>null));
 
-            return review<A, AB, B>(reports, value);
+        return review<A, P, B>(reports, value);
 
-        }
+    }
 
 /**
  * union applies a record of preconditions to an input object.
@@ -159,38 +143,42 @@ export const intersect =
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const union =
-    <A extends Values<AB>, AB, B>(conditions: Preconditions<AB, AB>): Precondition<A, B> =>
-        (value: A) => {
+export const union = <P, A extends Record<P>, Q, B extends Record<Q>>
+    (conditions: Preconditions<P, Q>): Precondition<A, B> => (value: A) => {
 
-            let keys = combineKeys(conditions, value);
-            let init: Reports<AB, AB> = { failures: {}, values: {} };
+        let keys = combineKeys(conditions, value);
+        let init: Reports<P, Q> = { failures: {}, values: {} };
 
-            let reports = keys.reduce((r: Reports<AB, AB>, k: string) =>
-                conditions.hasOwnProperty(k) ?
-              either<any,any,any>(onFailure(k, r))(onSuccess(k, r))(conditions[k](value[k])) :
-                    onSuccess(k, r)(value[k]), init);
+        let reports = keys.reduce((r: Reports<P, P>, k: string) =>
+            conditions.hasOwnProperty(k) ?
+                either<any, any, any>
+                    (onFailure(k, r))
+                    (onSuccess(k, r))
+                    (conditions[k](value[k])) :
+                onSuccess(k, r)(value[k]), init);
 
-            return review<A, AB, B>(reports, value);
+        return review<A, P, B>(reports, value);
 
-        }
+    }
 
 /**
  * map applies the same Precondition to each property of an object.
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const map =
-    <A extends Values<AB>, AB, B>(condition: Precondition<AB, AB>): Precondition<A, B> =>
-        (value: A) => {
+export const map = <P, A extends Record<P>, Q, B extends Record<Q>>
+    (condition: Precondition<P, Q>): Precondition<A, B> => (value: A) => {
 
-            let init: Reports<AB, AB> = { failures: {}, values: {} };
+        let init: Reports<P, Q> = { failures: {}, values: {} };
 
-            let reports = reduce(value, init,
-                (r: Reports<AB, AB>, x: AB, k: string) =>
+        let reports = reduce(value, init,
+            (r: Reports<P, Q>, x: P, k: string) =>
 
-              either<any,any,any>(onFailure(k, r))(onSuccess(k, r))(condition(x)));
+                either<any, any, any>
+                    (onFailure(k, r))
+                    (onSuccess(k, r))
+                    (condition(x)));
 
-            return review<A, AB, B>(reports, value);
+        return review<A, P, B>(reports, value);
 
-        }
+    }

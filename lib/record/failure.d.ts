@@ -1,6 +1,6 @@
 import * as preconditions from '../failure';
+import { Record } from '@quenk/noni/lib/data/record';
 import { ErrorTemplates, Context, Explanation } from '../failure';
-import { Values } from '.';
 /**
  * Failures is a map of Failures.
  */
@@ -18,13 +18,13 @@ export interface Contexts {
  */
 export interface Reports<M, V> {
     failures: Failures<M>;
-    values: Values<V>;
+    values: Record<V>;
 }
 /**
  * Failure contains information about a precondition that failed
  * when applied to an object.
  */
-export declare class Failure<A extends Values<V>, V> extends preconditions.Failure<A> {
+export declare class Failure<A extends Record<V>, V> extends preconditions.Failure<A> {
     failures: Failures<V>;
     value: A;
     contexts: Contexts;
@@ -34,9 +34,9 @@ export declare class Failure<A extends Values<V>, V> extends preconditions.Failu
 /**
  * @private
  */
-export declare const review: <A extends Values<AB>, AB, B>(reports: Reports<AB, AB>, value: A) => import("@quenk/noni/lib/data/either").Either<preconditions.Failure<A>, B>;
+export declare const review: <A extends Record<AB>, AB, B>(reports: Reports<AB, AB>, value: A) => import("@quenk/noni/lib/data/either").Either<preconditions.Failure<A>, B>;
 /**
  * failure produces a new failure wrapped in the left side
  * of an Either from a map (object) of failures.
  */
-export declare const failure: <A extends Values<V>, V, B>(errors: Failures<V>, value: A, contexts: Contexts) => import("@quenk/noni/lib/data/either").Left<Failure<A, V>, B>;
+export declare const failure: <A extends Record<V>, V, B>(errors: Failures<V>, value: A, contexts: Contexts) => import("@quenk/noni/lib/data/either").Left<Failure<A, V>, B>;
