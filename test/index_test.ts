@@ -1,8 +1,8 @@
 import * as must from 'must/register';
+import { Failure } from '../src/failure';
+import { success, failure } from '../src/result';
+import { Precondition } from '../src';
 import {
-    Failure,
-    success,
-    failure,
     notNull,
     optional,
     identity,
@@ -12,12 +12,14 @@ import {
     every,
     or,
     and,
-    unwrap,
     caseOf,
     match,
     whenFalse,
     fail
 } from '../src';
+
+ const unwrap =
+    <A, B>(p: () => Precondition<A, B>) => (value: A) => p()(value);
 
 describe('index', function() {
 

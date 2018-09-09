@@ -1,5 +1,5 @@
 import * as must from 'must/register';
-import { Failure } from '../src';
+import { Failure } from '../src/failure';
 import { isBoolean, toBoolean } from '../src/boolean';
 
 describe('boolean', function() {

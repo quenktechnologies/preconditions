@@ -1,45 +1,24 @@
+/**
+ * The promise module provides primitives for async preconditions
+ * via bluebirds Promise API.
+ */
 import * as sync from '../';
 import * as Promise from 'bluebird';
 import { Pattern } from '@quenk/kindof';
-import { Failure as SyncFailure } from '../';
-import { Either } from 'afpl/lib/monad/Either';
-export { Either };
-/**
- *
- * Async provides types and functions for operating on data
- * asynchronously.
- *
- * Bluebird promises are used in place of native promises.
- */
+import { Failure as SyncFailure } from '../failure';
+import { Result } from './failure';
 /**
  * Precondition (async version).
  */
 export declare type Precondition<A, B> = (a: A) => Result<A, B>;
 /**
- * Result (async version).
+ * async wraps the sync api so they can be used with async preconditions safely.
  */
-export declare type Result<A, B> = Promise<sync.Result<A, B>>;
-export declare type Failure<A> = Promise<SyncFailure<A>>;
-/**
- * failure flags an async precondtion as failing.
- * @param <A> The type of the original value.
- * @param <B> The type of the expected valid value.
- * @param message The error message.
- * @param a The original value.
- * @param ctx Context for the error message.
- */
-export declare const failure: <A, B>(message: string, a: A, ctx?: sync.Context) => Promise<Either<sync.Failure<A>, B>>;
-/**
- * success flags an async precondition as succeeding.
- * @param <A> The type of the original value.
- * @param <B> The type of the expected valid value.
- * @param b The new value after applying the precondition.
- */
-export declare const success: <A, B>(b: B) => Promise<Either<sync.Failure<A>, B>>;
+export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, B>>;
 /**
  * or (async version).
  */
-export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => (value: A) => Promise<Either<sync.Failure<{}>, B>>;
+export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
 /**
  * and (async version).
  *
@@ -49,7 +28,7 @@ export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>
 /**
  * every (async version).
  */
-export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<A | B, B>[]) => Precondition<A, B>;
+export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]) => Precondition<A, B>;
 /**
  * optional (async version).
  */
@@ -63,28 +42,17 @@ export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precon
  */
 export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
 /**
- * async wraps the sync api so they can be used with async preconditions safely.
- * @param <A> The type of the input value of the precondition.
- * @param <B> The type of the final value of the precondition.
- * @param a The input value.
- */
-export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<Either<sync.Failure<A>, B>>;
-/**
  * identity precondtion.
  *
  * Succeeds with whatever value is passed.
  */
-export declare const identity: <A>(value: A) => Promise<Either<sync.Failure<A>, A>>;
-export declare const id: <A>(value: A) => Promise<Either<sync.Failure<A>, A>>;
+export declare const identity: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;
+export declare const id: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;
 /**
  * fail always fails with reason no matter the value supplied.
  */
 export declare const fail: <A>(reason: string) => Precondition<A, A>;
 /**
- * resolve wraps a value in a Promise.
+ * log the value to the console.
  */
-export declare const resolve: typeof Promise.resolve;
-/**
- * reject wraps a value in a rejected Promise.
- */
-export declare const reject: typeof Promise.reject;
+export declare const log: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;

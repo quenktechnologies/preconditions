@@ -1,30 +1,14 @@
-import { Failure } from './Failure';
-import { Either } from 'afpl/lib/monad/Either';
-export { Failure };
+import { Result } from './result';
+import { Failure } from './failure';
 /**
  * Precondition represents some condition that must be satisfied
- * in order for data to be considered a success type.
+ * in order for data to be considered a valid type.
  *
- * The left type class represents the original type and the
- * right the final one.
+ * A Precondition accepts a value of type <A> and returns an Either
+ * where the left side contains information about why the precondition
+ * failed and the right the resulting type.
  */
-export interface Precondition<A, B> {
-    (value: A): Result<A, B>;
-}
-/**
- * Result of a precondition.
- */
-export declare type Result<A, B> = Either<Failure<A>, B>;
-/**
- * Context of a failure, used to explain error messages.
- */
-export interface Context {
-    [key: string]: any;
-}
-/**
- * Explanation of what went wrong with a Precondition.
- */
-export declare type Explanation = string | object;
+export declare type Precondition<A, B> = (value: A) => Result<A, B>;
 /**
  * Type is used by caseOf to pattern match a value.
  */
@@ -36,33 +20,22 @@ export declare type Type<T> = string | number | boolean | object | {
 /**
  * left wraps a value in the left side of an Either
  */
-export declare const left: <A, B>(a: A) => Either<A, B>;
 /**
  * right wraps a value in the right side of an Either
  */
-export declare const right: <A, B>(b: B) => Either<A, B>;
 /**
- * failure produces a new one to one Failure instance wrapped
- * in the left side of an Either.
- */
-export declare const failure: <A, B>(message: string, value: A, ctx?: Context) => Either<Failure<A>, B>;
-/**
- * success signals a precondition has passed and wraps the latest
- * version of the value in the left side of an Either.
- */
-export declare const success: <A, B>(b: B) => Either<Failure<A>, B>;
-/**
- * set the value to the value specified, no matter what
+ * set the value to the supplied value.
  */
 export declare const set: <A, B>(b: B) => Precondition<A, B>;
+export declare const cons: <A, B>(b: B) => Precondition<A, B>;
 /**
  * when conditionally applies one of two preconditions depending
  * on the outcome of a test function.
  */
 export declare const when: <A, B>(test: (a: A) => boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
- * whenTrue conditionally applies applied or otherwise depending
- * on whether condition is true or not.
+ * whenTrue conditionally applies "applied" or "otherwise" depending
+ * on whether "condition" is true or not.
  */
 export declare const whenTrue: <A, B>(condition: boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
@@ -70,22 +43,27 @@ export declare const whenTrue: <A, B>(condition: boolean, applied: Precondition<
  */
 export declare const whenFalse: <A, B>(condition: boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
- * equals tests if the value is equal to the value specified (strictly).
+ * equals tests if the value is equal (strictly) to the value specified.
  */
 export declare const equals: <A, B>(target: B) => Precondition<A, B>;
 /**
- * notNull requires a value to be specified.
+ * notNull will fail if the value is null or undefined.
  */
-export declare const notNull: <A>(value: A) => Either<Failure<A>, {}> | Either<Failure<{}>, A>;
+export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
- * optional applies the tests given only if the value is != null
+ * optional applies the precondition given only if the value is not null
+ * or undefined.
  */
 export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
 /**
- * identity always succeeds with the original value passed.
+ * identity always succeeds with the value it is applied to.
  */
-export declare const identity: Precondition<any, any>;
-export declare const id: Precondition<any, any>;
+export declare const identity: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const id: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+/**
+ * fail always fails with reason no matter the value supplied.
+ */
+export declare const fail: <A>(reason: string) => Precondition<A, A>;
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
@@ -104,9 +82,16 @@ export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  */
 export declare const exists: <A>(list: A[]) => Precondition<A, A>;
 /**
- * unwrap applies a precondition received from a function.
+ * isin requires the value passed to be a member of a provided list.
  */
-export declare const unwrap: <A, B>(p: () => Precondition<A, B>) => (value: A) => Either<Failure<A>, B>;
+export declare const isin: <A>(list: A[]) => Precondition<A, A>;
+/**
+ * match preforms a type/structure matching on the input
+ * value in order to decide which precondition to apply.
+ *
+ * Preconditions must be wrapped in a 'caseOf' precondition.
+ */
+export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
 /**
  * caseOf allows for the selective application of a precondition
  * based on the type or structure of the value.
@@ -121,17 +106,6 @@ export declare const unwrap: <A, B>(p: () => Precondition<A, B>) => (value: A) =
  */
 export declare const caseOf: <A, B>(t: Type<A>, p: Precondition<A, B>) => Precondition<A, B>;
 /**
- * match preforms a type/structure matching on the input
- * value in order to decide which precondition to apply.
- *
- * Preconditions must be wrapped in a 'caseOf' precondition.
+ * log the value to the console.
  */
-export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]) => Precondition<A, B>;
-/**
- * isin requires the value passed to be a member of a provided list.
- */
-export declare const isin: <A>(list: A[]) => Precondition<A, A>;
-/**
- * fail always fails with reason no matter the value supplied.
- */
-export declare const fail: <A>(reason: string) => Precondition<A, A>;
+export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
