@@ -55,4 +55,4 @@ export declare const fail: <A>(reason: string) => Precondition<A, A>;
 /**
  * log the value to the console.
  */
-export declare const log: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<{}>, A>>;
+export declare const log: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;

@@ -25,13 +25,5 @@ export declare const filter: <A, B>(p: Precondition<A, B>) => Precondition<A[], 
  * the entire array is considered a failure.
  */
 export declare const map: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]>;
-export declare const onFailure: <A, B>(key: number, { failures, values }: Reports<A, B>) => (f: Failure<A>) => {
-    values: B[];
-    failures: import("../record/failure").Failures<A> & {
-        [x: number]: Failure<A>;
-    };
-};
-export declare const onSuccess: <A, B>({ failures, values }: Reports<A, B>) => (b: B) => {
-    failures: import("../record/failure").Failures<A>;
-    values: B[];
-};
+export declare const onFailure: <A, B>(key: number, { failures, values }: Reports<A, B>) => (f: Failure<A>) => Reports<A, B>;
+export declare const onSuccess: <A, B>({ failures, values }: Reports<A, B>) => (b: B) => Reports<A, B>;

@@ -19,7 +19,7 @@ export declare const reports: <A>() => Promise<SyncReports<A, A>>;
 /**
  * @private
  */
-export declare const finish: <A>(key: string, r: SyncReports<A, A>) => (e: import("@quenk/noni/lib/data/either").Either<import("../failure").Failure<A>, A>) => Promise<SyncReports<A, A>>;
+export declare const finish: <A>(key: string, r: SyncReports<A, A>) => (e: import("@quenk/noni/lib/data/either").Either<import("../failure").Failure<A>, A>) => Promise<any>;
 /**
  * restrict (async version).
  */

@@ -49,7 +49,7 @@ export declare const equals: <A, B>(target: B) => Precondition<A, B>;
 /**
  * notNull will fail if the value is null or undefined.
  */
-export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, {}> | import("@quenk/noni/lib/data/either").Either<Failure<{}>, A>;
+export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
  * optional applies the precondition given only if the value is not null
  * or undefined.
@@ -108,4 +108,4 @@ export declare const caseOf: <A, B>(t: Type<A>, p: Precondition<A, B>) => Precon
 /**
  * log the value to the console.
  */
-export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<{}>, A>;
+export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
