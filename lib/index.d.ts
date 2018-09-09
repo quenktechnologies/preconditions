@@ -1,5 +1,4 @@
-import { Result } from './failure';
-import { Failure } from './failure';
+import { Result, Failure } from './result';
 /**
  * Precondition represents some condition that must be satisfied
  * in order for data to be considered a valid type.

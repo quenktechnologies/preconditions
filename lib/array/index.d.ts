@@ -1,6 +1,6 @@
 import { Precondition } from '../';
-import { Failure } from '../failure';
-import { Reports } from './failure';
+import { Failure } from '../result';
+import { Reports } from './result';
 /**
  * isArray tests if the value is an array
  */

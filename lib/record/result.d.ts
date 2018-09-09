@@ -1,6 +1,6 @@
-import * as preconditions from '../failure';
+import * as preconditions from '../result';
 import { Record } from '@quenk/noni/lib/data/record';
-import { ErrorTemplates, Context, Explanation } from '../failure';
+import { ErrorTemplates, Context, Explanation } from '../result';
 /**
  * Failures is a map of Failures.
  */

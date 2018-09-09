@@ -1,8 +1,8 @@
 import { left } from '@quenk/noni/lib/data/either';
 import { reduce, merge } from '@quenk/noni/lib/data/record';
-import { Failure as F, Explanation, ErrorTemplates, Context } from '../failure';
-import { success } from '../failure';
-import { Contexts, Failures } from '../record/failure';
+import { Failure as F, Explanation, ErrorTemplates, Context } from '../result';
+import { success } from '../result';
+import { Contexts, Failures } from '../record/result';
 
 /**
  * @private

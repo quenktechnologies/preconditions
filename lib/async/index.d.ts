@@ -5,8 +5,8 @@
 import * as sync from '../';
 import * as Promise from 'bluebird';
 import { Pattern } from '@quenk/kindof';
-import { Failure as SyncFailure } from '../failure';
-import { Result } from './failure';
+import { Failure as SyncFailure } from '../result';
+import { Result } from './result';
 /**
  * Precondition (async version).
  */

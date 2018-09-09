@@ -2,9 +2,9 @@ import { Precondition } from '../';
 import { Right, either } from '@quenk/noni/lib/data/either';
 import { id } from '@quenk/noni/lib/data/function';
 import { merge } from '@quenk/noni/lib/data/record';
-import { success, failure as fail } from '../failure';
-import { Failure } from '../failure';
-import { Reports, review } from './failure';
+import { success, failure as fail } from '../result';
+import { Failure } from '../result';
+import { Reports, review } from './result';
 
 /**
  * isArray tests if the value is an array

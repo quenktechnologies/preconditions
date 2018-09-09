@@ -1,7 +1,7 @@
 import * as Promise from 'bluebird';
-import { Reports as SyncReports } from '../array/failure';
-import { Contexts, Failures } from '../record/failure';
-import { Failure } from '../array/failure';
+import { Reports as SyncReports } from '../array/result';
+import { Contexts, Failures } from '../record/result';
+import { Failure } from '../array/result';
 import { Precondition } from '../async';
 /**
  * @private

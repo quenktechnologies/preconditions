@@ -1,7 +1,7 @@
 import * as Promise from 'bluebird';
-import { Result as SyncResult } from '../failure';
-import { Failure as SyncFailure } from '../failure';
-import { Context } from '../failure';
+import { Result as SyncResult } from '../result';
+import { Failure as SyncFailure } from '../result';
+import { Context } from '../result';
 export declare type Failure<A> = Promise<SyncFailure<A>>;
 /**
  * Result (async version).

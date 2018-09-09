@@ -1,5 +1,5 @@
-import { Failure as F, Explanation, ErrorTemplates, Context } from '../failure';
-import { Contexts, Failures } from '../record/failure';
+import { Failure as F, Explanation, ErrorTemplates, Context } from '../result';
+import { Contexts, Failures } from '../record/result';
 /**
  * @private
  */

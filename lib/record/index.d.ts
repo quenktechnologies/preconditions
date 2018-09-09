@@ -1,7 +1,7 @@
 import { Record } from '@quenk/noni/lib/data/record';
 import { Precondition } from '../';
-import { Failure as F } from '../failure';
-import { Reports } from './failure';
+import { Failure as F } from '../result';
+import { Reports } from './result';
 /**
  * A map of key precondition pairs.
  *

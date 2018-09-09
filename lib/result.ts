@@ -1,7 +1,6 @@
 import * as polate from '@quenk/polate';
 import { Record, merge } from '@quenk/noni/lib/data/record';
 import { Either, left, right } from '@quenk/noni/lib/data/either';
-import { Context } from './failure';
 
 /**
  * Result of a precondition (alias).
