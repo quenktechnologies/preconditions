@@ -7,7 +7,7 @@
  * however some primitivies are provided to make things easier.
  */
 import { Right, left, right, either } from '@quenk/noni/lib/data/either';
-import { Result, failure, success } from './result';
+import { Result, failure, success } from './failure';
 import { Failure } from './failure';
 
 /**

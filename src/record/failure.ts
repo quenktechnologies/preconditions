@@ -2,7 +2,7 @@ import * as preconditions from '../failure';
 import { merge, reduce } from '@quenk/noni/lib/data/record';
 import { left } from '@quenk/noni/lib/data/either';
 import { Failure as F, ErrorTemplates, Context, Explanation } from '../failure';
-import { success } from '../result';
+import { success } from '../failure';
 import { Values } from '.';
 
 /**

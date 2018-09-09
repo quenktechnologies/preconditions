@@ -1,6 +1,6 @@
 import * as must from 'must/register';
 import { Failure } from '../src/failure';
-import { success, failure } from '../src/result';
+import { success, failure } from '../src/failure';
 import { Precondition } from '../src';
 import {
     notNull,

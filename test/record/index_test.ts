@@ -1,5 +1,5 @@
 import * as must from 'must/register';
-import * as preconditions from '../../src/result';
+import * as preconditions from '../../src/failure';
 import { restrict, disjoint, union, intersect, map } from '../../src/record'
 import { isObject, Preconditions } from '../../src/record';
 import { Precondition, every } from '../../src';

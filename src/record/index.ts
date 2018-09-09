@@ -2,7 +2,7 @@ import { merge, reduce } from '@quenk/noni/lib/data/record';
 import { either } from '@quenk/noni/lib/data/either';
 import { Precondition } from '../';
 import { Failure as F } from '../failure';
-import { success, failure as fail } from '../result';
+import { success, failure as fail } from '../failure';
 import { combineKeys } from '../util';
 import { Reports, review } from './failure';
 

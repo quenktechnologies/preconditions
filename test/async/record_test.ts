@@ -1,6 +1,6 @@
 import * as Promise from 'bluebird';
 import * as must from 'must/register';
-import * as preconditions from '../../src/result';
+import * as preconditions from '../../src/failure';
 import * as Async from '../../src/async/record';
 import { restrict, disjoint, union, intersect, map } from '../../src/async/record';
 import { isObject } from '../../src/record';
@@ -56,7 +56,7 @@ const partialInvalidAccessErrors = {
     network: 'async', user: { age: 'async' }, previous: { age: 'async' }
 };
 
-const async = <A, B>(type: string) => (value: A): Result<A, B> =>
+const async = <A>(type: string) => (value: A): Result<A, any> =>
     Promise.fromCallback(cb =>
         setTimeout(() => cb(null,
             (type === 'prim') ?
