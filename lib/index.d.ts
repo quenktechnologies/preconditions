@@ -62,7 +62,7 @@ export declare const id: <A>(value: A) => import("@quenk/noni/lib/data/either").
 /**
  * fail always fails with reason no matter the value supplied.
  */
-export declare const fail: <A>(reason: string) => Precondition<A, A>;
+export declare const fail: <A, B>(reason: string) => Precondition<A, B>;
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */

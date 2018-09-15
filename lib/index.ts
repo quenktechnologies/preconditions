@@ -115,8 +115,8 @@ export const id = identity;
 /**
  * fail always fails with reason no matter the value supplied.
  */
-export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
-    failure<A, A>(reason, value);
+export const fail = <A,B>(reason: string): Precondition<A, B> => (value: A) =>
+    failure<A, B>(reason, value);
 
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
