@@ -115,7 +115,7 @@ export const id = identity;
 /**
  * fail always fails with reason no matter the value supplied.
  */
-export const fail = <A,B>(reason: string): Precondition<A, B> => (value: A) =>
+export const fail = <A, B>(reason: string): Precondition<A, B> => (value: A) =>
     failure<A, B>(reason, value);
 
 /**
@@ -130,9 +130,9 @@ export const or =
  * and performs the equivalent of a logical 'and' between two preconditions.
  */
 export const and =
-    <A, B>(l: Precondition<A, A>, r: Precondition<A, B>)
-        : Precondition<A, B> =>
-        (value: A) => <Result<A, B>>(l(value).chain(r));
+    <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
+        : Precondition<A, C> =>
+        (value: A) => <Result<A, C>>(l(value).chain(r));
 
 /**
  * every takes a set of preconditions and attempts to apply each

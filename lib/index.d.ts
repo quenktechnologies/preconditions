@@ -70,7 +70,7 @@ export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A,
 /**
  * and performs the equivalent of a logical 'and' between two preconditions.
  */
-export declare const and: <A, B>(l: Precondition<A, A>, r: Precondition<A, B>) => Precondition<A, B>;
+export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>) => Precondition<A, C>;
 /**
  * every takes a set of preconditions and attempts to apply each
  * one after the other to the input.
