@@ -10,6 +10,21 @@ export const matches = (pattern: RegExp): Precondition<string, string> =>
         success<string, string>(value)
 
 /**
+ * gt string length test.
+ */
+export const gt = (target: number): Precondition<string, string> => (value: string) =>
+  (value.length > target) ?
+        success<string, string>(value) :
+        failure<string, string>('gt', value, { target, value }) ;
+/**
+ * lt string length test.
+ */
+export const lt = (target: number): Precondition<string, string> => (value: string) =>
+  (value.length < target) ?
+        success<string, string>(value) :
+        failure<string, string>('lt', value, { target, value }) ;
+
+/**
  * range tests whether the length of string falls within a range.
  */
 export const range = (min: number, max: number): Precondition<string, string> =>
@@ -20,17 +35,20 @@ export const range = (min: number, max: number): Precondition<string, string> =>
             success<string, string>(value);
 
 /**
- * upper transforms a string into uppercase
+ * uppercase transforms a string into uppercase
  */
-export const upper: Precondition<string, string> =
+export const uppercase: Precondition<string, string> =
     (value: string) => success<string, string>(value.toUpperCase());
 
+export const upper = uppercase;
+
 /**
- * lower transforms a string into lowercase
+ * lowercase transforms a string into lowercase
  */
-export const lower: Precondition<string, string> =
+export const lowercase: Precondition<string, string> =
     (value: string) => success<string, string>(value.toLowerCase());
 
+export const lower = lowercase;
 
 /**
  * trim the whitespace from a string.
@@ -39,7 +57,13 @@ export const trim: Precondition<string, string> =
     (value: string) => success<string, string>(value.trim());
 
 /**
- * notEmpty tests whether a string is empty or not.
+ * split a string into an array.
+ */
+export const split = (token: string): Precondition<string, string[]> =>
+    (value: string) => success<string, string[]>(value.split(token));
+
+/**
+ * ne tests whether a string is empty or not.
  */
 export const notEmpty: Precondition<string, string> =
     (value: string) => value === '' ?

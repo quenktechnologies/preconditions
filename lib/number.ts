@@ -2,6 +2,21 @@ import { Precondition } from './';
 import { failure, success } from './result';
 
 /**
+ * gt test.
+ */
+export const gt = (target: number): Precondition<number, number> => (value: number) =>
+    (value > target) ?
+        success<number, number>(value) :
+        failure<number, number>('gt', value, { target, value });
+/**
+ * lt test.
+ */
+export const lt = (target: number): Precondition<number, number> => (value: number) =>
+    (value < target) ?
+        success<number, number>(value) :
+        failure<number, number>('lt', value, { target, value });
+
+/**
  * range tests whether a number falls within a specified range.
  */
 export const range =

@@ -1,5 +1,5 @@
 import * as must from 'must/register';
-import { isString, matches, trim, range, notEmpty, toString } from '../src/string';
+import { isString, matches, trim, gt, lt, range, notEmpty, toString } from '../src/string';
 import { Failure } from '../src/result';
 
 describe('string', function() {
@@ -39,7 +39,7 @@ describe('string', function() {
 
     describe('range', function() {
 
-        it('should correctly test string, number or arrays', function() {
+        it('should ensure a string length falls within a range', function() {
 
             let test = range(3, 5);
 
@@ -51,7 +51,37 @@ describe('string', function() {
 
         })
 
-    });
+    })
+
+    describe('gt', function() {
+
+        it('should ensure a string length is greater than', function() {
+
+            let test = gt(5);
+
+            must(test('1').takeLeft().explain()).be('gt');
+            must(test('11111').takeLeft().explain()).be('gt');
+            must(test('111111').takeRight()).be('111111');
+
+        })
+
+    })
+
+    describe('lt', function() {
+
+        it('should ensure a string length is less than', function() {
+
+            let test = lt(5);
+
+            must(test('1111111').takeLeft().explain()).be('lt');
+            must(test('11111').takeLeft().explain()).be('lt');
+            must(test('1111').takeRight()).be('1111');
+
+        })
+
+    })
+
+
 
     describe('notEmpty', () => {
 

@@ -4,23 +4,37 @@ import { Precondition } from './';
  */
 export declare const matches: (pattern: RegExp) => Precondition<string, string>;
 /**
+ * gt string length test.
+ */
+export declare const gt: (target: number) => Precondition<string, string>;
+/**
+ * lt string length test.
+ */
+export declare const lt: (target: number) => Precondition<string, string>;
+/**
  * range tests whether the length of string falls within a range.
  */
 export declare const range: (min: number, max: number) => Precondition<string, string>;
 /**
- * upper transforms a string into uppercase
+ * uppercase transforms a string into uppercase
  */
+export declare const uppercase: Precondition<string, string>;
 export declare const upper: Precondition<string, string>;
 /**
- * lower transforms a string into lowercase
+ * lowercase transforms a string into lowercase
  */
+export declare const lowercase: Precondition<string, string>;
 export declare const lower: Precondition<string, string>;
 /**
  * trim the whitespace from a string.
  */
 export declare const trim: Precondition<string, string>;
 /**
- * notEmpty tests whether a string is empty or not.
+ * split a string into an array.
+ */
+export declare const split: (token: string) => Precondition<string, string[]>;
+/**
+ * ne tests whether a string is empty or not.
  */
 export declare const notEmpty: Precondition<string, string>;
 /**
