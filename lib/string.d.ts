@@ -4,13 +4,13 @@ import { Precondition } from './';
  */
 export declare const matches: (pattern: RegExp) => Precondition<string, string>;
 /**
- * gt string length test.
+ * maxLength test.
  */
-export declare const gt: (target: number) => Precondition<string, string>;
+export declare const maxLength: (target: number) => Precondition<string, string>;
 /**
- * lt string length test.
+ * minLength test.
  */
-export declare const lt: (target: number) => Precondition<string, string>;
+export declare const minLength: (target: number) => Precondition<string, string>;
 /**
  * range tests whether the length of string falls within a range.
  */

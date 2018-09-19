@@ -21,6 +21,23 @@ export const notEmpty = <A>(value: A[]) => (value.length === 0) ?
     fail<A[], A[]>('notEmpty', value, { value }) : success<A[], A[]>(value);
 
 /**
+ * maxItems test.
+ */
+export const maxItems =
+    <A>(target: number): Precondition<A[], A[]> => (value: A[]) =>
+        (value.length > target) ?
+            fail<A[], A[]>('maxItems', value, { target, value }) :
+            success<A[], A[]>(value);
+/**
+ * minItems test.
+ */
+export const minItems =
+    <A>(target: number): Precondition<A[], A[]> => (value: A[]) =>
+        (value.length < target) ?
+            fail<A[], A[]>('minItems', value, { target, value }) :
+            success<A[], A[]>(value);
+
+/**
  * range tests whether an array falls within a specific min and max range.
  */
 export const range = <A>(min: number, max: number) => (value: A[]) =>

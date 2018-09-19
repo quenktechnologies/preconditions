@@ -1,5 +1,13 @@
 import * as must from 'must/register';
-import { isString, matches, trim, gt, lt, range, notEmpty, toString } from '../src/string';
+import { 
+  isString,
+  matches, 
+  trim,
+  maxLength, 
+  minLength, 
+  range,
+  notEmpty,
+  toString } from '../src/string';
 import { Failure } from '../src/result';
 
 describe('string', function() {
@@ -53,35 +61,33 @@ describe('string', function() {
 
     })
 
-    describe('gt', function() {
+    describe('maxLength', function() {
 
-        it('should ensure a string length is greater than', function() {
+        it('should ensure a stirng has maxLength', function() {
 
-            let test = gt(5);
+            let test = maxLength(5);
 
-            must(test('1').takeLeft().explain()).be('gt');
-            must(test('11111').takeLeft().explain()).be('gt');
-            must(test('111111').takeRight()).be('111111');
-
-        })
-
-    })
-
-    describe('lt', function() {
-
-        it('should ensure a string length is less than', function() {
-
-            let test = lt(5);
-
-            must(test('1111111').takeLeft().explain()).be('lt');
-            must(test('11111').takeLeft().explain()).be('lt');
+            must(test('1111111').takeLeft().explain()).be('maxLength');
+            must(test('11111').takeLeft().explain()).be('maxLength');
             must(test('1111').takeRight()).be('1111');
 
         })
 
     })
 
+    describe('minLength', function() {
 
+        it('should ensure a string has minLength', function() {
+
+            let test = minLength(5);
+
+            must(test('1').takeLeft().explain()).be('minLength');
+            must(test('11111').takeLeft().explain()).be('minLength');
+            must(test('111111').takeRight()).be('111111');
+
+        })
+
+    })
 
     describe('notEmpty', () => {
 

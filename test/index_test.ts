@@ -6,7 +6,7 @@ import {
     notNull,
     optional,
     identity,
-    equals,
+    eq,
     when,
     whenTrue,
     every,
@@ -46,12 +46,12 @@ describe('index', function() {
 
         }))
 
-    describe('equals', function() {
+    describe('eq', function() {
 
         it('should fail if the value is not equal', function() {
 
-            must(equals(23)(23).takeRight()).be(23);
-            must(equals(23)('23').takeLeft()).be.instanceOf(Failure);
+            must(eq(23)(23).takeRight()).be(23);
+            must(eq(23)('23').takeLeft()).be.instanceOf(Failure);
 
         });
 

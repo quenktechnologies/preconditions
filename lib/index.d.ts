@@ -42,13 +42,20 @@ export declare const whenTrue: <A, B>(condition: boolean, applied: Precondition<
  */
 export declare const whenFalse: <A, B>(condition: boolean, applied: Precondition<A, B>, otherwise: Precondition<A, B>) => Precondition<A, B>;
 /**
- * equals tests if the value is equal (strictly) to the value specified.
+ * eq tests if the value is equal (strictly) to the target.
  */
-export declare const equals: <A, B>(target: B) => Precondition<A, B>;
+export declare const eq: <A, B>(target: B) => Precondition<A, B>;
+export declare const equal: <A, B>(target: B) => Precondition<A, B>;
+/**
+ * neq tests if the value is not equal (strictly) to the target.
+ */
+export declare const neq: <A, B>(target: B) => Precondition<A, B>;
+export declare const notEqual: <A, B>(target: B) => Precondition<A, B>;
 /**
  * notNull will fail if the value is null or undefined.
  */
 export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const nn: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
  * optional applies the precondition given only if the value is not null
  * or undefined.

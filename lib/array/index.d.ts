@@ -10,6 +10,14 @@ export declare const isArray: Precondition<any, any[]>;
  */
 export declare const notEmpty: <A>(value: A[]) => import("@quenk/noni/lib/data/either").Either<Failure<A[]>, A[]>;
 /**
+ * maxItems test.
+ */
+export declare const maxItems: <A>(target: number) => Precondition<A[], A[]>;
+/**
+ * minItems test.
+ */
+export declare const minItems: <A>(target: number) => Precondition<A[], A[]>;
+/**
  * range tests whether an array falls within a specific min and max range.
  */
 export declare const range: <A>(min: number, max: number) => (value: A[]) => import("@quenk/noni/lib/data/either").Either<Failure<A[]>, {}> | import("@quenk/noni/lib/data/either").Either<Failure<{}>, A[]>;

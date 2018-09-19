@@ -10,19 +10,21 @@ export const matches = (pattern: RegExp): Precondition<string, string> =>
         success<string, string>(value)
 
 /**
- * gt string length test.
+ * maxLength test.
  */
-export const gt = (target: number): Precondition<string, string> => (value: string) =>
-  (value.length > target) ?
-        success<string, string>(value) :
-        failure<string, string>('gt', value, { target, value }) ;
+export const maxLength =
+    (target: number): Precondition<string, string> => (value: string) =>
+        (value.length > target) ?
+            failure<string, string>('maxLength', value, { target, value }) :
+            success<string, string>(value);
 /**
- * lt string length test.
+ * minLength test.
  */
-export const lt = (target: number): Precondition<string, string> => (value: string) =>
-  (value.length < target) ?
-        success<string, string>(value) :
-        failure<string, string>('lt', value, { target, value }) ;
+export const minLength =
+    (target: number): Precondition<string, string> => (value: string) =>
+        (value.length < target) ?
+            failure<string, string>('minLength', value, { target, value }) :
+            success<string, string>(value);
 
 /**
  * range tests whether the length of string falls within a range.

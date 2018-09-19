@@ -80,12 +80,24 @@ export const whenFalse = <A, B>(
     (value: A) => (condition === false) ? applied(value) : otherwise(value);
 
 /**
- * equals tests if the value is equal (strictly) to the value specified.
+ * eq tests if the value is equal (strictly) to the target.
  */
-export const equals = <A, B>(target: B): Precondition<A, B> =>
+export const eq = <A, B>(target: B): Precondition<A, B> =>
     (value: A) => (<any>target === value) ?
         success<A, B>(target) :
-        failure<A, B>('equals', value, { target });
+        failure<A, B>('eq', value, { target });
+
+export const equal = eq;
+
+/**
+ * neq tests if the value is not equal (strictly) to the target.
+ */
+export const neq = <A, B>(target: B): Precondition<A, B> => (value: A) =>
+    (<any>target === value) ?
+        failure<A, B>('neq', value, { target }) :
+        success<A, B>(target);
+
+export const notEqual = neq;
 
 /**
  * notNull will fail if the value is null or undefined.
@@ -94,6 +106,8 @@ export const notNull = <A>(value: A): Result<A, A> =>
     ((value == null) || ((typeof value === 'string') && (value === ''))) ?
         failure('notNull', value) :
         success(value)
+
+export const nn = notNull;
 
 /**
  * optional applies the precondition given only if the value is not null
