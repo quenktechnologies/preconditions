@@ -85,8 +85,18 @@ export class Failure<A> {
 
     }
 
-}
+    /**
+     * toError provides an explanation of the Failure as an error.
+     */
+    toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
 
+        let e = this.explain(templates, context);
+
+        return new Error((typeof e === 'object') ? JSON.stringify(e) : e);
+
+    }
+
+}
 
 /**
  * failure constructs a failed Result using the parameters supplied to

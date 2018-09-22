@@ -48,6 +48,10 @@ export declare class Failure<A> {
      * If all these fail the message value is used.
      */
     explain(templates?: ErrorTemplates, context?: Context): Explanation;
+    /**
+     * toError provides an explanation of the Failure as an error.
+     */
+    toError(templates?: ErrorTemplates, context?: Context): Error;
 }
 /**
  * failure constructs a failed Result using the parameters supplied to
