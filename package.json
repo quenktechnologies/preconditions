@@ -1,6 +1,6 @@
 {
   "name": "@quenk/preconditions",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Library for creating constraints before data is used.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
