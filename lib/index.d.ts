@@ -1,32 +1,29 @@
-import { Result, Failure } from './result';
+import { Pattern } from '@quenk/noni/lib/data/type';
+import { Result } from './result';
+import { Failure } from './result/failure';
 /**
  * Precondition represents some condition that must be satisfied
  * in order for data to be considered a valid type.
  *
  * A Precondition accepts a value of type <A> and returns an Either
  * where the left side contains information about why the precondition
- * failed and the right the resulting type.
+ * failed or the right the resulting type and value.
  */
 export declare type Precondition<A, B> = (value: A) => Result<A, B>;
 /**
- * Type is used by caseOf to pattern match a value.
+ * A map of key precondition pairs.
+ *
+ * The right type class should be the union
+ * of all possible values (or any) and the
+ * right th union of all possible outcomes.
  */
-export declare type Type<T> = string | number | boolean | object | {
-    [key: string]: any;
-} | {
-    new (): T;
-};
+export interface Preconditions<A, B> {
+    [key: string]: Precondition<A, B>;
+}
 /**
- * left wraps a value in the left side of an Either
+ * constant forces the value to be the supplied value.
  */
-/**
- * right wraps a value in the right side of an Either
- */
-/**
- * set the value to the supplied value.
- */
-export declare const set: <A, B>(b: B) => Precondition<A, B>;
-export declare const cons: <A, B>(b: B) => Precondition<A, B>;
+export declare const constant: <A, B>(b: B) => Precondition<A, B>;
 /**
  * when conditionally applies one of two preconditions depending
  * on the outcome of a test function.
@@ -45,17 +42,14 @@ export declare const whenFalse: <A, B>(condition: boolean, applied: Precondition
  * eq tests if the value is equal (strictly) to the target.
  */
 export declare const eq: <A, B>(target: B) => Precondition<A, B>;
-export declare const equal: <A, B>(target: B) => Precondition<A, B>;
 /**
  * neq tests if the value is not equal (strictly) to the target.
  */
 export declare const neq: <A, B>(target: B) => Precondition<A, B>;
-export declare const notEqual: <A, B>(target: B) => Precondition<A, B>;
 /**
  * notNull will fail if the value is null or undefined.
  */
 export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
-export declare const nn: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
  * optional applies the precondition given only if the value is not null
  * or undefined.
@@ -65,11 +59,10 @@ export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition
  * identity always succeeds with the value it is applied to.
  */
 export declare const identity: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
-export declare const id: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
- * fail always fails with reason no matter the value supplied.
+ * reject always fails with reason no matter the value supplied.
  */
-export declare const fail: <A, B>(reason: string) => Precondition<A, B>;
+export declare const reject: <A, B>(reason: string) => Precondition<A, B>;
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
  */
@@ -110,7 +103,7 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  * function -> Treated as a constructor and results in an instanceof check.
  *             For String,Number and Boolean, this uses the typeof check.
  */
-export declare const caseOf: <A, B>(t: Type<A>, p: Precondition<A, B>) => Precondition<A, B>;
+export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precondition<A, B>;
 /**
  * log the value to the console.
  */

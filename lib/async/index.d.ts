@@ -3,38 +3,45 @@
  * via bluebirds Promise API.
  */
 import * as sync from '../';
-import * as Promise from 'bluebird';
-import { Pattern } from '@quenk/kindof';
-import { Failure as SyncFailure } from '../result';
-import { Result } from './result';
+import { Pattern } from '@quenk/noni/lib/data/type';
+import { Future } from '@quenk/noni/lib/control/monad/future';
+import { Failure } from '../result/failure';
+import { Result } from '../result';
 /**
- * Precondition (async version).
+ * Precondition (async).
  */
-export declare type Precondition<A, B> = (a: A) => Result<A, B>;
+export declare type Precondition<A, B> = (a: A) => Future<Result<A, B>>;
 /**
- * async wraps the sync api so they can be used with async preconditions safely.
+ * Preconditions map (async).
  */
-export declare const async: <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, B>>;
+export interface Preconditions<A, B> {
+    [key: string]: Precondition<A, B>;
+}
 /**
- * or (async version).
+ * async wraps a sync api function so it can be used with other async
+ * functions.
  */
-export declare const or: <A, B>(left: Precondition<A, B>, right: Precondition<A, B>) => Precondition<A, B>;
+export declare const async: <A, B>(p: sync.Precondition<A, B>) => Precondition<A, B>;
 /**
- * and (async version).
+ * or (async).
+ */
+export declare const or: <A, B>(l: Precondition<A, B>, r: Precondition<A, B>) => Precondition<A, B>;
+/**
+ * and (async).
  *
  * TODO: using the any type until Either is fixed in afpl.
  */
-export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>) => Precondition<A | B, C>;
+export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>) => Precondition<A, C>;
 /**
- * every (async version).
+ * every (async).
  */
 export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]) => Precondition<A, B>;
 /**
- * optional (async version).
+ * optional (async).
  */
 export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition<A, A | B>;
 /**
- * caseOf (async version).
+ * caseOf (async).
  */
 export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precondition<A, B>;
 /**
@@ -46,13 +53,13 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  *
  * Succeeds with whatever value is passed.
  */
-export declare const identity: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;
-export declare const id: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;
+export declare const identity: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
+export declare const id: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
 /**
- * fail always fails with reason no matter the value supplied.
+ * reject always fails with reason no matter the value supplied.
  */
-export declare const fail: <A>(reason: string) => Precondition<A, A>;
+export declare const reject: <A>(reason: string) => Precondition<A, A>;
 /**
  * log the value to the console.
  */
-export declare const log: <A>(value: A) => Promise<import("@quenk/noni/lib/data/either").Either<SyncFailure<A>, A>>;
+export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
