@@ -72,6 +72,10 @@ export interface Failure<A> {
      * If all these fail the message value is used.
      */
     explain(templates?: ErrorTemplates, context?: Context): Explanation;
+    /**
+     * toError provides an explanation of the Failure as an error.
+     */
+    toError(templates: ErrorTemplates, context: Context): Error;
 }
 /**
  * PrimFailure is the failure
@@ -83,6 +87,7 @@ export declare class PrimFailure<A> {
     constructor(message: string, value?: A | undefined, context?: Context);
     static create<A>(message: string, value: A, ctx?: Context): PrimFailure<A>;
     explain(templates?: ErrorTemplates, ctx?: Context): string;
+    toError(templates?: ErrorTemplates, context?: Context): Error;
 }
 /**
  * ModifiedFailure is used in situations where a precondition is composite
@@ -96,4 +101,5 @@ export declare class ModifiedFailure<A, B> implements Failure<A> {
     readonly context: Context;
     static create<A, B>(value: A, previous: Failure<B>): ModifiedFailure<A, B>;
     explain(templates?: ErrorTemplates, ctx?: Context): Explanation;
+    toError(templates?: ErrorTemplates, context?: Context): Error;
 }

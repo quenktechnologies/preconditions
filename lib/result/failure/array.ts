@@ -24,11 +24,11 @@ export class ArrayFailure<A> implements Failure<A[]> {
 
     message = 'array';
 
-  get context(): Context {
+    get context(): Context {
 
-    return this.contexts;
+        return this.contexts;
 
-  }
+    }
 
     static create<A>(errs: Failures<A>, val: A[], ctx: Contexts): ArrayFailure<A> {
 
@@ -42,6 +42,14 @@ export class ArrayFailure<A> implements Failure<A[]> {
             (p: Explanations, f: Failure<A>, $index: string) => merge(p, {
                 [$index]: f.explain(templates, merge(c, { $index }))
             }));
+
+    }
+
+    toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
+
+        let e = this.explain(templates, context);
+
+        return new Error((typeof e === 'object') ? JSON.stringify(e) : e);
 
     }
 

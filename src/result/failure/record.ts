@@ -24,11 +24,11 @@ export class RecordFailure<A, AR extends Record<A>> implements Failure<AR> {
 
     message = 'object';
 
-  get context() : Context {
+    get context(): Context {
 
-    return this.contexts;
+        return this.contexts;
 
-  }
+    }
 
     static create<A, AR extends Record<A>>(
         errs: Failures<A>,
@@ -46,6 +46,14 @@ export class RecordFailure<A, AR extends Record<A>> implements Failure<AR> {
                 merge(o, {
                     [$key]: f.explain(templates, merge(c, { $key }))
                 }));
+
+    }
+
+    toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
+
+        let e = this.explain(templates, context);
+
+        return new Error((typeof e === 'object') ? JSON.stringify(e) : e);
 
     }
 

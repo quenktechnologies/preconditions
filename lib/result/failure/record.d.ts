@@ -13,6 +13,7 @@ export declare class RecordFailure<A, AR extends Record<A>> implements Failure<A
     readonly context: Context;
     static create<A, AR extends Record<A>>(errs: Failures<A>, val: AR, ctxs?: Contexts): RecordFailure<A, AR>;
     explain(templates?: ErrorTemplates, c?: Context): Explanation;
+    toError(templates?: ErrorTemplates, context?: Context): Error;
 }
 /**
  * fail constructs a new RecordFailure wrapped in the left part of a Result.

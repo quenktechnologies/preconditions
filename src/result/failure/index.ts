@@ -100,6 +100,11 @@ export interface Failure<A> {
      */
     explain(templates?: ErrorTemplates, context?: Context): Explanation;
 
+    /**
+     * toError provides an explanation of the Failure as an error.
+     */
+    toError(templates: ErrorTemplates, context: Context): Error;
+
 }
 
 /**
@@ -148,7 +153,13 @@ export class PrimFailure<A> {
 
         }
 
-      return polate(str, merge(context, <Context>{ $value }));
+        return polate(str, merge(context, <Context>{ $value }));
+
+    }
+
+    toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
+
+        return new Error(this.explain(templates, context));
 
     }
 
@@ -185,5 +196,13 @@ export class ModifiedFailure<A, B> implements Failure<A> {
         return this.previous.explain(templates, merge(ctx, { value: this.value }));
 
     }
+
+      toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
+
+                let e = this.explain(templates, context);
+
+                return new Error((typeof e === 'object') ? JSON.stringify(e) : e);
+
+            }
 
 }

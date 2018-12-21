@@ -12,6 +12,7 @@ export declare class ArrayFailure<A> implements Failure<A[]> {
     readonly context: Context;
     static create<A>(errs: Failures<A>, val: A[], ctx: Contexts): ArrayFailure<A>;
     explain(templates?: ErrorTemplates, c?: Context): Explanation;
+    toError(templates?: ErrorTemplates, context?: Context): Error;
 }
 /**
  * fail constructs a new ArrayFailure wrapped in the left part of a Result.
