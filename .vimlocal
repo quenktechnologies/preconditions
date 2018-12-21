@@ -1,1 +1,3 @@
-autocmd BufWritePost,FileWritePost *.ts :VimuxRunCommand "make"
+autocmd BufWritePost,FileWritePost src/*.ts :VimuxRunCommand "clear;make --warn-undefined-variables"
+
+
