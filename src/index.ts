@@ -6,8 +6,10 @@
  * Users of this library are expected to design their own preconditions,
  * however some primitivies are provided to make things easier.
  */
-import { Right, left, right, either } from '@quenk/noni/lib/data/either';
-import { Result, Failure, failure, success } from './result';
+import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
+import { Pattern, test } from '@quenk/noni/lib/data/type';
+import { Result, fail, succeed } from './result';
+import { Failure, ModifiedFailure as MF } from './result/failure';
 
 /**
  * Precondition represents some condition that must be satisfied
@@ -15,39 +17,28 @@ import { Result, Failure, failure, success } from './result';
  *
  * A Precondition accepts a value of type <A> and returns an Either
  * where the left side contains information about why the precondition
- * failed and the right the resulting type.
+ * failed or the right the resulting type and value.
  */
 export type Precondition<A, B> = (value: A) => Result<A, B>;
 
 /**
- * Type is used by caseOf to pattern match a value.
+ * A map of key precondition pairs.
+ *
+ * The right type class should be the union
+ * of all possible values (or any) and the 
+ * right th union of all possible outcomes.
  */
-export type Type<T>
-    = string
-    | number
-    | boolean
-    | object
-    | { [key: string]: any }
-    | { new(): T }
-    ;
+export interface Preconditions<A, B> {
+
+    [key: string]: Precondition<A, B>
+
+}
 
 /**
- * left wraps a value in the left side of an Either
+ * constant forces the value to be the supplied value.
  */
-//export const left: <A, B>(a: A) => Either<A, B> = Either.left;
-
-/**
- * right wraps a value in the right side of an Either
- */
-//export const right: <A, B>(b: B) => Either<A, B> = Either.right;
-
-/**
- * set the value to the supplied value.
- */
-export const set =
-    <A, B>(b: B): Precondition<A, B> => (_: A) => success<A, B>(b);
-
-export const cons = set;
+export const constant = <A, B>(b: B): Precondition<A, B> =>
+    (_: A) => succeed<A, B>(b);
 
 /**
  * when conditionally applies one of two preconditions depending
@@ -63,12 +54,11 @@ export const when = <A, B>(
  * whenTrue conditionally applies "applied" or "otherwise" depending
  * on whether "condition" is true or not.
  */
-export const whenTrue =
-    <A, B>(
-        condition: boolean,
-        applied: Precondition<A, B>,
-        otherwise: Precondition<A, B>): Precondition<A, B> =>
-        (value: A) => (condition === true) ? applied(value) : otherwise(value);
+export const whenTrue = <A, B>(
+    condition: boolean,
+    applied: Precondition<A, B>,
+    otherwise: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+        (condition === true) ? applied(value) : otherwise(value);
 
 /**
  * whenFalse (opposite of whenTrue).
@@ -76,38 +66,32 @@ export const whenTrue =
 export const whenFalse = <A, B>(
     condition: boolean,
     applied: Precondition<A, B>,
-    otherwise: Precondition<A, B>): Precondition<A, B> =>
-    (value: A) => (condition === false) ? applied(value) : otherwise(value);
+    otherwise: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+        (condition === false) ? applied(value) : otherwise(value);
 
 /**
  * eq tests if the value is equal (strictly) to the target.
  */
 export const eq = <A, B>(target: B): Precondition<A, B> =>
     (value: A) => (<any>target === value) ?
-        success<A, B>(target) :
-        failure<A, B>('eq', value, { target });
-
-export const equal = eq;
+        succeed<A, B>(target) :
+        fail<A, B>('eq', value, { target });
 
 /**
  * neq tests if the value is not equal (strictly) to the target.
  */
 export const neq = <A, B>(target: B): Precondition<A, B> => (value: A) =>
     (<any>target === value) ?
-        failure<A, B>('neq', value, { target }) :
-        success<A, B>(target);
-
-export const notEqual = neq;
+        fail<A, B>('neq', value, { target }) :
+        succeed<A, B>(target);
 
 /**
  * notNull will fail if the value is null or undefined.
  */
 export const notNull = <A>(value: A): Result<A, A> =>
     ((value == null) || ((typeof value === 'string') && (value === ''))) ?
-        failure('notNull', value) :
-        success(value)
-
-export const nn = notNull;
+        fail('notNull', value) :
+        succeed(value)
 
 /**
  * optional applies the precondition given only if the value is not null
@@ -117,20 +101,18 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
     : Precondition<A, A | B> =>
     (value: A) =>
         ((value == null) || (typeof value === 'string' && value === '')) ?
-            success<A, A>(value) : p(value);
+            succeed<A, A>(value) : p(value);
 
 /**
  * identity always succeeds with the value it is applied to.
  */
-export const identity = <A>(value: A) => success<A, A>(value);
-
-export const id = identity;
+export const identity = <A>(value: A) => succeed<A, A>(value);
 
 /**
- * fail always fails with reason no matter the value supplied.
+ * reject always fails with reason no matter the value supplied.
  */
-export const fail = <A, B>(reason: string): Precondition<A, B> => (value: A) =>
-    failure<A, B>(reason, value);
+export const reject = <A, B>(reason: string): Precondition<A, B> => (value: A) =>
+    fail<A, B>(reason, value);
 
 /**
  * or performs the equivalent of a logical 'or' between two preconditions.
@@ -143,38 +125,66 @@ export const or =
 /**
  * and performs the equivalent of a logical 'and' between two preconditions.
  */
-export const and =
-    <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
-        : Precondition<A, C> =>
-        (value: A) => <Result<A, C>>(l(value).chain(r));
+export const and = <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
+    : Precondition<A, C> => (value: A) => {
+
+        let result = l(value);
+
+        if (result instanceof Left) {
+
+            return left<Failure<A>, C>(result.takeLeft());
+
+        } else {
+
+            let result2 = r(result.takeRight());
+
+            if (result2 instanceof Left)
+
+                return left<Failure<A>, C>(MF.create(value, result2.takeLeft()));
+            else
+                return right<Failure<A>, C>(result2.takeRight());
+
+        }
+
+    }
 
 /**
  * every takes a set of preconditions and attempts to apply each
  * one after the other to the input.
  */
 export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[])
-    : Precondition<A, B> => (value: A) =>
-        either<Failure<A>, B, Result<A, B>>
-            ((f: Failure<A>) => left(f))
-            ((v: B) => <Result<A, B>>list.reduce((e: Result<A, B>, f) =>
-                <Result<A, B>>e.chain(f), <Result<A, B>>right(<B>v)))
-            (p(value));
+    : Precondition<A, B> => (value: A) => {
+
+        let r = p(value);
+
+        if (r instanceof Left)
+            return <Result<A, B>>r;
+
+        let r2 = list.reduce((p: Result<B, B>, c) => p.chain(c),
+            right<Failure<B>, B>(r.takeRight()));
+
+        if (r2 instanceof Left)
+            return left<Failure<A>, B>(MF.create(value, r2.takeLeft()));
+
+        return right<Failure<A>, B>(r2.takeRight());
+
+    }
 
 /**
  * exists requires the value to be enumerated in the supplied list.
  */
 export const exists = <A>(list: A[]): Precondition<A, A> => (value: A) =>
     (list.indexOf(value) < 0) ?
-        failure<A, A>('exists', value, { value, list }) :
-        success<A, A>(value)
+        fail<A, A>('exists', value, { value, list }) :
+        succeed<A, A>(value)
 
 /**
  * isin requires the value passed to be a member of a provided list.
  */
 export const isin = <A>(list: A[]): Precondition<A, A> => (value: A) =>
     list.indexOf(value) > -1 ?
-        success<A, A>(value) :
-        failure<A, A>('isin', value);
+        succeed<A, A>(value) :
+        fail<A, A>('isin', value);
 
 /**
  * match preforms a type/structure matching on the input
@@ -202,30 +212,11 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
  *             For String,Number and Boolean, this uses the typeof check.
  */
 export const caseOf =
-    <A, B>(t: Type<A>, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
-        _kindOf(t, value) ? p(value) : failure<A, B>('caseOf', value, { type: t });
-
-const _prims = ['string', 'number', 'boolean'];
-
-const _kindOf = <A>(t: Type<A>, value: A): boolean =>
-    ((_prims.indexOf(typeof t) > -1) && (value === t)) ?
-        true :
-        ((typeof t === 'function') &&
-            (((<Function>t === String) && (typeof value === 'string')) ||
-                ((<Function>t === Number) && (typeof value === 'number')) ||
-                ((<Function>t === Boolean) && (typeof value === 'boolean')) ||
-                ((<Function>t === Array) && (Array.isArray(value))) ||
-                (value instanceof <Function>t))) ?
-            true :
-            ((typeof t === 'object') && (typeof value === 'object')) ?
-                Object
-                    .keys(t)
-                    .every(k => value.hasOwnProperty(k) ?
-                        _kindOf((<any>t)[k], (<any>value)[k]) : false) :
-                false;
+    <A, B>(t: Pattern, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+        test(value, t) ? p(value) : fail<A, B>('caseOf', value, { type: t });
 
 /**
  * log the value to the console.
  */
 export const log = <A>(value: A): Result<A, A> =>
-    console.log(value) || success(value);
+    (console.log(value), succeed(value));
