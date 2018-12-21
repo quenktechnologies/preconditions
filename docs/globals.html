@@ -913,24 +913,12 @@ img { max-width: 100%; }
 	<div class="content-wrap">
 		<div class="tsd-panel tsd-typography">
 			<h1 id="preconditions">Preconditions</h1>
-			<p>Library for creating constraints before data is used.</p>
+			<p>Make data satisfy constraints before using.</p>
 			<h2 id="installation">Installation</h2>
 			<pre><code class="language-bash">npm install --save @quenk/preconditions</code></pre>
 			<h2 id="usage">Usage</h2>
 			<p>A precondition is a function that when applied to a value
 			returns either a Failure or the final form of the value.</p>
-			<p>This module defines provides two precondition types, synchronous and asynchronous.</p>
-			<pre><code class="language-typescript"><span class="hljs-comment">//Sync</span>
-<span class="hljs-keyword">type</span> Precondition&lt;A,B&gt; = <span class="hljs-function">(<span class="hljs-params">a:A</span>) =&gt;</span> Either&lt;Failure&lt;A&gt;, B&gt;;
-
-<span class="hljs-comment">//Async</span>
-<span class="hljs-keyword">type</span> Precondition&lt;A,B&gt; = <span class="hljs-function">(<span class="hljs-params">a:A</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;Either&lt;Failure&lt;A&gt;, B&gt;&gt;
-</code></pre>
-			<p>For both versions there exists useful functions for working with
-				ECMAScript primitives, arrays and objects. There is also a function called
-			<code>async</code> which makes it easier to cast between the two.</p>
-			<p>The <code>Either</code> type is provided by the <a href="https://github.com/quenktechnologies/noni">@quenk/noni</a>
-			package and the <code>Promise</code>, <a href="https://bluebirdjs.com">bluebird</a>.</p>
 			<h2 id="license">License</h2>
 			<p>Apache-2.0 © Quenk Technologies Limited</p>
 		</div>
@@ -941,22 +929,20 @@ img { max-width: 100%; }
 					<section class="tsd-index-section ">
 						<h3>External modules</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-external-module"><a href="modules/_array_index_.html" class="tsd-kind-icon">"array/index"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_array_result_.html" class="tsd-kind-icon">"array/result"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_array_.html" class="tsd-kind-icon">"array"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_async_array_.html" class="tsd-kind-icon">"async/array"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_async_index_.html" class="tsd-kind-icon">"async/index"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_async_record_index_.html" class="tsd-kind-icon">"async/record/index"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_async_record_result_.html" class="tsd-kind-icon">"async/record/result"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_async_result_.html" class="tsd-kind-icon">"async/result"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_async_record_.html" class="tsd-kind-icon">"async/record"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_boolean_.html" class="tsd-kind-icon">"boolean"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_function_.html" class="tsd-kind-icon">"function"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_index_.html" class="tsd-kind-icon">"index"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_number_.html" class="tsd-kind-icon">"number"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_record_index_.html" class="tsd-kind-icon">"record/index"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_record_result_.html" class="tsd-kind-icon">"record/result"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_result_.html" class="tsd-kind-icon">"result"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_record_.html" class="tsd-kind-icon">"record"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_result_failure_array_.html" class="tsd-kind-icon">"result/failure/array"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_result_failure_index_.html" class="tsd-kind-icon">"result/failure/index"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_result_failure_record_.html" class="tsd-kind-icon">"result/failure/record"</a></li>
+							<li class="tsd-kind-external-module"><a href="modules/_result_index_.html" class="tsd-kind-icon">"result/index"</a></li>
 							<li class="tsd-kind-external-module"><a href="modules/_string_.html" class="tsd-kind-icon">"string"</a></li>
-							<li class="tsd-kind-external-module"><a href="modules/_util_.html" class="tsd-kind-icon">"util"</a></li>
 						</ul>
 					</section>
 				</div>
