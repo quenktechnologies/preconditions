@@ -1,8 +1,9 @@
-import * as must from 'must/register';
-import * as preconditions from '../../src/result';
-import { restrict, disjoint, union, intersect, map } from '../../src/record'
-import { isObject, Preconditions } from '../../src/record';
-import { Precondition, every } from '../../src';
+import { must } from '@quenk/must';
+import { restrict, disjoint, union, intersect, map } from '../src/record'
+import { isRecord } from '../src/record';
+import { Preconditions } from '../src';
+import { Precondition, every } from '../src';
+import { succeed, fail } from '../src/result';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -63,15 +64,15 @@ const noDataErrors = {
 const check = <A>(type: string): Precondition<A, A> => (value: A) =>
     (type === 'prim') ?
         typeof value !== 'object' ?
-            preconditions.success<A, A>(value) :
-            preconditions.failure<A, A>('check', value) :
+            succeed<A, A>(value) :
+            fail<A, A>('check', value) :
         (type === 'array') ?
             Array.isArray(value) ?
-                preconditions.success<A, A>(value) :
-                preconditions.failure<A, A>('check', value) :
+                succeed<A, A>(value) :
+                fail<A, A>('check', value) :
             (typeof value !== type) ?
-                preconditions.failure<A, A>('check', value) :
-                preconditions.success<A, A>(value);
+                fail<A, A>('check', value) :
+                succeed<A, A>(value);
 
 const user: Preconditions<any, any> = {
 
@@ -83,20 +84,20 @@ const user: Preconditions<any, any> = {
 
 const shouldFailInvalidData = (condition: Precondition<object, object>) =>
     must(condition(invalidUser).takeLeft().explain())
-        .eql({ name: 'check', age: 'check' });
+        .equate({ name: 'check', age: 'check' });
 
 const shouldAllowValidData = (condition: Precondition<object, object>) =>
-    must(condition(validUser).takeRight()).eql(validUser);
+    must(condition(validUser).takeRight()).equate(validUser);
 
 const unknownProperties = (condition: Precondition<object, object>, expected: object) =>
-    must(condition(userWithAddtionalProperties).takeRight()).eql(expected);
+    must(condition(userWithAddtionalProperties).takeRight()).equate(expected);
 
 const shouldWorkWithNestedConditions = (condition: Precondition<object, object>) => {
 
-    must(condition(validAccess).takeRight()).eql(validAccess);
+    must(condition(validAccess).takeRight()).equate(validAccess);
 
     must(condition(invalidAccess).takeLeft().explain())
-        .eql({
+        .equate({
             network: 'check', user: { roles: 'check' }, previous: { age: 'check' }
         });
 
@@ -105,24 +106,24 @@ const shouldWorkWithNestedConditions = (condition: Precondition<object, object>)
 const shouldApplyEveryCondtion = (condition: Precondition<object, object>) =>
     must(condition(partialValidAccess).takeLeft()
         .explain({}))
-        .eql(partialValidAccessErrors);
+        .equate(partialValidAccessErrors);
 
 const shouldFailtWhenNoData = (condition: Precondition<object, object>) =>
     must(condition({}).takeLeft()
         .explain({}))
-        .eql(noDataErrors);
+        .equate(noDataErrors);
 
 describe('record', function() {
 
-    describe('isObject', function() {
+    describe('isRecord', function() {
 
         it('should work', function() {
 
-            must(isObject({}).takeRight()).eql({});
+            must(isRecord({}).takeRight()).equate({});
 
-            must(isObject('z').takeLeft().explain({})).eql('isObject');
+            must(isRecord('z').takeLeft().explain({})).equal('isRecord');
 
-            must(isObject([]).takeLeft().explain({})).eql('isObject');
+            must(isRecord([]).takeLeft().explain({})).equal('isRecord');
 
         });
 
@@ -134,8 +135,8 @@ describe('record', function() {
 
             id: check('number'),
             network: check('number'),
-            user: every(isObject, restrict(user)),
-            get previous() { return every(isObject, restrict(user)); }
+            user: every(isRecord, restrict(user)),
+            get previous() { return every(isRecord, restrict(user)); }
 
         }
 
@@ -165,8 +166,8 @@ describe('record', function() {
 
             id: check('number'),
             network: check('number'),
-            user: every(isObject, disjoint(user)),
-            get previous() { return every(isObject, disjoint(user)); }
+            user: every(isRecord, disjoint(user)),
+            get previous() { return every(isRecord, disjoint(user)); }
 
         }
 
@@ -190,8 +191,8 @@ describe('record', function() {
 
             id: check('number'),
             network: check('number'),
-            user: every(isObject, intersect(user)),
-            get previous() { return every(isObject, intersect(user)); }
+            user: every(isRecord, intersect(user)),
+            get previous() { return every(isRecord, intersect(user)); }
 
         }
 
@@ -207,8 +208,11 @@ describe('record', function() {
 
         it('should apply to present properties only', () => {
 
-            must(intersect(access)(partialValidAccess).takeRight()).eql(partialValidAccess);
-            must(intersect(access)(partialInvalidAccess).takeLeft().explain()).eql(partialInvalidAccessErrors)
+            must(intersect(access)(partialValidAccess).takeRight())
+                .equate(partialValidAccess);
+
+            must(intersect(access)(partialInvalidAccess).takeLeft().explain())
+                .equate(partialInvalidAccessErrors)
 
         })
 
@@ -220,8 +224,8 @@ describe('record', function() {
 
             id: check('number'),
             network: check('number'),
-            user: every(isObject, union(user)),
-            get previous() { return every(isObject, union(user)); }
+            user: every(isRecord, union(user)),
+            get previous() { return every(isRecord, union(user)); }
 
         }
 
@@ -246,11 +250,11 @@ describe('record', function() {
 
         it('should fail invalid data',
             () =>
-                shouldFailInvalidData(every(isObject, map(check('prim')))));
+                shouldFailInvalidData(every(isRecord, map(check('prim')))));
 
         it('should allow valid data',
             () =>
-                shouldAllowValidData(every(isObject, map(check('prim')))));
+                shouldAllowValidData(every(isRecord, map(check('prim')))));
 
     });
 

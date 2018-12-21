@@ -1,10 +1,10 @@
-import * as must from 'must/register';
-import * as conditions from '../../src/result';
-import { Failure } from '../../src/record/result';
+import { must } from '@quenk/must';
+import { RecordFailure } from '../../../src/result/failure/record';
+import { PrimFailure } from '../../../src/result/failure';
 
 type Prim = string | number | number[] | Date;
 
-describe('Failure', () => {
+describe('RecordFailure', () => {
 
     describe('explain', () => {
 
@@ -13,10 +13,10 @@ describe('Failure', () => {
 
         beforeEach(function() {
 
-            fail = new Failure<{ [key: string]: Prim }, Prim>({
-                name: new conditions.Failure('string', new Date()),
-                age: new conditions.Failure('range', 200, { min: 5, max: 122 }),
-                size: new conditions.Failure('enum', 'small')
+            fail = new RecordFailure<Prim, { [key: string]: Prim }>({
+                name: new PrimFailure('string', new Date()),
+                age: new PrimFailure('range', 200, { min: 5, max: 122 }),
+                size: new PrimFailure('enum', 'small')
             }, { name: [3], age: 10000, size: 'tiny' });
 
             templates = {
@@ -31,8 +31,8 @@ describe('Failure', () => {
         it('should work', () => {
 
             let r = fail.explain(templates, { her: 'Sara' });
-
-            must(r).eql({
+console.error('rrrr ', r);
+            must(r).equate({
                 name: 'There was a problem with name!',
                 age: 'age must be within 5 to 122',
                 size: 'Sara says size must not be small'

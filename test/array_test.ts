@@ -1,8 +1,8 @@
 import * as must from 'must/register';
-import { notEmpty, isArray, filter, map, range } from '../../src/array';
-import { success, failure } from '../../src/result';
+import { notEmpty, isArray, filter, map, range } from '../src/array';
+import { succeed, fail } from '../src/result';
 
-const num = <A>(n: A) => (typeof n === 'number') ? success(n) : failure('num', n);
+const num = <A>(n: A) => (typeof n === 'number') ? succeed(n) : fail('num', n);
 const invalidList = [0, 1, 2, 3, 'four', 5, 'six', 7, 'eight', 9];
 const validList = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 

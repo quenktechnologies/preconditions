@@ -1,8 +1,11 @@
-import * as must from 'must/register';
+import { must } from '@quenk/must';
+import { toPromise, pure } from '@quenk/noni/lib/control/monad/future';
 import { filter, map } from '../../src/async/array';
-import { success, failure } from '../../src/async/result';
+import { succeed, fail } from '../../src/result';
 
-const num = <A>(n: A) => (typeof n === 'number') ? success(n) : failure('num', n, {});
+const num = <A>(n: A) => (typeof n === 'number') ?
+    pure(succeed(n)) : pure(fail('num', n, {}));
+
 const invalidList = [0, 1, 2, 3, 'four', 5, 'six', 7, 'eight', 9];
 const validList = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -12,8 +15,9 @@ describe('async', function() {
 
         it('should retain succesful members', function() {
 
-            (filter(num)(invalidList))
-                .then(e => must(e.takeRight()).eql([0, 1, 2, 3, 5, 7, 9]))
+            toPromise((filter(num)(invalidList)))
+                .then(e => must(e.takeRight())
+                    .equate([0, 1, 2, 3, 5, 7, 9]))
 
         });
 
@@ -23,17 +27,17 @@ describe('async', function() {
 
         it('should fail if any member fails', function() {
 
-            (map(num)(invalidList))
+            toPromise(map(num)(invalidList))
                 .then(e => must(e.takeLeft().explain())
-                    .eql({ 4: 'num', 6: 'num', 8: 'num' }));
+                    .equate({ 4: 'num', 6: 'num', 8: 'num' }));
 
         });
 
         it('should work otherwise', function() {
 
-            (map(num)(validList))
+            toPromise(map(num)(validList))
                 .then(e => must(e.takeRight())
-                    .eql([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
+                    .equate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 
         });
 
