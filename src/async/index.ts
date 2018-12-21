@@ -3,114 +3,142 @@
  * via bluebirds Promise API.
  */
 import * as sync from '../';
-import * as Promise from 'bluebird';
-import { Pattern, kindOf } from '@quenk/kindof';
-import { Right, either, left, right } from '@quenk/noni/lib/data/either';
-import { cons } from '@quenk/noni/lib/data/function';
-import { Result as SyncResult } from '../result';
-import { Failure as SyncFailure } from '../result';
-import { Result, failure, success } from './result';
+import { Pattern, test } from '@quenk/noni/lib/data/type';
+import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Right, Left, left, right } from '@quenk/noni/lib/data/either';
+import { Failure, ModifiedFailure as MF } from '../result/failure';
+import { Result, succeed, fail } from '../result';
 
 /**
- * Precondition (async version).
+ * Precondition (async).
  */
-export type Precondition<A, B> = (a: A) => Result<A, B>;
+export type Precondition<A, B> = (a: A) => Future<Result<A, B>>;
 
 /**
- * async wraps the sync api so they can be used with async preconditions safely.
+ * Preconditions map (async).
  */
-export const async =
-    <A, B>(p: sync.Precondition<A, B>) => (a: A) => Promise.resolve(p(a));
+export interface Preconditions<A, B> {
+
+    [key: string]: Precondition<A, B>
+
+}
 
 /**
- * or (async version).
+ * async wraps a sync api function so it can be used with other async 
+ * functions.
  */
-export const or = <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
+export const async = <A, B>(p: sync.Precondition<A, B>)
+    : Precondition<A, B> => (a: A) => pure(p(a));
+
+/**
+ * or (async).
+ */
+export const or = <A, B>(l: Precondition<A, B>, r: Precondition<A, B>)
     : Precondition<A, B> => (value: A) =>
-        left(value).then((e: SyncResult<A, B>) =>
-            (either<SyncFailure<A>, B, Result<A, B>>
-                (cons(right(value)))(success)(e)));
+        l(value)
+            .chain(e => e.fold(() => (r(value)), v => pure(succeed<A, B>(v))));
+
 /**
- * and (async version).
+ * and (async).
  *
  * TODO: using the any type until Either is fixed in afpl.
  */
 export const and = <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>)
-    : Precondition<A | B, C> => (value: A | B) =>
-        l(<A>value).then((e: SyncResult<A, B>): Result<A | B, C> =>
-            (<SyncResult<A, any>>e.map(b => r(b)))
-                .orRight((f: SyncFailure<A>) => <any>failure<A | B, B>(f.message, value, f.context))
-                .takeRight());
+    : Precondition<A, C> => (value: A) =>
+        l(value).chain(e => {
+
+            if (e instanceof Left) {
+
+                return pure(left<Failure<A>, C>(e.takeLeft()));
+
+            } else {
+
+                return r(e.takeRight())
+                    .chain(e2 =>
+                        pure((e2 instanceof Left) ?
+                            left<Failure<A>, C>(MF.create(value, e2.takeLeft())) :
+                            right<Failure<A>, C>(e2.takeRight())));
+
+            }
+
+        });
 
 /**
- * every (async version).
+ * every (async).
  */
-export const every =
-    <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[])
-        : Precondition<A, B> => (value: A) =>
-            p(value).then((e: SyncResult<A, B>) =>
-                either<SyncFailure<any>, B, Result<any, B>>(evl)
-                    (ev(list))(e));
+export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[])
+    : Precondition<A, B> => (value: A) =>
+        p(value)
+            .chain((r: Result<A, B>) => {
 
-const ev = <B>(list: Precondition<B, B>[]) => (b: B): Result<B, B> =>
-    list.reduce((p: Result<B, B>, c: Precondition<B, B>) =>
-        p.then(ev2(c)),
-        Promise.resolve(right(b)));
+                if (r instanceof Left)
+                    return pure(left<Failure<A>, B>(r.takeLeft()));
 
-const ev2 = <B>(p: Precondition<B, B>) => (e: SyncResult<B, B>) =>
-    either<SyncFailure<B>, B, Result<B, B>>
-        (evl)
-        ((b: B) => p(b))(e);
+                return list.reduce((p: Future<Result<B, B>>, c) =>
+                    p.chain(e => (e instanceof Left) ?
+                        pure(<Result<B, B>>e) :
+                        c(e.takeRight())),
+                    pure(right<Failure<B>, B>(r.takeRight())))
+                    .chain((e: Result<B, B>) =>
+                        (e instanceof Left) ?
+                            pure(left<Failure<A>, B>(MF.create(value, e.takeLeft()))) :
+                            pure(right<Failure<A>, B>(e.takeRight())));
 
-const evl = <B>(f: SyncFailure<B>): Result<B, B> => Promise.resolve(left(f))
+            });
+
+
 
 /**
- * optional (async version).
+ * optional (async).
  */
 export const optional = <A, B>(p: Precondition<A, A | B>)
-    : Precondition<A, A | B> =>
-    (value: A) =>
-        ((value == null) || (typeof value === 'string' && value === '')) ?
-            success<A, A>(value) : p(value);
+    : Precondition<A, A | B> => (value: A) =>
+        isNon(value) ?
+            pure(succeed<A, A | B>(value)) :
+            p(value);
+
+const isNon = <A>(value: A): boolean =>
+    ((value == null) || (typeof value === 'string' && value === ''));
 
 /**
- * caseOf (async version).
+ * caseOf (async).
  */
 export const caseOf = <A, B>(t: Pattern, p: Precondition<A, B>)
-    : Precondition<A, B> => (value: A) =>
-        kindOf(value, t) ? p(value) : failure<A, B>('caseOf', value, { type: t });
+    : Precondition<A, B> => (value: A) => test(value, t) ?
+        p(value) :
+        pure(fail<A, B>('caseOf', value, { type: t }));
 
 /**
  * match (async version).
  */
 export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[])
-    : Precondition<A, B> =>
-    (value: A) => list.reduce((pe, f) =>
-        pe
-            .then(e => (e instanceof Right) ? Promise.resolve(e) :
-                Promise
-                    .resolve(e.takeLeft())
-                    .then(r => (r.message === 'caseOf') ?
-                        f(value) :
-                        failure<A, B>(r.message, value, r.context))), p(value));
+    : Precondition<A, B> => (value: A) =>
+        list.reduce((pe, f) =>
+            pe
+                .chain((e: Result<A, B>) => (e instanceof Right) ?
+                    pure(<Result<A, B>>e) :
+                    pure(e.takeLeft())
+                        .chain((r: Failure<A>) => (r.message === 'caseOf') ?
+                            f(value) :
+                            pure(fail<A, B>(r.message, value, r.context)))), p(value));
 
 /**
  * identity precondtion.
  *
  * Succeeds with whatever value is passed.
  */
-export const identity = <A>(value: A) => success<A, A>(value);
+export const identity = <A>(value: A) =>pure( succeed<A, A>(value));
 
 export const id = identity;
 
 /**
- * fail always fails with reason no matter the value supplied.
+ * reject always fails with reason no matter the value supplied.
  */
-export const fail = <A>(reason: string): Precondition<A, A> => (value: A) =>
-    failure<A, A>(reason, value);
+export const reject = <A>(reason: string): Precondition<A, A> => (value: A) =>
+    pure(fail<A, A>(reason, value));
 
 /**
  * log the value to the console.
  */
 export const log = <A>(value: A): Result<A, A> =>
-    console.log(value) || success(value);
+    (console.log(value), succeed(value));

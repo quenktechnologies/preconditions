@@ -1,57 +1,45 @@
-import * as Promise from 'bluebird';
 import { merge } from '@quenk/noni/lib/data/record';
-import { left, either } from '@quenk/noni/lib/data/either';
-import { Reports as SyncReports } from '../array/result';
-import { Contexts, Failures } from '../record/result';
-import { Failure } from '../array/result';
-import { Failure as F } from '../result';
+import { Right } from '@quenk/noni/lib/data/either';
+import { pure, parallel } from '@quenk/noni/lib/control/monad/future';
 import { Precondition } from '../async';
-import { Result as SyncResult } from '../result';
-import { success } from './result';
+import { fail } from '../result/failure/array';
+import { Failure, Failures } from '../result/failure';
+import { Result, succeed } from '../result';
+
+type Reports<A, B> = [Failures<A>, B[]];
 
 /**
- * @private
+ * filter (async).
  */
-export type Reports<M, V> = Promise<SyncReports<M, V>>
+export const filter = <A, B>(p: Precondition<A, B>)
+    : Precondition<A[], B[]> => (value: A[]) =>
+        parallel(value.map(p))
+    .map((r: Result<A, B>[]) => r.reduce<B[]>(filterResults, []))
+            .chain((values: B[]) => pure(succeed<A[], B[]>(values)));
+
+const filterResults = <A, B>(p: B[], c: Result<A, B>): B[] =>
+    (c instanceof Right) ? p.concat(c.takeRight()) : p;
 
 /**
- * failure
- */
-export const failure =
-    <A, B>(errors: Failures<A>, value: A[], contexts: Contexts) =>
-        Promise.resolve(left<Failure<A>, B[]>(new Failure(errors, value, contexts)));
-
-/**
- * filter (async version).
- */
-export const filter =
-    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) =>
-        Promise
-            .all(value.map(p))
-            .then(results =>
-                Promise
-                    .resolve(
-                        results
-                            .map((r: SyncResult<A, B>) =>
-                                r
-                                    .orRight((): any => null)
-                                    .takeRight())
-                            .filter(b => b != null)))
-            .then(values => success<A[], B[]>(values));
-
-/**
- * map (async version).
+ * map (async).
  */
 export const map =
-    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
-        (value: A[]) =>
-            Promise
-                .all(value.map(p))
-                .then(results => results
-                    .reduce(([fails, succs]: [Failures<A>, B[]], curr: SyncResult<A, B>, key) =>
-                      either<any,any,any>((f: F<A>) => [merge(fails, { [key]: f }), succs])
-                            ((b: B) => [fails, succs.concat(b)])
-                            (curr), [<Failures<A>>{}, <B[]>[]]))
-                .then(([fails, succs]: [Failures<A>, B[]]) => Object.keys(fails).length > 0 ?
-                    failure<A, B>(fails, value, { value }) :
-                    success<A[], B[]>(succs));
+    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) =>
+        parallel(value.map(p))
+            .map(mapReduce)
+            .map(mapFinish(value));
+
+const mapReduce = <A, B>(r: Result<A, B>[]) =>
+    r.reduce<Reports<A, B>>(mapReduceFold, [{}, []]);
+
+const mapReduceFold = <A, B>([fails, succs]: Reports<A, B>,
+    curr: Result<A, B>, idx: number): Reports<A, B> =>
+    curr.fold(
+        (f: Failure<A>): Reports<A, B> => [merge(fails, { [idx]: f }), succs],
+        (b: B): Reports<A, B> => [fails, succs.concat(b)]);
+
+const mapFinish = <A, B>(value: A[]) => ([fails, succs]: Reports<A, B>)
+    : Result<A[], B[]> =>
+    Object.keys(fails).length > 0 ?
+        fail(fails, value, { value }) :
+        succeed<A[], B[]>(succs);

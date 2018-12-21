@@ -1,65 +1,60 @@
-import * as Promise from 'bluebird';
-import * as must from 'must/register';
-import { success } from '../../src/async/result';
+import { must } from '@quenk/must';
+import { toPromise, pure } from '@quenk/noni/lib/control/monad/future';
+import { succeed } from '../../src/result';
 import {
     optional,
     caseOf,
     match,
     identity,
-    fail
+    reject
 } from '../../src/async';
 
 describe('async', function() {
 
     describe('optional', () =>
         it('should not run the test if the value is null', () =>
-
-            Promise
-                .resolve((_: any) => success('12'))
-                .then(t =>
-                    optional(t)(undefined)
-                        .then(r => must(r.takeRight()).eql(undefined))
-                        .then(() => optional(t)('earth'))
-                        .then(r => must(r.takeRight()).be('12')))))
+            toPromise(optional(<any>12)(undefined))
+                .then(r => must(r.takeRight()).equal(undefined))
+                .then(() => toPromise(optional(() => pure(succeed(12)))('earth')))
+                .then(r => must(r.takeRight()).equal(12))))
 
     describe('caseOf', function() {
 
         it('should match primitives', () =>
 
-            Promise
-                .resolve([
-                    caseOf('hello', () => success('string')),
-                    caseOf(String, () => success('String')),
-                    caseOf(12, () => success('number')),
-                    caseOf(Number, () => success('Number')),
-                    caseOf(false, () => success('boolean')),
-                    caseOf(Boolean, () => success('Boolean')),
-                ])
+            toPromise(pure([
+                caseOf('hello', () => pure(succeed('string'))),
+                caseOf(String, () => pure(succeed('String'))),
+                caseOf(12, () => pure(succeed('number'))),
+                caseOf(Number, () => pure(succeed('Number'))),
+                caseOf(false, () => pure(succeed('boolean'))),
+                caseOf(Boolean, () => pure(succeed('Boolean'))),
+            ]))
                 .then(([s, scons, n, ncons, b, bcons]) =>
-                    s('hello')
-                        .then(r => must(r.takeRight()).eql('string'))
-                        .then(() => s('chello'))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))
-                        .then(() => scons('ferimpusds'))
-                        .then(r =>  must(r.takeRight()).eql('String'))
-                        .then(() => scons(<any>12))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))
-                        .then(() => n(12))
-                        .then(r => must(r.takeRight()).eql('number'))
-                        .then(() => n('12'))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))
-                        .then(() => ncons(123243))
-                        .then(r => must(r.takeRight()).eql('Number'))
-                        .then(() => ncons(<any>'adf'))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))
-                        .then(() => b(false))
-                        .then(r => must(r.takeRight()).eql('boolean'))
-                        .then(() => b('false'))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))
-                        .then(() => bcons(true))
-                        .then(r => must(r.takeRight()).eql('Boolean'))
-                        .then(() => bcons(<any>Date))
-                        .then(r => must(r.takeLeft().explain()).eql('caseOf'))))
+                    toPromise(s('hello'))
+                        .then(r => must(r.takeRight()).equal('string'))
+                        .then(() => toPromise(s('chello')))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))
+                        .then(() => toPromise(scons('ferimpusds')))
+                        .then(r => must(r.takeRight()).equal('String'))
+                        .then(() => toPromise(scons(<any>12)))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))
+                        .then(() => toPromise(n(12)))
+                        .then(r => must(r.takeRight()).equal('number'))
+                        .then(() => toPromise(n('12')))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))
+                        .then(() => toPromise(ncons(123243)))
+                        .then(r => must(r.takeRight()).equal('Number'))
+                        .then(() => toPromise(ncons(<any>'adf')))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))
+                        .then(() => toPromise(b(false)))
+                        .then(r => must(r.takeRight()).equal('boolean'))
+                        .then(() => toPromise(b('false')))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))
+                        .then(() => toPromise(bcons(true)))
+                        .then(r => must(r.takeRight()).equal('Boolean'))
+                        .then(() => toPromise(bcons(<any>Date)))
+                        .then(r => must(r.takeLeft().explain()).equal('caseOf'))))
 
 
     });
@@ -69,13 +64,13 @@ describe('async', function() {
         it('should only run one case', function() {
 
             let p = match(
-                caseOf(true, v => success(`${v} -> true`)),
-                caseOf(String, v => success<string, string>(`${v} -> String`)),
-                caseOf({ name: String }, v => success(`${v} -> name`)),
-                caseOf('quenk', v => success(`${v} -> quenk`)));
+                caseOf(true, v => pure(succeed(`${v} -> true`))),
+                caseOf(String, v => pure(succeed<string, string>(`${v} -> String`))),
+                caseOf({ name: String }, v => pure(succeed(`${v} -> name`))),
+                caseOf('quenk', v => pure(succeed(`${v} -> quenk`))));
 
-            return p('quenk')
-                .then(r => must(r.takeRight()).eql('quenk -> String'));
+            return toPromise(p('quenk'))
+                .then(r => must(r.takeRight()).equal('quenk -> String'));
 
         });
 
@@ -85,16 +80,16 @@ describe('async', function() {
 
         it('should return the value passed', function() {
 
-            return identity(12)
-                .then(v => must(v.takeRight()).eql(12));
+            return toPromise(identity(12))
+                .then(v => must(v.takeRight()).equal(12));
 
         });
 
     });
 
-    describe('fail', () =>
+    describe('reject', () =>
         it('should fail all the time', () =>
-            (fail('testing')(12))
-                .then(r => must(r.takeLeft().explain()).be('testing'))));
+            toPromise(reject('testing')(12))
+                .then(r => must(r.takeLeft().explain()).equal('testing'))));
 
 })

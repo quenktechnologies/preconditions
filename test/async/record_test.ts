@@ -1,12 +1,15 @@
-import * as Promise from 'bluebird';
-import * as must from 'must/register';
-import * as preconditions from '../../src/result';
 import * as Async from '../../src/async/record';
+import { must } from '@quenk/must';
+import {
+    Future,
+    toPromise,
+    fromCallback
+} from '@quenk/noni/lib/control/monad/future';
 import { restrict, disjoint, union, intersect, map } from '../../src/async/record';
-import { isObject } from '../../src/record';
+import { isRecord } from '../../src/record';
 import { every, async as wrap } from '../../src/async';
-import { Precondition } from '../../src/async';
-import { Result } from '../../src/async/result';
+import { Precondition, Preconditions } from '../../src/async';
+import { Result, succeed, fail } from '../../src/result';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -56,22 +59,22 @@ const partialInvalidAccessErrors = {
     network: 'async', user: { age: 'async' }, previous: { age: 'async' }
 };
 
-const async = <A>(type: string) => (value: A): Result<A, any> =>
-    Promise.fromCallback(cb =>
+const async = <A>(type: string) => (value: A): Future<Result<A, any>> =>
+    (fromCallback(cb =>
         setTimeout(() => cb(null,
             (type === 'prim') ?
                 typeof value !== 'object' ?
-                    preconditions.success(value) :
-                    preconditions.failure('async', value) :
+                    succeed(value) :
+                    fail('async', value) :
                 (type === 'array') ?
                     Array.isArray(value) ?
-                        preconditions.success(value) :
-                        preconditions.failure('async', value) :
+                        succeed(value) :
+                        fail('async', value) :
                     (typeof value !== type) ?
-                        preconditions.failure('async', value) :
-                        preconditions.success(value)), 100));
+                        fail('async', value) :
+                        succeed(value)), 100)));
 
-const user: Async.Preconditions<any, any> = {
+const user: Preconditions<any, any> = {
 
     name: async('string'),
     age: async('number'),
@@ -80,42 +83,42 @@ const user: Async.Preconditions<any, any> = {
 }
 
 const shouldFailInvalidData = (condition: Precondition<object, object>) =>
-    condition(invalidUser)
+    toPromise(condition(invalidUser))
         .then(e =>
             must(e.takeLeft().explain())
-                .eql({ name: 'async', age: 'async' }));
+                .equate({ name: 'async', age: 'async' }));
 
 const shouldAllowValidData = (condition: Precondition<object, object>) =>
-    condition(validUser).then(e => must(e.takeRight()).eql(validUser));
+    condition(validUser).map(e => must(e.takeRight()).equate(validUser));
 
 const unknownProperties = (condition: Precondition<object, object>, expected: object) =>
     condition(userWithAddtionalProperties)
-        .then(e => must(e.takeRight()).eql(expected));
+        .map(e => must(e.takeRight()).equate(expected));
 
 const shouldWorkWithNestedConditions = (condition: Precondition<object, object>) =>
     condition(validAccess)
-        .then(r => must(r.takeRight()).eql(validAccess))
-        .then(() => condition(invalidAccess))
-        .then(r => must(r.takeLeft().explain())
-            .eql({
+        .map(r => must(r.takeRight()).equate(validAccess))
+        .chain(() => condition(invalidAccess))
+        .map(r => must(r.takeLeft().explain())
+            .equate({
                 network: 'async', user: { roles: 'async' }, previous: { age: 'async' }
             }))
 
 const shouldApplyEveryCondtion = (condition: Precondition<object, object>) =>
     condition
         (partialValidAccess)
-        .then(r => must(r.takeLeft().explain({})).eql(partialValidAccessErrors));
+        .map(r => must(r.takeLeft().explain({})).equate(partialValidAccessErrors));
 
 describe('async', function() {
 
     describe('restrict', function() {
 
-        const access: Async.Preconditions<any, any> = {
+        const access: Preconditions<any, any> = {
 
             id: async('number'),
             network: async('number'),
-            user: every(wrap(isObject), restrict(user)),
-            get previous() { return every(wrap(isObject), restrict(user)); }
+            user: every(wrap(isRecord), restrict(user)),
+            get previous() { return every(wrap(isRecord), restrict(user)); }
 
         }
 
@@ -138,12 +141,12 @@ describe('async', function() {
 
     describe('disjoint', function() {
 
-        const access: Async.Preconditions<any, any> = {
+        const access: Preconditions<any, any> = {
 
             id: async('number'),
             network: async('number'),
-            user: every(wrap(isObject), disjoint(user)),
-            get previous() { return every(wrap(isObject), disjoint(user)); }
+            user: every(wrap(isRecord), disjoint(user)),
+            get previous() { return every(wrap(isRecord), disjoint(user)); }
 
         }
 
@@ -163,12 +166,12 @@ describe('async', function() {
 
     describe('intersect', function() {
 
-        const access: Async.Preconditions<any, any> = {
+        const access: Preconditions<any, any> = {
 
             id: async('number'),
             network: async('number'),
-            user: every(wrap(isObject), intersect(user)),
-            get previous() { return every(wrap(isObject), intersect(user)); }
+            user: every(wrap(isRecord), intersect(user)),
+            get previous() { return every(wrap(isRecord), intersect(user)); }
 
         }
 
@@ -186,20 +189,21 @@ describe('async', function() {
             Async
                 .intersect(access)
                 (partialValidAccess)
-                .then(r => must(r.takeRight()).eql(partialValidAccess))
-                .then(() => intersect(access)(partialInvalidAccess))
-                .then(r => must(r.takeLeft().explain()).eql(partialInvalidAccessErrors)))
+                .map(r => must(r.takeRight()).equate(partialValidAccess))
+                .chain(() => intersect(access)(partialInvalidAccess))
+                .map(r => must(r.takeLeft().explain())
+                    .equate(partialInvalidAccessErrors)))
 
     })
 
     describe('union', function() {
 
-        const access: Async.Preconditions<any, any> = {
+        const access: Preconditions<any, any> = {
 
             id: async('number'),
             network: async('number'),
-            user: every(wrap(isObject), union(user)),
-            get previous() { return every(wrap(isObject), union(user)); }
+            user: every(wrap(isRecord), union(user)),
+            get previous() { return every(wrap(isRecord), union(user)); }
 
         }
 
@@ -224,13 +228,12 @@ describe('async', function() {
 
         it('should fail invalid data',
             () =>
-                shouldFailInvalidData(every(wrap(isObject), map(async('prim')))));
+                shouldFailInvalidData(every(wrap(isRecord), map(async('prim')))));
 
         it('should allow valid data',
             () =>
-                shouldAllowValidData(every(wrap(isObject), map(async('prim')))));
+                shouldAllowValidData(every(wrap(isRecord), map(async('prim')))));
 
     });
 
 });
-
