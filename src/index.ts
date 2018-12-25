@@ -9,7 +9,7 @@
 import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
 import { Pattern, test } from '@quenk/noni/lib/data/type';
 import { Result, fail, succeed } from './result';
-import { Failure, ModifiedFailure as MF } from './result/failure';
+import { Failure, ModifiedFailure as MF, DualFailure } from './result/failure';
 
 /**
  * Precondition represents some condition that must be satisfied
@@ -119,8 +119,10 @@ export const reject = <A, B>(reason: string): Precondition<A, B> => (value: A) =
  */
 export const or =
     <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
-        : Precondition<A, B> =>
-        (value: A) => left(value).orElse(() => right(value));
+  : Precondition<A, B> =>        (value: A) => 
+  left(value)
+  .orElse(f => right(value)
+               .lmap(f2 => new DualFailure(value, f, f2)));
 
 /**
  * and performs the equivalent of a logical 'and' between two preconditions.
