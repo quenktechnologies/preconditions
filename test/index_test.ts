@@ -81,6 +81,7 @@ describe('index', function() {
         }));
 
     describe('or', () => {
+
         it('should act like a logical or', () => {
 
             const left = (_: any) => fail('left', 'left');
@@ -90,6 +91,22 @@ describe('index', function() {
             must(or(right, right)(12).takeRight()).equal('right');
 
         })
+
+        it('should provide details about both when both fail', () => {
+
+            const left = (_: any) => fail('left', 'left');
+            const right = (_: any) => fail('right', 'right');
+
+            must(or(left, right)(12).takeLeft().explain()).equate({
+
+                first: 'left',
+
+                second: 'right'
+
+            });
+
+
+        });
 
     })
 

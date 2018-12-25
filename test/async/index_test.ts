@@ -1,11 +1,12 @@
 import { must } from '@quenk/must';
 import { toPromise, pure } from '@quenk/noni/lib/control/monad/future';
-import { succeed } from '../../src/result';
+import { succeed, fail } from '../../src/result';
 import {
     optional,
     caseOf,
     match,
     identity,
+    or,
     reject
 } from '../../src/async';
 
@@ -91,5 +92,28 @@ describe('async', function() {
         it('should fail all the time', () =>
             toPromise(reject('testing')(12))
                 .then(r => must(r.takeLeft().explain()).equal('testing'))));
+
+    describe('or', () => {
+
+        it('should use the first success', () =>
+            toPromise(or(
+                () => pure(succeed(24)),
+                () => pure(succeed(30)))(12))
+                .then(r => must(r.takeRight()).equal(24)));
+
+        it('should use the second if failing first', () =>
+            toPromise(or(
+                () => pure(fail('left', 12)),
+                () => pure(succeed(30)))(12))
+                .then(r => must(r.takeRight()).equal(30)));
+
+        it('should provide info about both failures', () =>
+            toPromise(or(
+                () => pure(fail('left', 12)),
+                () => pure(fail('right', 12)))(12))
+                .then(r => must(r.takeLeft().explain())
+                    .equate({ first: 'left', second: 'right' })))
+
+    })
 
 })
