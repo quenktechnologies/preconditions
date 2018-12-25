@@ -91,7 +91,7 @@ export declare class PrimFailure<A> {
 }
 /**
  * ModifiedFailure is used in situations where a precondition is composite
- * and we need to modify the value to be the original first one.
+ * and we need to modify the value to be the original left one.
  */
 export declare class ModifiedFailure<A, B> implements Failure<A> {
     value: A;
@@ -105,9 +105,9 @@ export declare class ModifiedFailure<A, B> implements Failure<A> {
 }
 export declare class DualFailure<A, B> implements Failure<A> {
     value: A;
-    first: Failure<A>;
-    second: Failure<B>;
-    constructor(value: A, first: Failure<A>, second: Failure<B>);
+    left: Failure<A>;
+    right: Failure<B>;
+    constructor(value: A, left: Failure<A>, right: Failure<B>);
     readonly message: string;
     readonly context: Context;
     explain(templates?: ErrorTemplates, ctx?: Context): Explanation;

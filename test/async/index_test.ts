@@ -95,13 +95,13 @@ describe('async', function() {
 
     describe('or', () => {
 
-        it('should use the first success', () =>
+        it('should use the left\'s success', () =>
             toPromise(or(
                 () => pure(succeed(24)),
                 () => pure(succeed(30)))(12))
                 .then(r => must(r.takeRight()).equal(24)));
 
-        it('should use the second if failing first', () =>
+        it('should use the right if failing left', () =>
             toPromise(or(
                 () => pure(fail('left', 12)),
                 () => pure(succeed(30)))(12))
@@ -112,7 +112,7 @@ describe('async', function() {
                 () => pure(fail('left', 12)),
                 () => pure(fail('right', 12)))(12))
                 .then(r => must(r.takeLeft().explain())
-                    .equate({ first: 'left', second: 'right' })))
+                    .equate({ left: 'left', right: 'right' })))
 
     })
 

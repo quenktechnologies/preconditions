@@ -99,9 +99,9 @@ describe('index', function() {
 
             must(or(left, right)(12).takeLeft().explain()).equate({
 
-                first: 'left',
+                left: 'left',
 
-                second: 'right'
+                right: 'right'
 
             });
 

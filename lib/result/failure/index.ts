@@ -167,7 +167,7 @@ export class PrimFailure<A> {
 
 /**
  * ModifiedFailure is used in situations where a precondition is composite
- * and we need to modify the value to be the original first one.
+ * and we need to modify the value to be the original left one.
  */
 export class ModifiedFailure<A, B> implements Failure<A> {
 
@@ -211,18 +211,18 @@ export class DualFailure<A, B> implements Failure<A> {
 
   constructor( 
     public value:A,
-    public first: Failure<A>,
-    public second: Failure<B>) { }
+    public left: Failure<A>,
+    public right: Failure<B>) { }
 
     get message(): string {
 
-      return `${this.first.message} | ${this.second.message}`;
+      return `${this.left.message} | ${this.right.message}`;
 
     }
 
     get context(): Context {
 
-      return {first: this.first.context, second: this.second.context};
+      return {left: this.left.context, right: this.right.context};
 
     }
 
@@ -231,8 +231,8 @@ export class DualFailure<A, B> implements Failure<A> {
       let _ctx = merge(ctx, {value:this.value});
 
       return { 
-        first: this.first.explain(templates, _ctx),
-              second: this.second.explain(templates, _ctx)
+        left: this.left.explain(templates, _ctx),
+              right: this.right.explain(templates, _ctx)
       }
 
     }
