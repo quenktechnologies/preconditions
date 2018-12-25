@@ -6,7 +6,7 @@ import * as sync from '../';
 import { Pattern, test } from '@quenk/noni/lib/data/type';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { Right, Left, left, right } from '@quenk/noni/lib/data/either';
-import { Failure, ModifiedFailure as MF } from '../result/failure';
+import { Failure, ModifiedFailure as MF, DualFailure } from '../result/failure';
 import { Result, succeed, fail } from '../result';
 
 /**
@@ -35,8 +35,12 @@ export const async = <A, B>(p: sync.Precondition<A, B>)
  */
 export const or = <A, B>(l: Precondition<A, B>, r: Precondition<A, B>)
     : Precondition<A, B> => (value: A) =>
-        l(value)
-            .chain(e => e.fold(() => (r(value)), v => pure(succeed<A, B>(v))));
+        l(value).chain(e =>            e.fold<Future<Result<A, B>>>(orFail(value, r), orSucc));
+
+const orFail = <A, B>(value: A, r: Precondition<A, B>) => (f: Failure<A>) =>
+    r(value).map(e2 => e2.lmap((f2): Failure<A> => new DualFailure(value, f, f2)));
+
+const orSucc = <A, B>(v: B) => pure(succeed<A, B>(v));
 
 /**
  * and (async).
@@ -127,7 +131,7 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
  *
  * Succeeds with whatever value is passed.
  */
-export const identity = <A>(value: A) =>pure( succeed<A, A>(value));
+export const identity = <A>(value: A) => pure(succeed<A, A>(value));
 
 export const id = identity;
 

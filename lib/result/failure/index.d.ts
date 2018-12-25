@@ -103,3 +103,13 @@ export declare class ModifiedFailure<A, B> implements Failure<A> {
     explain(templates?: ErrorTemplates, ctx?: Context): Explanation;
     toError(templates?: ErrorTemplates, context?: Context): Error;
 }
+export declare class DualFailure<A, B> implements Failure<A> {
+    value: A;
+    first: Failure<A>;
+    second: Failure<B>;
+    constructor(value: A, first: Failure<A>, second: Failure<B>);
+    readonly message: string;
+    readonly context: Context;
+    explain(templates?: ErrorTemplates, ctx?: Context): Explanation;
+    toError(templates?: ErrorTemplates, context?: Context): Error;
+}

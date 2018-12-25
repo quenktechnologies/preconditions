@@ -206,3 +206,43 @@ export class ModifiedFailure<A, B> implements Failure<A> {
             }
 
 }
+
+export class DualFailure<A, B> implements Failure<A> {
+
+  constructor( 
+    public value:A,
+    public first: Failure<A>,
+    public second: Failure<B>) { }
+
+    get message(): string {
+
+      return `${this.first.message} | ${this.second.message}`;
+
+    }
+
+    get context(): Context {
+
+      return {first: this.first.context, second: this.second.context};
+
+    }
+
+    explain(templates: ErrorTemplates = {}, ctx: Context = {}): Explanation {
+
+      let _ctx = merge(ctx, {value:this.value});
+
+      return { 
+        first: this.first.explain(templates, _ctx),
+              second: this.second.explain(templates, _ctx)
+      }
+
+    }
+
+      toError(templates: ErrorTemplates = {}, context: Context = {}): Error {
+
+                let e = this.explain(templates, context);
+
+                return new Error((typeof e === 'object') ? JSON.stringify(e) : e);
+
+            }
+
+}
