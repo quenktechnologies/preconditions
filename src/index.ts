@@ -214,7 +214,7 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
  *             For String,Number and Boolean, this uses the typeof check.
  */
 export const caseOf =
-    <A, B>(t: Pattern, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+  <A, B>(t: Pattern<A>, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
         test(value, t) ? p(value) : fail<A, B>('caseOf', value, { type: t });
 
 /**
