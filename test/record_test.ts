@@ -1,4 +1,4 @@
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { restrict, disjoint, union, intersect, map } from '../src/record'
 import { isRecord } from '../src/record';
 import { Preconditions } from '../src';
@@ -83,20 +83,20 @@ const user: Preconditions<any, any> = {
 }
 
 const shouldFailInvalidData = (condition: Precondition<object, object>) =>
-    must(condition(invalidUser).takeLeft().explain())
+    assert(condition(invalidUser).takeLeft().explain())
         .equate({ name: 'check', age: 'check' });
 
 const shouldAllowValidData = (condition: Precondition<object, object>) =>
-    must(condition(validUser).takeRight()).equate(validUser);
+    assert(condition(validUser).takeRight()).equate(validUser);
 
 const unknownProperties = (condition: Precondition<object, object>, expected: object) =>
-    must(condition(userWithAddtionalProperties).takeRight()).equate(expected);
+    assert(condition(userWithAddtionalProperties).takeRight()).equate(expected);
 
 const shouldWorkWithNestedConditions = (condition: Precondition<object, object>) => {
 
-    must(condition(validAccess).takeRight()).equate(validAccess);
+    assert(condition(validAccess).takeRight()).equate(validAccess);
 
-    must(condition(invalidAccess).takeLeft().explain())
+    assert(condition(invalidAccess).takeLeft().explain())
         .equate({
             network: 'check', user: { roles: 'check' }, previous: { age: 'check' }
         });
@@ -104,12 +104,12 @@ const shouldWorkWithNestedConditions = (condition: Precondition<object, object>)
 }
 
 const shouldApplyEveryCondtion = (condition: Precondition<object, object>) =>
-    must(condition(partialValidAccess).takeLeft()
+    assert(condition(partialValidAccess).takeLeft()
         .explain({}))
         .equate(partialValidAccessErrors);
 
 const shouldFailtWhenNoData = (condition: Precondition<object, object>) =>
-    must(condition({}).takeLeft()
+    assert(condition({}).takeLeft()
         .explain({}))
         .equate(noDataErrors);
 
@@ -119,11 +119,11 @@ describe('record', function() {
 
         it('should work', function() {
 
-            must(isRecord({}).takeRight()).equate({});
+            assert(isRecord({}).takeRight()).equate({});
 
-            must(isRecord('z').takeLeft().explain({})).equal('isRecord');
+            assert(isRecord('z').takeLeft().explain({})).equal('isRecord');
 
-            must(isRecord([]).takeLeft().explain({})).equal('isRecord');
+            assert(isRecord([]).takeLeft().explain({})).equal('isRecord');
 
         });
 
@@ -208,10 +208,10 @@ describe('record', function() {
 
         it('should apply to present properties only', () => {
 
-            must(intersect(access)(partialValidAccess).takeRight())
+            assert(intersect(access)(partialValidAccess).takeRight())
                 .equate(partialValidAccess);
 
-            must(intersect(access)(partialInvalidAccess).takeLeft().explain())
+            assert(intersect(access)(partialInvalidAccess).takeLeft().explain())
                 .equate(partialInvalidAccessErrors)
 
         })

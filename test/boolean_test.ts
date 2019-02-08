@@ -1,4 +1,4 @@
-import { must}  from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { PrimFailure } from '../src/result/failure';
 import { isBoolean, toBoolean } from '../src/boolean';
 
@@ -8,9 +8,9 @@ describe('boolean', function() {
 
         it('should fail if the value specified is not a boolean', function() {
 
-            must(isBoolean(true).takeRight()).be.true();
-            must(isBoolean(false).takeRight()).be.false();
-            must(isBoolean('12').takeLeft()).be.instance.of(PrimFailure);
+            assert(isBoolean(true).takeRight()).be.true();
+            assert(isBoolean(false).takeRight()).be.false();
+            assert(isBoolean('12').takeLeft()).be.instance.of(PrimFailure);
 
         });
 
@@ -20,11 +20,11 @@ describe('boolean', function() {
 
         it('should work', function() {
 
-            must(toBoolean(Date).takeRight()).be.true();
-            must(toBoolean(undefined).takeRight()).be.false();
-            must(toBoolean(null).takeRight()).be.false();
-            must(toBoolean(true).takeRight()).be.true();
-          must(toBoolean(false).takeRight()).be.false();
+            assert(toBoolean(Date).takeRight()).be.true();
+            assert(toBoolean(undefined).takeRight()).be.false();
+            assert(toBoolean(null).takeRight()).be.false();
+            assert(toBoolean(true).takeRight()).be.true();
+          assert(toBoolean(false).takeRight()).be.false();
 
         });
 

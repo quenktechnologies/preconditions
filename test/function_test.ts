@@ -1,4 +1,4 @@
-import {must} from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { PrimFailure } from '../src/result/failure';
 import { isFunction } from '../src/function';
 
@@ -10,8 +10,8 @@ describe('function', function() {
 
         it('should fail if the value specified is not a function', function() {
 
-            must(isFunction(fun).takeRight()(12)).be.equal(12);
-            must(isFunction('12').takeLeft()).be.instance.of(PrimFailure);
+            assert(isFunction(fun).takeRight()(12)).be.equal(12);
+            assert(isFunction('12').takeLeft()).be.instance.of(PrimFailure);
 
         });
 

@@ -1,4 +1,4 @@
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { PrimFailure } from '../src/result/failure';
 import { succeed, fail } from '../src/result';
 import { Precondition } from '../src';
@@ -29,8 +29,8 @@ describe('index', function() {
 
             let x;
 
-            must(notNull('value').takeRight()).equal('value');
-            must(notNull(x).takeLeft()).be.instance.of(PrimFailure);
+            assert(notNull('value').takeRight()).equal('value');
+            assert(notNull(x).takeLeft()).be.instance.of(PrimFailure);
 
         });
 
@@ -41,8 +41,8 @@ describe('index', function() {
 
             const test = (_: any) => succeed('12');
 
-            must(optional(test)(undefined).takeRight()).be.undefined()
-            must(optional(test)('earth').takeRight()).equal('12')
+            assert(optional(test)(undefined).takeRight()).be.undefined()
+            assert(optional(test)('earth').takeRight()).equal('12')
 
         }))
 
@@ -50,8 +50,8 @@ describe('index', function() {
 
         it('should fail if the value is not equal', function() {
 
-            must(eq(23)(23).takeRight()).equal(23);
-            must(eq(23)('23').takeLeft()).be.instance.of(PrimFailure);
+            assert(eq(23)(23).takeRight()).equal(23);
+            assert(eq(23)('23').takeLeft()).be.instance.of(PrimFailure);
 
         });
 
@@ -64,8 +64,8 @@ describe('index', function() {
             const ok = (n: number) => succeed<number, number | string>(n);
             const notOk = (n: number) => succeed<number, string>(`Got ${n}`);
 
-            must(when(test, ok, notOk)(12).takeRight()).equal(12);
-            must(when(test, ok, notOk)(10).takeRight()).equal('Got 10');
+            assert(when(test, ok, notOk)(12).takeRight()).equal(12);
+            assert(when(test, ok, notOk)(10).takeRight()).equal('Got 10');
 
         }));
 
@@ -75,8 +75,8 @@ describe('index', function() {
             const double = (n: number) => succeed(n * 2);
             const half = (n: number) => succeed(n / 2);
 
-            must(whenTrue(true, double, half)(12).takeRight()).equal(24);
-            must(whenFalse(false, double, half)(12).takeRight()).equal(24);
+            assert(whenTrue(true, double, half)(12).takeRight()).equal(24);
+            assert(whenFalse(false, double, half)(12).takeRight()).equal(24);
 
         }));
 
@@ -87,8 +87,8 @@ describe('index', function() {
             const left = (_: any) => fail('left', 'left');
             const right = (_: any) => succeed('right');
 
-            must(or(left, right)(12).takeRight()).equal('right');
-            must(or(right, right)(12).takeRight()).equal('right');
+            assert(or(left, right)(12).takeRight()).equal('right');
+            assert(or(right, right)(12).takeRight()).equal('right');
 
         })
 
@@ -97,7 +97,7 @@ describe('index', function() {
             const left = (_: any) => fail('left', 'left');
             const right = (_: any) => fail('right', 'right');
 
-            must(or(left, right)(12).takeLeft().explain()).equate({
+            assert(or(left, right)(12).takeLeft().explain()).equate({
 
                 left: 'left',
 
@@ -116,9 +116,9 @@ describe('index', function() {
             const left = (_: any) => fail('left', 'left');
             const right = (_: any) => succeed('right');
 
-            must(and(right, left)(12).takeLeft().explain()).equal('left');
-            must(and(left, right)(12).takeLeft().explain()).equal('left');
-            must(or(right, right)(12).takeRight()).equal('right');
+            assert(and(right, left)(12).takeLeft().explain()).equal('left');
+            assert(and(left, right)(12).takeLeft().explain()).equal('left');
+            assert(or(right, right)(12).takeRight()).equal('right');
 
         })
 
@@ -131,14 +131,14 @@ describe('index', function() {
 
         it('should stop on first failure', () => {
 
-            must(every(up, up, up, fails('away'), up, up)(1).takeLeft().explain())
+            assert(every(up, up, up, fails('away'), up, up)(1).takeLeft().explain())
                 .equal('away');
 
         });
 
         it('should run everything', () => {
 
-            must(every(up, up, up, up, up, up, up, up, up)(1).takeRight())
+            assert(every(up, up, up, up, up, up, up, up, up)(1).takeRight())
                 .equal(10);
 
         });
@@ -152,8 +152,8 @@ describe('index', function() {
             let p = unwrap(() => (n: number) => (n === 12) ?
                 succeed('success') : fail('insuccess', 12));
 
-            must(p(6).takeLeft().message).equal('insuccess');
-            must(p(12).takeRight()).equal('success');
+            assert(p(6).takeLeft().message).equal('insuccess');
+            assert(p(12).takeRight()).equal('success');
 
         });
 
@@ -172,20 +172,20 @@ describe('index', function() {
             let b = caseOf(false, () => succeed('boolean'));
             let bcons = caseOf(Boolean, () => succeed('Boolean'));
 
-            must(s('hello').takeRight()).equal('string');
-            must(s('chello').takeLeft().explain()).equal('caseOf');
-            must(scons('ferimpusds').takeRight()).equal('String');
-            must(scons(<any>12).takeLeft().explain()).equal('caseOf');
+            assert(s('hello').takeRight()).equal('string');
+            assert(s('chello').takeLeft().explain()).equal('caseOf');
+            assert(scons('ferimpusds').takeRight()).equal('String');
+            assert(scons(<any>12).takeLeft().explain()).equal('caseOf');
 
-            must(n(12).takeRight()).equal('number');
-            must(n('12').takeLeft().explain()).equal('caseOf');
-            must(ncons(123243).takeRight()).equal('Number');
-            must(ncons(<any>'adf').takeLeft().explain()).equal('caseOf');
+            assert(n(12).takeRight()).equal('number');
+            assert(n('12').takeLeft().explain()).equal('caseOf');
+            assert(ncons(123243).takeRight()).equal('Number');
+            assert(ncons(<any>'adf').takeLeft().explain()).equal('caseOf');
 
-            must(b(false).takeRight()).equal('boolean');
-            must(b('false').takeLeft().explain()).equal('caseOf');
-            must(bcons(true).takeRight()).equal('Boolean');
-            must(bcons(<any>Date).takeLeft().explain()).equal('caseOf');
+            assert(b(false).takeRight()).equal('boolean');
+            assert(b('false').takeLeft().explain()).equal('caseOf');
+            assert(bcons(true).takeRight()).equal('Boolean');
+            assert(bcons(<any>Date).takeLeft().explain()).equal('caseOf');
 
         });
 
@@ -197,13 +197,13 @@ describe('index', function() {
                     value: 12, config: { flags: Array, active: Boolean }
                 }, () => succeed('shapes'));
 
-            must(p('gum').takeLeft().explain()).equal('caseOf');
-            must(p({}).takeLeft().explain()).equal('caseOf');
-            must(p([]).takeLeft().explain()).equal('caseOf');
-            must(p({ name: 'Hup', value: 12 }).takeLeft().explain()).equal('caseOf');
-            must(p({ name: 'Zum', value: 12, config: { flags: [], active: 12 } })
+            assert(p('gum').takeLeft().explain()).equal('caseOf');
+            assert(p({}).takeLeft().explain()).equal('caseOf');
+            assert(p([]).takeLeft().explain()).equal('caseOf');
+            assert(p({ name: 'Hup', value: 12 }).takeLeft().explain()).equal('caseOf');
+            assert(p({ name: 'Zum', value: 12, config: { flags: [], active: 12 } })
                 .takeLeft().explain()).equal('caseOf');
-            must(p({ name: 'Zum', value: 12, config: { flags: [], active: false } })
+            assert(p({ name: 'Zum', value: 12, config: { flags: [], active: false } })
                 .takeRight()).equal('shapes');
 
         });
@@ -220,7 +220,7 @@ describe('index', function() {
                 caseOf({ name: String }, v => succeed(`${v} -> name`)),
                 caseOf('quenk', v => succeed(`${v} -> quenk`)));
 
-            must(p('quenk').takeRight()).equal('quenk -> String');
+            assert(p('quenk').takeRight()).equal('quenk -> String');
 
         });
 
@@ -228,10 +228,10 @@ describe('index', function() {
 
     describe('identity', () =>
         it('should succeed with the value given', () =>
-            must(identity(12).takeRight()).equal(12)));
+            assert(identity(12).takeRight()).equal(12)));
 
     describe('reject', () =>
         it('should fail all the time', () =>
-            must((reject('testing')(12)).takeLeft().explain()).equal('testing')));
+            assert((reject('testing')(12)).takeLeft().explain()).equal('testing')));
 
 })

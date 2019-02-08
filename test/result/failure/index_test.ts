@@ -1,5 +1,5 @@
-import {must} from '@quenk/must';
-import {PrimFailure} from '../../../src/result/failure';
+import { assert } from '@quenk/test/lib/assert';
+import { PrimFailure } from '../../../src/result/failure';
 
 describe('PrimFailure', function() {
 
@@ -17,7 +17,7 @@ describe('PrimFailure', function() {
 
         it('should explain templates', function() {
 
-            must(fail.explain(templates, { punc: '!' }))
+            assert(fail.explain(templates, { punc: '!' }))
                 .equal('Input "12" is not a number! I no feel joys!');
 
         });

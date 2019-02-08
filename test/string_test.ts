@@ -1,4 +1,4 @@
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { 
   isString,
   matches, 
@@ -16,8 +16,8 @@ describe('string', function() {
 
         it('should fail if the value specified is not a string', function() {
 
-            must(isString('12').takeRight()).equal('12');
-            must(isString(12).takeLeft()).be.instance.of(PrimFailure);
+            assert(isString('12').takeRight()).equal('12');
+            assert(isString(12).takeLeft()).be.instance.of(PrimFailure);
 
         });
 
@@ -28,8 +28,8 @@ describe('string', function() {
         it('should correctly test string', function() {
 
             let email = /.+\@.+\..+/;
-            must(matches(email)('m12@emale.com').takeRight()).equal('m12@emale.com');
-            must(matches(email)('12').takeLeft()).be.instance.of(PrimFailure);
+            assert(matches(email)('m12@emale.com').takeRight()).equal('m12@emale.com');
+            assert(matches(email)('12').takeLeft()).be.instance.of(PrimFailure);
 
         });
 
@@ -39,7 +39,7 @@ describe('string', function() {
 
         it('should remove trailing whitespace', () => {
 
-            must(trim(' ole o zebra       ').takeRight()).equal('ole o zebra');
+            assert(trim(' ole o zebra       ').takeRight()).equal('ole o zebra');
 
         });
 
@@ -51,11 +51,11 @@ describe('string', function() {
 
             let test = range(3, 5);
 
-            must(test('1').takeLeft().explain()).equal('range.min');
-            must(test('111111').takeLeft().explain()).equal('range.max');
-            must(test('111').takeRight()).equal('111');
-            must(test('1111').takeRight()).equal('1111');
-            must(test('11111').takeRight()).equal('11111');
+            assert(test('1').takeLeft().explain()).equal('range.min');
+            assert(test('111111').takeLeft().explain()).equal('range.max');
+            assert(test('111').takeRight()).equal('111');
+            assert(test('1111').takeRight()).equal('1111');
+            assert(test('11111').takeRight()).equal('11111');
 
         })
 
@@ -67,9 +67,9 @@ describe('string', function() {
 
             let test = maxLength(5);
 
-            must(test('1111111').takeLeft().explain()).equal('maxLength');
-          must(test('11111').takeRight()).equal('11111');
-            must(test('1111').takeRight()).equal('1111');
+            assert(test('1111111').takeLeft().explain()).equal('maxLength');
+          assert(test('11111').takeRight()).equal('11111');
+            assert(test('1111').takeRight()).equal('1111');
 
         })
 
@@ -81,9 +81,9 @@ describe('string', function() {
 
             let test = minLength(5);
 
-            must(test('1').takeLeft().explain()).equal('minLength');
-            must(test('11111').takeRight()).equal('11111');
-            must(test('111111').takeRight()).equal('111111');
+            assert(test('1').takeLeft().explain()).equal('minLength');
+            assert(test('11111').takeRight()).equal('11111');
+            assert(test('111111').takeRight()).equal('111111');
 
         })
 
@@ -92,8 +92,8 @@ describe('string', function() {
     describe('notEmpty', () => {
 
         it('should work', () => {
-            must(notEmpty('').takeLeft().explain()).equal('notEmpty');
-            must(notEmpty('[]').takeRight()).equal('[]');
+            assert(notEmpty('').takeLeft().explain()).equal('notEmpty');
+            assert(notEmpty('[]').takeRight()).equal('[]');
 
         })
 
@@ -103,7 +103,7 @@ describe('string', function() {
 
         it('should cast to string', () => {
 
-            must(toString([12]).takeRight()).equal('12');
+            assert(toString([12]).takeRight()).equal('12');
 
         })
 

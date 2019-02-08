@@ -1,4 +1,4 @@
-import * as must from 'must/register';
+import {assert} from '@quenk/test/lib/assert';
 import { notEmpty, isArray, filter, map, range } from '../src/array';
 import { succeed, fail } from '../src/result';
 
@@ -12,8 +12,8 @@ describe('array', function() {
 
         it('should work with arrays', () => {
 
-            must(notEmpty([]).takeLeft().explain()).be('notEmpty');
-            must(notEmpty([1]).takeRight()).eql([1]);
+            assert(notEmpty([]).takeLeft().explain()).equal('notEmpty');
+            assert(notEmpty([1]).takeRight()).equate([1]);
 
         })
 
@@ -23,8 +23,8 @@ describe('array', function() {
 
         it('should work', function() {
 
-            must(isArray('coo').takeLeft().explain({})).be('isArray');
-            must(isArray([]).takeRight()).eql([]);
+            assert(isArray('coo').takeLeft().explain({})).equal('isArray');
+            assert(isArray([]).takeRight()).equate([]);
 
         });
 
@@ -34,9 +34,9 @@ describe('array', function() {
 
         it('should work', function() {
 
-            must(range(1, 3)([]).takeLeft().explain()).eql('range.min');
-            must(range(1, 3)([1, 2, 3, 4]).takeLeft().explain()).eql('range.max');
-            must(range(1, 3)([1, 2, 3]).takeRight()).eql([1, 2, 3]);
+            assert(range(1, 3)([]).takeLeft().explain()).equal('range.min');
+            assert(range(1, 3)([1, 2, 3, 4]).takeLeft().explain()).equal('range.max');
+            assert(range(1, 3)([1, 2, 3]).takeRight()).equate([1, 2, 3]);
 
         });
 
@@ -46,7 +46,7 @@ describe('array', function() {
 
         it('should retain succesful members', function() {
 
-            must(filter(num)(invalidList).takeRight()).eql([0, 1, 2, 3, 5, 7, 9]);
+            assert(filter(num)(invalidList).takeRight()).equate([0, 1, 2, 3, 5, 7, 9]);
 
         });
 
@@ -56,15 +56,15 @@ describe('array', function() {
 
         it('should fail if any member fails', function() {
 
-            must(map(num)(invalidList).takeLeft().explain())
-                .eql({ 4: 'num', 6: 'num', 8: 'num' });
+            assert(map(num)(invalidList).takeLeft().explain())
+                .equate({ 4: 'num', 6: 'num', 8: 'num' });
 
         });
 
         it('should work otherwise', function() {
 
-            must(map(num)(validList).takeRight())
-                .eql([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            assert(map(num)(validList).takeRight())
+                .equate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
         });
 

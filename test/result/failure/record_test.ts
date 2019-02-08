@@ -1,4 +1,4 @@
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import { RecordFailure } from '../../../src/result/failure/record';
 import { PrimFailure } from '../../../src/result/failure';
 
@@ -22,8 +22,8 @@ describe('RecordFailure', () => {
             templates = {
                 'name.string': 'There was a problem with {$key}!',
                 'name': 'You should never see this',
-                'age.range': '{$key} must be within {min} to {max}',
-                'size': '{her} says size must not be {$value}'
+                'age.range': '{$key} assert be within {min} to {max}',
+                'size': '{her} says size assert not be {$value}'
             };
 
         });
@@ -31,11 +31,11 @@ describe('RecordFailure', () => {
         it('should work', () => {
 
             let r = fail.explain(templates, { her: 'Sara' });
-console.error('rrrr ', r);
-            must(r).equate({
+
+            assert(r).equate({
                 name: 'There was a problem with name!',
-                age: 'age must be within 5 to 122',
-                size: 'Sara says size must not be small'
+                age: 'age assert be within 5 to 122',
+                size: 'Sara says size assert not be small'
             });
 
         });

@@ -1,5 +1,5 @@
 import * as Async from '../../src/async/record';
-import { must } from '@quenk/must';
+import { assert } from '@quenk/test/lib/assert';
 import {
     Future,
     toPromise,
@@ -85,21 +85,21 @@ const user: Preconditions<any, any> = {
 const shouldFailInvalidData = (condition: Precondition<object, object>) =>
     toPromise(condition(invalidUser))
         .then(e =>
-            must(e.takeLeft().explain())
+            assert(e.takeLeft().explain())
                 .equate({ name: 'async', age: 'async' }));
 
 const shouldAllowValidData = (condition: Precondition<object, object>) =>
-    condition(validUser).map(e => must(e.takeRight()).equate(validUser));
+    condition(validUser).map(e => assert(e.takeRight()).equate(validUser));
 
 const unknownProperties = (condition: Precondition<object, object>, expected: object) =>
     condition(userWithAddtionalProperties)
-        .map(e => must(e.takeRight()).equate(expected));
+        .map(e => assert(e.takeRight()).equate(expected));
 
 const shouldWorkWithNestedConditions = (condition: Precondition<object, object>) =>
     condition(validAccess)
-        .map(r => must(r.takeRight()).equate(validAccess))
+        .map(r => assert(r.takeRight()).equate(validAccess))
         .chain(() => condition(invalidAccess))
-        .map(r => must(r.takeLeft().explain())
+        .map(r => assert(r.takeLeft().explain())
             .equate({
                 network: 'async', user: { roles: 'async' }, previous: { age: 'async' }
             }))
@@ -107,7 +107,7 @@ const shouldWorkWithNestedConditions = (condition: Precondition<object, object>)
 const shouldApplyEveryCondtion = (condition: Precondition<object, object>) =>
     condition
         (partialValidAccess)
-        .map(r => must(r.takeLeft().explain({})).equate(partialValidAccessErrors));
+        .map(r => assert(r.takeLeft().explain({})).equate(partialValidAccessErrors));
 
 describe('async', function() {
 
@@ -189,9 +189,9 @@ describe('async', function() {
             Async
                 .intersect(access)
                 (partialValidAccess)
-                .map(r => must(r.takeRight()).equate(partialValidAccess))
+                .map(r => assert(r.takeRight()).equate(partialValidAccess))
                 .chain(() => intersect(access)(partialInvalidAccess))
-                .map(r => must(r.takeLeft().explain())
+                .map(r => assert(r.takeLeft().explain())
                     .equate(partialInvalidAccessErrors)))
 
     })
