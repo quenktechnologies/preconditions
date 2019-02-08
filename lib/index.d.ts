@@ -103,7 +103,7 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  * function -> Treated as a constructor and results in an instanceof check.
  *             For String,Number and Boolean, this uses the typeof check.
  */
-export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precondition<A, B>;
+export declare const caseOf: <A, B>(t: Pattern<A>, p: Precondition<A, B>) => Precondition<A, B>;
 /**
  * log the value to the console.
  */

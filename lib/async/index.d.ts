@@ -43,7 +43,7 @@ export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition
 /**
  * caseOf (async).
  */
-export declare const caseOf: <A, B>(t: Pattern, p: Precondition<A, B>) => Precondition<A, B>;
+export declare const caseOf: <A, B>(t: Pattern<A>, p: Precondition<A, B>) => Precondition<A, B>;
 /**
  * match (async version).
  */

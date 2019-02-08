@@ -107,7 +107,7 @@ const isNon = <A>(value: A): boolean =>
 /**
  * caseOf (async).
  */
-export const caseOf = <A, B>(t: Pattern, p: Precondition<A, B>)
+export const caseOf = <A, B>(t: Pattern<A>, p: Precondition<A, B>)
     : Precondition<A, B> => (value: A) => test(value, t) ?
         p(value) :
         pure(fail<A, B>('caseOf', value, { type: t }));
