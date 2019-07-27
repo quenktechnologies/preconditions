@@ -92,3 +92,33 @@ const onFailure = <A, B>(key: number, { failures, values }: Reports<A, B>) =>
 const onSuccess = <A, B>({ failures, values }: Reports<A, B>) => (b: B)
     : Reports<A, B> =>
     ({ failures, values: values.concat(b) })
+
+/**
+ * tuple tests whether the value supplied qualifies as a tuple.
+ *
+ * Each precondition in the list represents a precondition for its
+ * corresponding tuple element.
+ */
+export const tuple = <A, B>(list: Precondition<A, B>[])
+    : Precondition<A[], B[]> => (value: A[]) => {
+
+        if (value.length !== list.length)
+            return fail<A[], B[]>('tuple', value);
+
+        let results = value.map((v, idx) => list[idx](v));
+
+        let fails = results.filter(v => v.isLeft()).map(e => e.takeLeft());
+
+        if (fails.length > 0) {
+
+            let failMap =
+                fails.reduce((p, c, k) => { p[k] = c; return p; },
+                    <Failures<A>>{});
+
+            return left<Failure<A[]>, B[]>(AF.create(failMap, value, { value }));
+
+        }
+
+        return succeed<A[], B[]>(results.map(e => e.takeRight()));
+
+    }

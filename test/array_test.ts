@@ -1,12 +1,13 @@
-import {assert} from '@quenk/test/lib/assert';
-import { notEmpty, isArray, filter, map, range } from '../src/array';
+import { assert } from '@quenk/test/lib/assert';
+import { notEmpty, isArray, filter, map, range, tuple } from '../src/array';
 import { succeed, fail } from '../src/result';
 
 const num = <A>(n: A) => (typeof n === 'number') ? succeed(n) : fail('num', n);
+const string = <A>(n: A) => (typeof n === 'string') ? succeed(n) : fail('string', n);
 const invalidList = [0, 1, 2, 3, 'four', 5, 'six', 7, 'eight', 9];
 const validList = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-describe('array', function() {
+describe('array', () => {
 
     describe('notEmpty', () => {
 
@@ -19,9 +20,9 @@ describe('array', function() {
 
     });
 
-    describe('isArray', function() {
+    describe('isArray', () => {
 
-        it('should work', function() {
+        it('should work', () => {
 
             assert(isArray('coo').takeLeft().explain({})).equal('isArray');
             assert(isArray([]).takeRight()).equate([]);
@@ -30,9 +31,9 @@ describe('array', function() {
 
     });
 
-    describe('range', function() {
+    describe('range', () => {
 
-        it('should work', function() {
+        it('should work', () => {
 
             assert(range(1, 3)([]).takeLeft().explain()).equal('range.min');
             assert(range(1, 3)([1, 2, 3, 4]).takeLeft().explain()).equal('range.max');
@@ -42,9 +43,9 @@ describe('array', function() {
 
     });
 
-    describe('filter', function() {
+    describe('filter', () => {
 
-        it('should retain succesful members', function() {
+        it('should retain succesful members', () => {
 
             assert(filter(num)(invalidList).takeRight()).equate([0, 1, 2, 3, 5, 7, 9]);
 
@@ -52,19 +53,45 @@ describe('array', function() {
 
     });
 
-    describe('map', function() {
+    describe('map', () => {
 
-        it('should fail if any member fails', function() {
+        it('should fail if any member fails', () => {
 
             assert(map(num)(invalidList).takeLeft().explain())
                 .equate({ 4: 'num', 6: 'num', 8: 'num' });
 
         });
 
-        it('should work otherwise', function() {
+        it('should work otherwise', () => {
 
             assert(map(num)(validList).takeRight())
                 .equate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        });
+
+    });
+
+    describe('tuple', () => {
+
+        const checks = [num, string, num];
+
+        it('should pass when valid', () => {
+
+            let value = [1, 'two', 3];
+
+            let ret = tuple(checks)(value).takeRight();
+
+            assert(ret).equate([1, 'two', 3]);
+
+        });
+
+        it('should fail when invalid', () => {
+
+            let value = [1, 2, 3];
+
+            let ret = tuple(checks)(value).isLeft();
+
+            assert(ret).true();
 
         });
 

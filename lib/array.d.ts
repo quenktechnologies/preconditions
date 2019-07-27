@@ -33,3 +33,10 @@ export declare const filter: <A, B>(p: Precondition<A, B>) => Precondition<A[], 
  * the entire array is considered a failure.
  */
 export declare const map: <A, B>(p: Precondition<A, B>) => Precondition<A[], B[]>;
+/**
+ * tuple tests whether the value supplied qualifies as a tuple.
+ *
+ * Each precondition in the list represents a precondition for its
+ * corresponding tuple element.
+ */
+export declare const tuple: <A, B>(list: Precondition<A, B>[]) => Precondition<A[], B[]>;
