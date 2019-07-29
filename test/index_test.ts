@@ -6,6 +6,7 @@ import {
     notNull,
     optional,
     identity,
+    discard,
     eq,
     when,
     whenTrue,
@@ -229,6 +230,10 @@ describe('index', function() {
     describe('identity', () =>
         it('should succeed with the value given', () =>
             assert(identity(12).takeRight()).equal(12)));
+
+    describe('discard', () =>
+        it('should succeed with undefined', () =>
+            assert(discard(12).takeRight()).equal(undefined)));
 
     describe('reject', () =>
         it('should fail all the time', () =>

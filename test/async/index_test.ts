@@ -6,6 +6,7 @@ import {
     caseOf,
     match,
     identity,
+    discard,
     or,
     reject
 } from '../../src/async';
@@ -83,6 +84,17 @@ describe('async', function() {
 
             return toPromise(identity(12))
                 .then(v => assert(v.takeRight()).equal(12));
+
+        });
+
+    });
+
+    describe('discard', function() {
+
+        it('should discard the value passed', function() {
+
+            return toPromise(discard(12))
+                .then(v => assert(v.takeRight()).equal(undefined));
 
         });
 

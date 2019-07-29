@@ -56,6 +56,10 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
 export declare const identity: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
 export declare const id: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
 /**
+ * discard (async).
+ */
+export declare const discard: any;
+/**
  * reject always fails with reason no matter the value supplied.
  */
 export declare const reject: <A>(reason: string) => Precondition<A, A>;

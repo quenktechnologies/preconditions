@@ -35,7 +35,7 @@ export const async = <A, B>(p: sync.Precondition<A, B>)
  */
 export const or = <A, B>(l: Precondition<A, B>, r: Precondition<A, B>)
     : Precondition<A, B> => (value: A) =>
-        l(value).chain(e =>            e.fold<Future<Result<A, B>>>(orFail(value, r), orSucc));
+        l(value).chain(e => e.fold<Future<Result<A, B>>>(orFail(value, r), orSucc));
 
 const orFail = <A, B>(value: A, r: Precondition<A, B>) => (f: Failure<A>) =>
     r(value).map(e2 => e2.lmap((f2): Failure<A> => new DualFailure(value, f, f2)));
@@ -134,6 +134,11 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
 export const identity = <A>(value: A) => pure(succeed<A, A>(value));
 
 export const id = identity;
+
+/**
+ * discard (async).
+ */
+export const discard = <A>(_: A) => pure(succeed<A, undefined>(undefined));
 
 /**
  * reject always fails with reason no matter the value supplied.

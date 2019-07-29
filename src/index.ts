@@ -109,6 +109,11 @@ export const optional = <A, B>(p: Precondition<A, A | B>)
 export const identity = <A>(value: A) => succeed<A, A>(value);
 
 /**
+ * discard throws away a value by assigning it ot undefined.
+ */
+export const discard = <A>(_: A) => succeed<A, undefined>(undefined);
+
+/**
  * reject always fails with reason no matter the value supplied.
  */
 export const reject = <A, B>(reason: string): Precondition<A, B> => (value: A) =>
@@ -119,10 +124,10 @@ export const reject = <A, B>(reason: string): Precondition<A, B> => (value: A) =
  */
 export const or =
     <A, B>(left: Precondition<A, B>, right: Precondition<A, B>)
-  : Precondition<A, B> =>        (value: A) => 
-  left(value)
-  .orElse(f => right(value)
-               .lmap(f2 => new DualFailure(value, f, f2)));
+        : Precondition<A, B> => (value: A) =>
+            left(value)
+                .orElse(f => right(value)
+                    .lmap(f2 => new DualFailure(value, f, f2)));
 
 /**
  * and performs the equivalent of a logical 'and' between two preconditions.
@@ -214,7 +219,7 @@ export const match = <A, B>(p: Precondition<A, B>, ...list: Precondition<A, B>[]
  *             For String,Number and Boolean, this uses the typeof check.
  */
 export const caseOf =
-  <A, B>(t: Pattern<A>, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
+    <A, B>(t: Pattern<A>, p: Precondition<A, B>): Precondition<A, B> => (value: A) =>
         test(value, t) ? p(value) : fail<A, B>('caseOf', value, { type: t });
 
 /**

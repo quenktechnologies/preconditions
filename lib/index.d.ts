@@ -60,6 +60,10 @@ export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition
  */
 export declare const identity: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
 /**
+ * discard throws away a value by assigning it ot undefined.
+ */
+export declare const discard: <A>(_: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, undefined>;
+/**
  * reject always fails with reason no matter the value supplied.
  */
 export declare const reject: <A, B>(reason: string) => Precondition<A, B>;
