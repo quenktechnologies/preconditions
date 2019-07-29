@@ -58,7 +58,7 @@ export declare const id: <A>(value: A) => Future<import("@quenk/noni/lib/data/ei
 /**
  * discard (async).
  */
-export declare const discard: any;
+export declare const discard: <A>(_: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, undefined>>;
 /**
  * reject always fails with reason no matter the value supplied.
  */

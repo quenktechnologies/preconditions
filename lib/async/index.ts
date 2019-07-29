@@ -138,7 +138,7 @@ export const id = identity;
 /**
  * discard (async).
  */
-export const discard <A>(_: A) => pure(succeed<A, undefined>(undefined));
+export const discard = <A>(_: A) => pure(succeed<A, undefined>(undefined));
 
 /**
  * reject always fails with reason no matter the value supplied.
