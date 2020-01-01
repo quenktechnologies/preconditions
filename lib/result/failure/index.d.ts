@@ -97,8 +97,8 @@ export declare class ModifiedFailure<A, B> implements Failure<A> {
     value: A;
     previous: Failure<B>;
     constructor(value: A, previous: Failure<B>);
-    readonly message: string;
-    readonly context: Context;
+    get message(): string;
+    get context(): Context;
     static create<A, B>(value: A, previous: Failure<B>): ModifiedFailure<A, B>;
     explain(templates?: ErrorTemplates, ctx?: Context): Explanation;
     toError(templates?: ErrorTemplates, context?: Context): Error;
@@ -108,8 +108,8 @@ export declare class DualFailure<A, B> implements Failure<A> {
     left: Failure<A>;
     right: Failure<B>;
     constructor(value: A, left: Failure<A>, right: Failure<B>);
-    readonly message: string;
-    readonly context: Context;
+    get message(): string;
+    get context(): Context;
     explain(templates?: ErrorTemplates, ctx?: Context): Explanation;
     toError(templates?: ErrorTemplates, context?: Context): Error;
 }

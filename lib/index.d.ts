@@ -1,6 +1,5 @@
 import { Pattern } from '@quenk/noni/lib/data/type';
 import { Result } from './result';
-import { Failure } from './result/failure';
 /**
  * Precondition represents some condition that must be satisfied
  * in order for data to be considered a valid type.
@@ -49,7 +48,7 @@ export declare const neq: <A, B>(target: B) => Precondition<A, B>;
 /**
  * notNull will fail if the value is null or undefined.
  */
-export declare const notNull: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const notNull: <A>(value: A) => Result<A, A>;
 /**
  * optional applies the precondition given only if the value is not null
  * or undefined.
@@ -58,11 +57,11 @@ export declare const optional: <A, B>(p: Precondition<A, A | B>) => Precondition
 /**
  * identity always succeeds with the value it is applied to.
  */
-export declare const identity: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const identity: <A>(value: A) => Result<A, A>;
 /**
  * discard throws away a value by assigning it ot undefined.
  */
-export declare const discard: <A>(_: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, undefined>;
+export declare const discard: <A>(_: A) => Result<A, undefined>;
 /**
  * reject always fails with reason no matter the value supplied.
  */
@@ -111,4 +110,4 @@ export declare const caseOf: <A, B>(t: Pattern<A>, p: Precondition<A, B>) => Pre
 /**
  * log the value to the console.
  */
-export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const log: <A>(value: A) => Result<A, A>;

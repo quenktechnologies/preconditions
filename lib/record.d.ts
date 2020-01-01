@@ -1,10 +1,10 @@
 import { Record } from '@quenk/noni/lib/data/record';
-import { Failure } from './result/failure';
+import { Result } from './result';
 import { Precondition, Preconditions } from './';
 /**
  * isRecord tests if the value is an js object (and not an Array).
  */
-export declare const isRecord: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<any>, A>;
+export declare const isRecord: <A>(value: A) => Result<any, A>;
 /**
  * restrict applies a record of preconditions to an input object keeping
  * only those properties that have a matching precondition.

@@ -5,7 +5,6 @@
 import * as sync from '../';
 import { Pattern } from '@quenk/noni/lib/data/type';
 import { Future } from '@quenk/noni/lib/control/monad/future';
-import { Failure } from '../result/failure';
 import { Result } from '../result';
 /**
  * Precondition (async).
@@ -53,12 +52,12 @@ export declare const match: <A, B>(p: Precondition<A, B>, ...list: Precondition<
  *
  * Succeeds with whatever value is passed.
  */
-export declare const identity: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
-export declare const id: <A>(value: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, A>>;
+export declare const identity: <A>(value: A) => Future<Result<A, A>>;
+export declare const id: <A>(value: A) => Future<Result<A, A>>;
 /**
  * discard (async).
  */
-export declare const discard: <A>(_: A) => Future<import("@quenk/noni/lib/data/either").Either<Failure<A>, undefined>>;
+export declare const discard: <A>(_: A) => Future<Result<A, undefined>>;
 /**
  * reject always fails with reason no matter the value supplied.
  */
@@ -66,4 +65,4 @@ export declare const reject: <A>(reason: string) => Precondition<A, A>;
 /**
  * log the value to the console.
  */
-export declare const log: <A>(value: A) => import("@quenk/noni/lib/data/either").Either<Failure<A>, A>;
+export declare const log: <A>(value: A) => Result<A, A>;
