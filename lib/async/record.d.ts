@@ -3,20 +3,20 @@ import { Precondition, Preconditions } from './';
 /**
  * restrict (async version).
  */
-export declare const restrict: <A, AR extends Record<A>, B, BR extends Record<B>>(conditions: Preconditions<A, B>) => Precondition<AR, BR>;
+export declare const restrict: <A, B, R extends Record<B>>(tests: Preconditions<A, B>) => Precondition<Record<A>, R>;
 /**
  * disjoint (async version).
  */
-export declare const disjoint: <A, AR extends Record<A>, B, BR extends Record<B>>(conditions: Preconditions<A, B>) => Precondition<AR, BR>;
+export declare const disjoint: <A, B, R extends Record<B>>(tests: Preconditions<A, B>) => Precondition<Record<A>, R>;
 /**
  * intersect (async version).
  */
-export declare const intersect: <A, AR extends Record<A>, B, BR extends Record<B>>(conditions: Preconditions<A, B>) => Precondition<AR, BR>;
+export declare const intersect: <A, B, R extends Record<B>>(tests: Preconditions<A, B>) => Precondition<Record<A>, R>;
 /**
  * union (async version).
  */
-export declare const union: <A, AR extends Record<A>, B, BR extends Record<B>>(conditions: Preconditions<A, B>) => Precondition<AR, BR>;
+export declare const union: <A, B, R extends Record<B>>(tests: Preconditions<A, B>) => Precondition<Record<A>, R>;
 /**
  * map (async version).
  */
-export declare const map: <A, AR extends Record<A>, B, BR extends Record<B>>(condition: Precondition<A, B>) => Precondition<AR, BR>;
+export declare const map: <A, B, R extends Record<B>>(test: Precondition<A, B>) => Precondition<Record<A>, R>;
