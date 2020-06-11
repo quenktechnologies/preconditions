@@ -1,6 +1,6 @@
 {
   "name": "@quenk/preconditions",
-  "version": "5.4.3",
+  "version": "5.5.0",
   "description": "Make data satisfy constraints before using.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -9,7 +9,7 @@
     "test": "./node_modules/.bin/mocha --opts mocha.opts $(find test -name *_test.ts)"
   },
   "files": [
-"lib"
+    "lib"
   ],
   "keywords": [
     "preconditions",
