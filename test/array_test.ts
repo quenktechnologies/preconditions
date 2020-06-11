@@ -2,9 +2,16 @@ import { assert } from '@quenk/test/lib/assert';
 import { notEmpty, isArray, filter, map, range, tuple } from '../src/array';
 import { succeed, fail } from '../src/result';
 
-const num = <A>(n: A) => (typeof n === 'number') ? succeed(n) : fail('num', n);
-const string = <A>(n: A) => (typeof n === 'string') ? succeed(n) : fail('string', n);
+const num = <A>(n: A) => (typeof n === 'number') ?
+    succeed<A, number>(n) :
+    fail<A, number>('num', n);
+
+const string = <A>(n: A) => (typeof n === 'string') ?
+    succeed(n) :
+    fail('string', n);
+
 const invalidList = [0, 1, 2, 3, 'four', 5, 'six', 7, 'eight', 9];
+
 const validList = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 describe('array', () => {

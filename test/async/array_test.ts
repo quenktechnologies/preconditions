@@ -4,7 +4,7 @@ import { filter, map, tuple } from '../../src/async/array';
 import { succeed, fail } from '../../src/result';
 
 const num = <A>(n: A) => (typeof n === 'number') ?
-    pure(succeed(n)) : pure(fail('num', n, {}));
+    pure(succeed<A, number>(n)) : pure(fail<A, number>('num', n, {}));
 
 const string = <A>(n: A) => (typeof n === 'string') ?
     pure(succeed(n)) : pure(fail('string', n, {}));

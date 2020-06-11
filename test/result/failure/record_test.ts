@@ -13,7 +13,7 @@ describe('RecordFailure', () => {
 
         beforeEach(function() {
 
-            fail = new RecordFailure<Prim, { [key: string]: Prim }>({
+            fail = new RecordFailure<Prim>({
                 name: new PrimFailure('string', new Date()),
                 age: new PrimFailure('range', 200, { min: 5, max: 122 }),
                 size: new PrimFailure('enum', 'small')
