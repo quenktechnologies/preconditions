@@ -80,6 +80,10 @@ export declare const and: <A, B, C>(l: Precondition<A, B>, r: Precondition<B, C>
  */
 export declare const every: <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]) => Precondition<A, B>;
 /**
+ * anyOf applies all of the preconditions provided until one succeeds.
+ */
+export declare const anyOf: <A, B>(...list: Precondition<A, B>[]) => Precondition<A, B>;
+/**
  * exists requires the value to be enumerated in the supplied list.
  */
 export declare const exists: <A>(list: A[]) => Precondition<A, A>;
