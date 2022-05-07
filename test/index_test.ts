@@ -13,6 +13,7 @@ import {
     every,
     or,
     and,
+    anyOf,
     caseOf,
     match,
     whenFalse,
@@ -141,6 +142,28 @@ describe('index', function() {
 
             assert(every(up, up, up, up, up, up, up, up, up)(1).takeRight())
                 .equal(10);
+
+        });
+
+    });
+
+    describe('anyOf', function() {
+
+        const no = (msg = 'no') => (val: number) => fail(msg, val);
+
+        const yes = (val: number) => succeed(val + 1);
+
+        it('should continue', () => {
+
+            assert(anyOf(no(), no(), yes, no())(1)
+                .takeRight()).equal(2);
+
+        });
+
+        it('should return the last error', () => {
+
+            assert(anyOf(no('1'), no('2'), no('3'))(1).takeLeft().explain())
+                .equal('3');
 
         });
 

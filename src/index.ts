@@ -8,6 +8,7 @@
  */
 import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
 import { Pattern, test } from '@quenk/noni/lib/data/type';
+
 import { Result, fail, succeed } from './result';
 import { Failure, ModifiedFailure as MF, DualFailure } from './result/failure';
 
@@ -174,6 +175,26 @@ export const every = <A, B>(p: Precondition<A, B>, ...list: Precondition<B, B>[]
             return left<Failure<A>, B>(MF.create(value, r2.takeLeft()));
 
         return right<Failure<A>, B>(r2.takeRight());
+
+    }
+
+/**
+ * anyOf applies all of the preconditions provided until one succeeds.
+ */
+export const anyOf = <A, B>(...list: Precondition<A, B>[])
+    : Precondition<A, B> => (value: A) => {
+
+        let result: Result<A, B> = fail('anyOf', value);
+
+        for (let i = 0; i < list.length; i++) {
+
+            result = list[i](value);
+
+            if (result.isRight()) break;
+
+        }
+
+        return result;
 
     }
 
