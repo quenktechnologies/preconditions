@@ -24,11 +24,13 @@ export interface Preconditions<A, B> {
 }
 
 /**
- * async wraps a sync api function so it can be used with other async 
- * functions.
+ * lift a sync precondition into an async one.
  */
-export const async = <A, B>(p: sync.Precondition<A, B>)
+export const lift = <A, B>(p: sync.Precondition<A, B>)
     : Precondition<A, B> => (a: A) => pure(p(a));
+
+// @deprecated
+export { lift as async }
 
 /**
  * or (async).
