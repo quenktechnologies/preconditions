@@ -1,3 +1,5 @@
+import { Type } from '@quenk/noni/lib/data/type';
+
 import { Precondition } from './';
 import { fail, succeed } from './result';
 
@@ -6,16 +8,17 @@ import { fail, succeed } from './result';
  */
 export const range =
     (min: number, max: number): Precondition<number, number> =>
-        (value: number) => (value < min) ?
-            fail<number, number>('range.min', value, { min, max }) :
-            (value > max) ?
-                fail<number, number>('range.max', value, { min, max }) :
-                succeed<number, number>(value)
+    (value: number) =>
+        value < min
+            ? fail<number, number>('range.min', value, { min, max })
+            : value > max
+            ? fail<number, number>('range.max', value, { min, max })
+            : succeed<number, number>(value);
 
 /**
  * isFunction tests if a value is a function.
  */
-export const isFunction: Precondition<any, Function> =
-    <A>(f: A) => (typeof f === 'function') ?
-        succeed<A, Function>(f) :
-        fail<A, Function>('function', f);
+export const isFunction: Precondition<Type, Function> = <A>(f: A) =>
+    typeof f === 'function'
+        ? succeed<A, Function>(f)
+        : fail<A, Function>('function', f);

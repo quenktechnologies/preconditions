@@ -1,21 +1,14 @@
-lib: $(shell find src -name \*.ts) 
-	rm -R lib || true
-	cp -R src $@
-	./node_modules/.bin/tsc --project $@
+.DELETE_ON_ERROR:
+lib: $(shell find src -type f)
+	rm -R lib 2> /dev/null || true 
+	mkdir lib
+	cp -R -u src/* lib
+	./node_modules/.bin/tsc --project lib
 
-.PHONY: clean
-clean:
-	rm -R lib || true
+.PHONY: format
+format:
+	./node_modules/.bin/prettier --write {src,test}/**/*.{ts,js,json} $(ARGS)
 
-.PHONY: docs
-docs: 
-	./node_modules/.bin/typedoc \
-	--mode modules \
-	--out $@ \
-	--excludeExternals \
-	--excludeNotExported \
-	--excludePrivate \
-	--tsconfig lib/tsconfig.json \
-	--theme minimal && \
-	echo 'DO NOT DELETE!' > docs/.nojekyll 
-
+.PHONY: lint
+lint:
+	./node_modules/.bin/eslint {src,test}/**/*.{ts,js}  $(ARGS)
