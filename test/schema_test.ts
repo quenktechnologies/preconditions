@@ -193,12 +193,12 @@ describe('schema', () => {
                 filters: { name: 1, age: 0, active: 1 }
             });
 
-            xit('should not permit missing properties', () => {
+            it('should not permit missing properties', () => {
                 return runTest({
                     schema,
                     test: mapTo(
                         {
-                            name: 'isString',
+                            name: 'minLength',
                             age: 'NaN',
                             tags: 'isArray',
                             filters: 'isRecord'
@@ -271,6 +271,7 @@ describe('schema', () => {
                                 filters: 'yes'
                             },
                             output: {
+                              name: 'minLength',
                                 age: 'min',
                                 tags: 'isArray',
                                 filters: 'isRecord'

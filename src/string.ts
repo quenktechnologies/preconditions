@@ -96,4 +96,4 @@ export const isString: Precondition<Type, string> = <A>(a: A) =>
  * toString casts a value into a string.
  */
 export const toString: Precondition<Type, string> = <A>(a: A) =>
-    succeed<A, string>(String(a));
+    succeed<A, string>(a == null ? '' :String(a));
