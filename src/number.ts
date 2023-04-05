@@ -35,6 +35,26 @@ export const range =
             : succeed<number, number>(value);
 
 /**
+ * min tests whether a value is more than or equal to the desired target.
+ */
+export const min =
+    (target: number): Precondition<number, number> =>
+    value =>
+        value >= target
+            ? succeed<number, number>(value)
+            : fail<number, number>('min', value, { target, value });
+
+/**
+ * max tests whether a value is less than or equal to the desired target.
+ */
+export const max =
+    (target: number): Precondition<number, number> =>
+    value =>
+        value <= target
+            ? succeed<number, number>(value)
+            : fail<number, number>('max', value, { target, value });
+
+/**
  * isNumber tests if a value is a number.
  */
 export const isNumber: Precondition<Type, number> = <A>(n: A) =>

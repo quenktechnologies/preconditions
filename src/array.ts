@@ -25,10 +25,10 @@ export const notEmpty = <A>(value: A[]) =>
  */
 export const maxLength =
     <A>(target: number): Precondition<A[], A[]> =>
-        (value: A[]) =>
-            value.length > target
-                ? fail<A[], A[]>('maxLength', value, { target, value })
-                : succeed<A[], A[]>(value);
+    (value: A[]) =>
+        value.length > target
+            ? fail<A[], A[]>('maxLength', value, { target, value })
+            : succeed<A[], A[]>(value);
 
 export { maxLength as max };
 
@@ -37,10 +37,10 @@ export { maxLength as max };
  */
 export const minLength =
     <A>(target: number): Precondition<A[], A[]> =>
-        (value: A[]) =>
-            value.length < target
-                ? fail<A[], A[]>('minLength', value, { target, value })
-                : succeed<A[], A[]>(value);
+    (value: A[]) =>
+        value.length < target
+            ? fail<A[], A[]>('minLength', value, { target, value })
+            : succeed<A[], A[]>(value);
 
 export { minLength as min };
 
@@ -49,12 +49,12 @@ export { minLength as min };
  */
 export const range =
     <A>(min: number, max: number) =>
-        (value: A[]) =>
-            value.length < min
-                ? fail('range.min', value, { min, max, value })
-                : value.length > max
-                    ? fail('range.max', value)
-                    : succeed(value);
+    (value: A[]) =>
+        value.length < min
+            ? fail('range.min', value, { min, max, value })
+            : value.length > max
+            ? fail('range.max', value)
+            : succeed(value);
 
 /**
  * filter applies a precondition to each member of an array producing
@@ -62,13 +62,13 @@ export const range =
  */
 export const filter =
     <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
-        (value: A[]) =>
-            succeed<A[], B[]>(
-                value
-                    .map(p)
-                    .filter(e => e instanceof Right)
-                    .map(e => e.takeRight())
-            );
+    (value: A[]) =>
+        succeed<A[], B[]>(
+            value
+                .map(p)
+                .filter(e => e instanceof Right)
+                .map(e => e.takeRight())
+        );
 
 /**
  * map applies a precondition to each member of an array.
@@ -77,7 +77,8 @@ export const filter =
  * the entire array is considered a failure.
  */
 export const map =
-    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) => {
+    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
+    (value: A[]) => {
         let failed = 0;
         let failures: Failures<A> = {};
         let values = [];
@@ -87,11 +88,13 @@ export const map =
                 failed++;
                 failures[i] = result.takeLeft();
             } else {
-                values[i] = result.takeRight()
+                values[i] = result.takeRight();
             }
         }
-        return (failed === 0) ? succeed<A[], B[]>(values) : left(AF.create(failures, value, { value }));
-    }
+        return failed === 0
+            ? succeed<A[], B[]>(values)
+            : left(AF.create(failures, value, { value }));
+    };
 
 /**
  * tuple tests whether the value supplied qualifies as a tuple.
@@ -101,23 +104,23 @@ export const map =
  */
 export const tuple =
     <A, B>(list: Precondition<A, B>[]): Precondition<A[], B[]> =>
-        (value: A[]) => {
-            if (value.length !== list.length) return fail<A[], B[]>('tuple', value);
+    (value: A[]) => {
+        if (value.length !== list.length) return fail<A[], B[]>('tuple', value);
 
-            let results = value.map((v, idx) => list[idx](v));
+        let results = value.map((v, idx) => list[idx](v));
 
-            let fails = results.filter(v => v.isLeft()).map(e => e.takeLeft());
+        let fails = results.filter(v => v.isLeft()).map(e => e.takeLeft());
 
-            if (fails.length > 0) {
-                let failMap = fails.reduce((p, c, k) => {
-                    p[k] = c;
-                    return p;
-                }, <Failures<A>>{});
+        if (fails.length > 0) {
+            let failMap = fails.reduce((p, c, k) => {
+                p[k] = c;
+                return p;
+            }, <Failures<A>>{});
 
-                return left<Failure<A[]>, B[]>(
-                    AF.create(failMap, value, { value })
-                );
-            }
+            return left<Failure<A[]>, B[]>(
+                AF.create(failMap, value, { value })
+            );
+        }
 
-            return succeed<A[], B[]>(results.map(e => e.takeRight()));
-        };
+        return succeed<A[], B[]>(results.map(e => e.takeRight()));
+    };

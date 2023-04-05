@@ -271,7 +271,7 @@ describe('schema', () => {
                                 filters: 'yes'
                             },
                             output: {
-                              name: 'minLength',
+                                name: 'minLength',
                                 age: 'min',
                                 tags: 'isArray',
                                 filters: 'isRecord'

@@ -183,7 +183,7 @@ export interface NumberTypeSchema extends PropertyTypeSchema {
 /**
  * BooleanTypeSchema represents a value that may be true or false.
  */
-export interface BooleanTypeSchema extends PropertyTypeSchema { }
+export type BooleanTypeSchema = PropertyTypeSchema;
 
 /**
  * JSONPreconditionProvider is a function that once invoked provides a
@@ -216,11 +216,10 @@ export interface Options {
 }
 
 /**
- * Context is used to resolve preconditions found in the respective pipeline 
+ * Context is used to resolve preconditions found in the respective pipeline
  * directives.
  */
-export interface Context
-    extends Record<JSONPrecondition | JSONPreconditionProvider> { }
+export type Context = Record<JSONPrecondition | JSONPreconditionProvider>;
 
 const defaultOptions = { strict: false, context: {}, partial: false };
 
@@ -236,7 +235,9 @@ export const fromSchema = (opts: Partial<Options>, schema: Schema) =>
 const _fromSchema = (opts: Options, schema: Schema): Except<JSONPrecondition> =>
     <Except<JSONPrecondition>>match(schema)
         .caseOf({ type: TYPE_OBJECT }, () => fromObjectSchema(opts, schema))
-        .caseOf({ type: TYPE_ARRAY }, () => fromArraySchema(opts, <ArrayTypeSchema>schema))
+        .caseOf({ type: TYPE_ARRAY }, () =>
+            fromArraySchema(opts, <ArrayTypeSchema>schema)
+        )
         .caseOf({ type: TYPE_STRING }, () =>
             fromStringSchema(opts, <StringTypeSchema>schema)
         )
@@ -374,9 +375,11 @@ export const fromNumberSchema = (
 
         pipes.push(number.isNumber);
 
-        if (isNumber(schema.min)) pipes.push(<JSONPrecondition>number.min(schema.min));
+        if (isNumber(schema.min))
+            pipes.push(<JSONPrecondition>number.min(schema.min));
 
-        if (isNumber(schema.max)) pipes.push(<JSONPrecondition>number.max(schema.max));
+        if (isNumber(schema.max))
+            pipes.push(<JSONPrecondition>number.max(schema.max));
 
         pipes = pipes.concat(schema.pipeline || []);
     }
@@ -433,5 +436,5 @@ const pipeline2Precondition = (
 
 const _optional =
     (schema: Schema) =>
-        (prec: JSONPrecondition): JSONPrecondition =>
-            schema.optional ? optional(prec) : prec;
+    (prec: JSONPrecondition): JSONPrecondition =>
+        schema.optional ? optional(prec) : prec;
