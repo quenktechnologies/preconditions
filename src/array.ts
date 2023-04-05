@@ -1,16 +1,10 @@
-import { Precondition } from './';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Right, left } from '@quenk/noni/lib/data/either';
-import { merge } from '@quenk/noni/lib/data/record';
+
 import { ArrayFailure as AF } from './result/failure/array';
 import { Failures, Failure } from './result/failure';
 import { succeed, fail } from './result';
-
-interface Reports<M, V> {
-    failures: Failures<M>;
-
-    values: V[];
-}
+import { Precondition } from './';
 
 /**
  * isArray tests if the value is an array
@@ -29,33 +23,38 @@ export const notEmpty = <A>(value: A[]) =>
 /**
  * max sets a maximum number of elements the array can contain.
  */
-export const max =
+export const maxLength =
     <A>(target: number): Precondition<A[], A[]> =>
-    (value: A[]) =>
-        value.length > target
-            ? fail<A[], A[]>('max', value, { target, value })
-            : succeed<A[], A[]>(value);
+        (value: A[]) =>
+            value.length > target
+                ? fail<A[], A[]>('maxLength', value, { target, value })
+                : succeed<A[], A[]>(value);
+
+export { maxLength as max };
+
 /**
  * min sets a minimum number of elements the array can contain.
  */
-export const min =
+export const minLength =
     <A>(target: number): Precondition<A[], A[]> =>
-    (value: A[]) =>
-        value.length < target
-            ? fail<A[], A[]>('min', value, { target, value })
-            : succeed<A[], A[]>(value);
+        (value: A[]) =>
+            value.length < target
+                ? fail<A[], A[]>('minLength', value, { target, value })
+                : succeed<A[], A[]>(value);
+
+export { minLength as min };
 
 /**
  * range tests whether an array's length falls within a specific min and max range.
  */
 export const range =
     <A>(min: number, max: number) =>
-    (value: A[]) =>
-        value.length < min
-            ? fail('range.min', value, { min, max, value })
-            : value.length > max
-            ? fail('range.max', value)
-            : succeed(value);
+        (value: A[]) =>
+            value.length < min
+                ? fail('range.min', value, { min, max, value })
+                : value.length > max
+                    ? fail('range.max', value)
+                    : succeed(value);
 
 /**
  * filter applies a precondition to each member of an array producing
@@ -63,13 +62,13 @@ export const range =
  */
 export const filter =
     <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
-    (value: A[]) =>
-        succeed<A[], B[]>(
-            value
-                .map(p)
-                .filter(e => e instanceof Right)
-                .map(e => e.takeRight())
-        );
+        (value: A[]) =>
+            succeed<A[], B[]>(
+                value
+                    .map(p)
+                    .filter(e => e instanceof Right)
+                    .map(e => e.takeRight())
+            );
 
 /**
  * map applies a precondition to each member of an array.
@@ -78,32 +77,21 @@ export const filter =
  * the entire array is considered a failure.
  */
 export const map =
-    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
-    (value: A[]) =>
-        review(value, value.reduce(mapReduce(p), reports()));
-
-const review = <A, B>(value: A[], r: Reports<A, B>) =>
-    Object.keys(r.failures).length > 0
-        ? left<Failure<A[]>, B[]>(AF.create(r.failures, value, { value }))
-        : succeed<A[], B[]>(r.values);
-
-const mapReduce =
-    <A, B>(p: Precondition<A, B>) =>
-    (reports: Reports<A, B>, a: A, k: number) =>
-        p(a).fold(onFailure(k, reports), onSuccess<A, B>(reports));
-
-const reports = <A, B>(): Reports<A, B> => ({ failures: {}, values: [] });
-
-const onFailure =
-    <A, B>(key: number, { failures, values }: Reports<A, B>) =>
-    (f: Failure<A>): Reports<A, B> => ({
-        values,
-        failures: merge(failures, { [key]: f })
-    });
-
-const onSuccess =
-    <A, B>({ failures, values }: Reports<A, B>) =>
-    (b: B): Reports<A, B> => ({ failures, values: values.concat(b) });
+    <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> => (value: A[]) => {
+        let failed = 0;
+        let failures: Failures<A> = {};
+        let values = [];
+        for (let i = 0; i < value.length; i++) {
+            let result = p(value[i]);
+            if (result.isLeft()) {
+                failed++;
+                failures[i] = result.takeLeft();
+            } else {
+                values[i] = result.takeRight()
+            }
+        }
+        return (failed === 0) ? succeed<A[], B[]>(values) : left(AF.create(failures, value, { value }));
+    }
 
 /**
  * tuple tests whether the value supplied qualifies as a tuple.
@@ -113,23 +101,23 @@ const onSuccess =
  */
 export const tuple =
     <A, B>(list: Precondition<A, B>[]): Precondition<A[], B[]> =>
-    (value: A[]) => {
-        if (value.length !== list.length) return fail<A[], B[]>('tuple', value);
+        (value: A[]) => {
+            if (value.length !== list.length) return fail<A[], B[]>('tuple', value);
 
-        let results = value.map((v, idx) => list[idx](v));
+            let results = value.map((v, idx) => list[idx](v));
 
-        let fails = results.filter(v => v.isLeft()).map(e => e.takeLeft());
+            let fails = results.filter(v => v.isLeft()).map(e => e.takeLeft());
 
-        if (fails.length > 0) {
-            let failMap = fails.reduce((p, c, k) => {
-                p[k] = c;
-                return p;
-            }, <Failures<A>>{});
+            if (fails.length > 0) {
+                let failMap = fails.reduce((p, c, k) => {
+                    p[k] = c;
+                    return p;
+                }, <Failures<A>>{});
 
-            return left<Failure<A[]>, B[]>(
-                AF.create(failMap, value, { value })
-            );
-        }
+                return left<Failure<A[]>, B[]>(
+                    AF.create(failMap, value, { value })
+                );
+            }
 
-        return succeed<A[], B[]>(results.map(e => e.takeRight()));
-    };
+            return succeed<A[], B[]>(results.map(e => e.takeRight()));
+        };
