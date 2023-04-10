@@ -1,12 +1,9 @@
-import { merge } from '@quenk/noni/lib/data/record';
 import { Right, left } from '@quenk/noni/lib/data/either';
-import { pure, parallel } from '@quenk/noni/lib/control/monad/future';
+import { pure, parallel, Future } from '@quenk/noni/lib/control/monad/future';
 import { Precondition } from '../async';
-import { fail, ArrayFailure } from '../result/failure/array';
+import { ArrayFailure } from '../result/failure/array';
 import { Failure, Failures } from '../result/failure';
 import { Result, succeed, fail as failure } from '../result';
-
-type Reports<A, B> = [Failures<A>, B[]];
 
 /**
  * filter (async).
@@ -27,27 +24,23 @@ const filterResults = <A, B>(p: B[], c: Result<A, B>): B[] =>
 export const map =
     <A, B>(p: Precondition<A, B>): Precondition<A[], B[]> =>
     (value: A[]) =>
-        parallel(value.map(p)).map(mapReduce).map(mapFinish(value));
-
-const mapReduce = <A, B>(r: Result<A, B>[]) =>
-    r.reduce<Reports<A, B>>(mapReduceFold, [{}, []]);
-
-const mapReduceFold = <A, B>(
-    [fails, succs]: Reports<A, B>,
-    curr: Result<A, B>,
-    idx: number
-): Reports<A, B> =>
-    curr.fold(
-        (f: Failure<A>): Reports<A, B> => [merge(fails, { [idx]: f }), succs],
-        (b: B): Reports<A, B> => [fails, succs.concat(b)]
-    );
-
-const mapFinish =
-    <A, B>(value: A[]) =>
-    ([fails, succs]: Reports<A, B>): Result<A[], B[]> =>
-        Object.keys(fails).length > 0
-            ? fail(fails, value, { value })
-            : succeed<A[], B[]>(succs);
+        Future.do(async () => {
+            let failed = 0;
+            let failures: Failures<A> = {};
+            let values = [];
+            for (let i = 0; i < value.length; i++) {
+                let result = await p(value[i]);
+                if (result.isLeft()) {
+                    failed++;
+                    failures[i] = result.takeLeft();
+                } else {
+                    values[i] = result.takeRight();
+                }
+            }
+            return failed === 0
+                ? succeed<A[], B[]>(values)
+                : left(ArrayFailure.create(failures, value, { value }));
+        });
 
 /**
  * tuple (async)

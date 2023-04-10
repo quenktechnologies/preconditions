@@ -40,6 +40,11 @@ describe('async', function () {
                 assert(e.takeRight()).equate([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
             );
         });
+
+        it('should not flatten nested arrays', async () => {
+            let result = await map(map(num))([[1], [1], [1]]);
+            assert(result.takeRight()).equate([[1], [1], [1]]);
+        });
     });
 
     describe('tuple', () => {
