@@ -22,13 +22,13 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@quenk/test": "^2.2.4",
-    "@types/mocha": "^7.0.2",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^13.1.2",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "mocha": "^9.2.2",
+    "mocha": "^10.2.0",
     "prettier": "^2.8.4",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
