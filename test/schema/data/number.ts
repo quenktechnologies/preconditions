@@ -38,5 +38,24 @@ export const tests = {
                 ['number.max', [3]]
             ]
         ]
+    },
+    'should support preconditions key': {
+        input: {
+            type: 'number',
+            preconditions: [
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        },
+        expected: [
+            'number',
+            [
+                ['base.type', ['number']],
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        ]
     }
 };

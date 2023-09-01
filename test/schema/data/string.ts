@@ -46,5 +46,24 @@ export const tests = {
                 ['base.type', ['string']]
             ]
         ]
+    },
+    'should support preconditions key': {
+        input: {
+            type: 'string',
+            preconditions: [
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        },
+        expected: [
+            'string',
+            [
+                ['base.type', ['string']],
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        ]
     }
 };

@@ -1,12 +1,11 @@
 import { Except, raise } from '@quenk/noni/lib/control/except';
 import { empty } from '@quenk/noni/lib/data/array';
 import { right } from '@quenk/noni/lib/data/either';
-import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Record } from '@quenk/noni/lib/data/record';
 
 import { JSONPrecondition, Schema } from './';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { isObject } from '@quenk/noni/lib/data/type';
+import { isObject, Type } from '@quenk/noni/lib/data/type';
 
 const extractors = new Map([
     ['object', ['base.default', 'base.const', 'base.type', 'base.enum']],
@@ -69,12 +68,12 @@ export type Node<T> = ObjectNode<T> | ArrayNode<T> | PrimNode<T>;
 /**
  * ObjectNode holds information about an object precondition.
  */
-export type ObjectNode<T> = ['object', [Record<T>, T | null, T[]]];
+export type ObjectNode<T> = ['object', [Record<T>, T?, T[]?]];
 
 /**
  * ArrayNode holds information about an array precondition.
  */
-export type ArrayNode<T> = ['array', [T | null, T[]]];
+export type ArrayNode<T> = ['array', [T, T[]?]];
 
 /**
  * PrimNode holds information about preconditions for primitive values.
@@ -106,11 +105,9 @@ export interface ParseContext<T> {
     visit: (entry: Node<T>) => T;
 
     /**
-     * create a single precondition given its path and value.
-     *
-     * Path is us
+     * get a single precondition given its path.
      */
-    create: (path: string, args: Value[]) => Maybe<T>;
+    get: (path: Path, args: Type[]) => Maybe<T>;
 }
 
 type Index = string | number;
@@ -163,7 +160,10 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                 if (schema.type === 'object') {
                     let newStack: Item<T>[] = [];
 
-                    let object: ObjectNode<T> = ['object', [{}, null, precs]];
+                    let object: ObjectNode<T> = [
+                        'object',
+                        [{}, undefined, precs]
+                    ];
 
                     let [, args] = object;
 
@@ -173,7 +173,7 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                         newStack.push([prop, key, <Record<T>>args[0]]);
 
                     if (isObject(schema.additionalProperties))
-                        stack.push([
+                        newStack.push([
                             <Schema>schema.additionalProperties,
                             1,
                             <T[]>args
@@ -184,7 +184,8 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                         [object, currentPath, currentTarget]
                     ]);
                 } else if (schema.type === 'array') {
-                    let array: ArrayNode<T> = ['array', [null, precs]];
+                    //XXX: Items is initially undefined but must always be set.
+                    let array = <ArrayNode<T>>(<Type>['array', [, precs]]);
                     let newStack: Item<T>[] = [];
 
                     newStack.push([<Schema>schema.items, 0, <T[]>array[1]]);
@@ -223,7 +224,7 @@ const takePreconditions = <T>(
 
     let result = [];
     for (let [path, args] of [...json, ...(schema.preconditions || [])]) {
-        let mprec = ctx.create(path, args);
+        let mprec = ctx.get(path, args);
 
         if (mprec.isNothing()) return raise(`Unknown provider "${path}"!`);
 

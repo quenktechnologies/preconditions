@@ -31,5 +31,24 @@ export const tests = {
                 ['base.type', ['boolean']]
             ]
         ]
+    },
+    'should support preconditions key': {
+        input: {
+            type: 'boolean',
+            preconditions: [
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        },
+        expected: [
+            'boolean',
+            [
+                ['base.type', ['boolean']],
+                ['custom.one', [1]],
+                ['custom.two', [2]],
+                ['custom.three', [3]]
+            ]
+        ]
     }
 };

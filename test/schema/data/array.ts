@@ -1,5 +1,3 @@
-import { just } from '@quenk/noni/lib/data/maybe';
-
 export const tests = {
     'should parse array schema': {
         input: {
@@ -24,7 +22,7 @@ export const tests = {
         expected: [
             'array',
             [
-                just([
+                [
                     'number',
                     [
                         ['base.default', [2]],
@@ -35,10 +33,9 @@ export const tests = {
                         ['number.min', [1]],
                         ['number.max', [3]]
                     ]
-                ]),
+                ],
                 [
                     ['base.default', [[2]]],
-                    ['array.cast', [true]],
                     ['base.const', [[1]]],
                     ['base.type', ['array']],
                     ['base.enum', [[[1], [2], [3]]]],
@@ -62,10 +59,51 @@ export const tests = {
         expected: [
             'array',
             [
-                just(['number', [['base.type', ['number']]]]),
+                ['number', [['base.type', ['number']]]],
                 [
                     ['base.type', ['array']],
                     ['array.maxItems', [3]]
+                ]
+            ]
+        ]
+    },
+    'should support the preconditions key': {
+        input: {
+            type: 'array',
+            maxItems: 3,
+            preconditions: [
+                ['custom.one', [[1]]],
+                ['custom.two', [[2]]],
+                ['custom.three', [[3]]]
+            ],
+            items: {
+                type: 'number',
+                preconditions: [
+                    ['custom.one', [1]],
+                    ['custom.two', [2]],
+                    ['custom.three', [3]]
+                ]
+            }
+        },
+
+        expected: [
+            'array',
+            [
+                [
+                    'number',
+                    [
+                        ['base.type', ['number']],
+                        ['custom.one', [1]],
+                        ['custom.two', [2]],
+                        ['custom.three', [3]]
+                    ]
+                ],
+                [
+                    ['base.type', ['array']],
+                    ['array.maxItems', [3]],
+                    ['custom.one', [[1]]],
+                    ['custom.two', [[2]]],
+                    ['custom.three', [[3]]]
                 ]
             ]
         ]

@@ -1,5 +1,5 @@
 export const tests = {
-    'should parse object schema ': {
+    'should parse object schema': {
         input: {
             type: 'object',
             const: {
@@ -117,6 +117,107 @@ export const tests = {
                 {},
                 ['boolean', [['base.type', ['boolean']]]],
                 [['base.type', ['object']]]
+            ]
+        ]
+    },
+    'should support the preconditions key': {
+        input: {
+            type: 'object',
+            preconditions: [
+                [
+                    'custom.one',
+                    [
+                        {
+                            n: 1
+                        }
+                    ]
+                ],
+                [
+                    'custom.two',
+                    [
+                        {
+                            n: 2
+                        }
+                    ]
+                ],
+                [
+                    'custom.three',
+                    [
+                        {
+                            n: 3
+                        }
+                    ]
+                ]
+            ],
+            properties: {
+                n: {
+                    type: 'number',
+                    preconditions: [
+                        ['custom.one', [1]],
+                        ['custom.two', [2]],
+                        ['custom.three', [3]]
+                    ]
+                }
+            },
+            additionalProperties: {
+                type: 'boolean',
+                preconditions: [
+                    ['custom.one', [true]],
+                    ['custom.two', [false]],
+                    ['custom.three', [true]]
+                ]
+            }
+        },
+        expected: [
+            'object',
+            [
+                {
+                    n: [
+                        'number',
+                        [
+                            ['base.type', ['number']],
+                            ['custom.one', [1]],
+                            ['custom.two', [2]],
+                            ['custom.three', [3]]
+                        ]
+                    ]
+                },
+                [
+                    'boolean',
+                    [
+                        ['base.type', ['boolean']],
+                        ['custom.one', [true]],
+                        ['custom.two', [false]],
+                        ['custom.three', [true]]
+                    ]
+                ],
+                [
+                    ['base.type', ['object']],
+                    [
+                        'custom.one',
+                        [
+                            {
+                                n: 1
+                            }
+                        ]
+                    ],
+                    [
+                        'custom.two',
+                        [
+                            {
+                                n: 2
+                            }
+                        ]
+                    ],
+                    [
+                        'custom.three',
+                        [
+                            {
+                                n: 3
+                            }
+                        ]
+                    ]
+                ]
             ]
         ]
     }
