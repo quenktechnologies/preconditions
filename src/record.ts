@@ -11,7 +11,7 @@ import { keys } from '@quenk/noni/lib/data/record';
 import { fail as rfail } from './result/failure/record';
 import { Failures, Failure } from './result/failure';
 import { Result, succeed, fail } from './result';
-import { Precondition, Preconditions } from './';
+import { Precondition, Preconditions, typeOf, and } from './';
 
 interface Reports<A, B, R extends Record<B>> {
     failures: Failures<A>;
@@ -126,18 +126,17 @@ export const union =
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const map =
-    <A, B, R extends Record<B>>(
-        condition: Precondition<A, B>
-    ): Precondition<Record<A>, R> =>
-    (value: Record<A>) => {
+export const map = <A, B, R extends Record<B>>(
+    condition: Precondition<A, B>
+): Precondition<Record<A>, R> =>
+    and(typeOf('object'), (value: Record<A>) => {
         let add2Reports = (r: Reports<A, B, R>, v: A, k: string) =>
             condition(v).fold(onFailure(k, r), onSuccess(k, r));
 
         let result = reduce(value, reports<A, B, R>(), add2Reports);
 
         return review<A, B, R>(result, value);
-    };
+    });
 
 const reports = <A, B, R extends Record<B>>(): Reports<A, B, R> => ({
     failures: {},

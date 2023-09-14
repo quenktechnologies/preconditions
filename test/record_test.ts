@@ -2,11 +2,13 @@ import { assert } from '@quenk/test/lib/assert';
 
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { restrict, disjoint, union, intersect, map } from '../src/record';
-import { isRecord } from '../src/record';
-import { Preconditions } from '../src';
-import { Precondition, every } from '../src';
-import { succeed, fail } from '../src/result';
+import { restrict, disjoint, union, intersect, map } from '../lib/record';
+import { isRecord } from '../lib/record';
+import { Preconditions } from '../lib';
+import { Precondition, every } from '../lib';
+import { succeed, fail } from '../lib/result';
+import { typeOf } from '../lib';
+import { runTestSuites } from './tests';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -247,11 +249,107 @@ describe('record', function () {
             shouldApplyEveryCondtion(union(access)));
     });
 
-    describe('map', function () {
-        it('should fail invalid data', () =>
-            shouldFailInvalidData(every(isRecord, map(check('prim')))));
+    // TODO: Migrate remaining tests.
+    runTestSuites({
+        map: [
+            {
+                name: 'flat',
+                prec: map(typeOf('string')),
+                cases: [
+                    { value: { name: 'me' } },
+                    { value: 'me', notOk: 'object' },
+                    { value: [], notOk: 'object' },
+                    { value: { name: 1 }, notOk: { name: 'string' } }
+                ]
+            },
 
-        it('should allow valid data', () =>
-            shouldAllowValidData(every(isRecord, map(check('prim')))));
+            {
+                name: 'nested (2)',
+                prec: map(map(typeOf('string'))),
+                cases: [
+                    {
+                        value: {
+                            user: { name: 'pat' },
+                            previous: { roles: 'any' }
+                        }
+                    },
+                    {
+                        value: {
+                            user: { age: 27 },
+                            previous: { age: 26 }
+                        },
+                        notOk: {
+                            user: { age: 'string' },
+                            previous: { age: 'string' }
+                        }
+                    },
+                    {
+                        value: {
+                            user: { name: 'pat' },
+                            previous: { age: 26 }
+                        },
+                        notOk: { previous: { age: 'string' } }
+                    },
+                    {
+                        value: {
+                            id: 12,
+                            user: { name: 'pat' },
+                            previous: { roles: 'any' }
+                        },
+                        notOk: { id: 'object' }
+                    },
+                    { value: 'me', notOk: 'object' },
+                    { value: [], notOk: 'object' }
+                ]
+            },
+
+            {
+                name: 'nested (3)',
+                prec: map(map(map(typeOf('string')))),
+                cases: [
+                    {
+                        value: {
+                            users: { user: { name: 'pat' } },
+                            states: { previous: { roles: 'any' } }
+                        }
+                    },
+                    {
+                        value: {
+                            users: { user: { age: 27 } },
+                            states: { previous: { age: 26 } }
+                        },
+                        notOk: {
+                            users: { user: { age: 'string' } },
+                            states: { previous: { age: 'string' } }
+                        }
+                    },
+                    {
+                        value: {
+                            users: { user: { name: 'pat' } },
+                            states: { previous: { age: 26 } }
+                        },
+                        notOk: { states: { previous: { age: 'string' } } }
+                    },
+                    {
+                        value: {
+                            ids: 12,
+                            users: { user: { name: 'pat' } },
+                            states: { previous: { roles: 'any' } }
+                        },
+                        notOk: { ids: 'object' }
+                    },
+                    {
+                        value: {
+                            ids: { id: 12 },
+                            users: { user: { name: 'pat' } },
+                            states: { previous: { roles: 'any' } }
+                        },
+                        notOk: { ids: { id: 'object' } }
+                    },
+                    { value: 'me', notOk: 'object' },
+                    { value: [], notOk: 'object' }
+                ]
+            }
+        ]
     });
 });
