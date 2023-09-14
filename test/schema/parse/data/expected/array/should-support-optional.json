@@ -1,0 +1,9 @@
+[
+    "array",
+    [
+        [["base.type", ["array"]]],
+        ["string", [["base.type", ["string"]]], false],
+        []
+    ],
+    true
+]

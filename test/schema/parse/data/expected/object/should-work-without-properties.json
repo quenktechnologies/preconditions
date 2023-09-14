@@ -1,0 +1,10 @@
+[
+    "object",
+    [
+        [["base.type", ["object"]]],
+        {},
+        ["boolean", [["base.type", ["boolean"]]], false],
+        []
+    ],
+    false
+]

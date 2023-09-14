@@ -1,0 +1,8 @@
+[
+    "boolean",
+    [
+        ["base.const", [false]],
+        ["base.type", ["boolean"]]
+    ],
+    false
+]

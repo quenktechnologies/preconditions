@@ -1,0 +1,12 @@
+[
+    "array",
+    [
+        [
+            ["base.type", ["array"]],
+            ["array.maxItems", [3]]
+        ],
+        ["number", [["base.type", ["number"]]], false],
+        []
+    ],
+    false
+]

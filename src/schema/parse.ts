@@ -69,15 +69,18 @@ export type Node<T> = ObjectNode<T> | ArrayNode<T> | PrimNode<T>;
 
 /**
  * ObjectNode holds information about an object precondition.
- *
- * The second element is described as follows:
+ */
+export type ObjectNode<T> = ['object', ObjectArgs<T>, Optional];
+
+/**
+ * ObjectArgs:
  *
  * 0: Any parsed builtin preconditions.
  * 1: Preconditions parsed from the `properties` key.
  * 2: Preconditions parsed from the `additionalProperties` key.
  * 3: Custom specified preconditions.
  */
-export type ObjectNode<T> = ['object', [T[], Record<T>, T?, T[]?]];
+export type ObjectArgs<T> = [T[], Record<T>, T?, T[]?];
 
 /**
  * ArrayNode holds information about an array precondition.
@@ -88,12 +91,29 @@ export type ObjectNode<T> = ['object', [T[], Record<T>, T?, T[]?]];
  * 1: Preconditions parsed from the `items` property.
  * 2 : Custom specified preconditions.
  */
-export type ArrayNode<T> = ['array', [T[], T, T[]?]];
+export type ArrayNode<T> = ['array', ArrayArgs<T>, Optional];
+
+/**
+ * ArrayArgs:
+ *
+ * 0: Any parsed builtin preconditions.
+ * 1: Preconditions parsed from the `items` property.
+ * 2 : Custom specified preconditions.
+ */
+export type ArrayArgs<T> = [T[], T, T[]?];
 
 /**
  * PrimNode holds information about preconditions for primitive values.
  */
-export type PrimNode<T> = ['boolean' | 'number' | 'string', T[]];
+export type PrimNode<T> = ['boolean' | 'number' | 'string', T[], Optional];
+
+/**
+ * Optional if set to true indicates a precondition is optional and should
+ * not be applied if no value is specified.
+ *
+ * This is only observed for properties of an object schema.
+ */
+export type Optional = boolean;
 
 /**
  * A string used to resolve a precondition's name consisting of it's module
@@ -168,7 +188,8 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
 
                 (<T[]>currentTarget)[<number>currentPath] = ctx.visit([
                     <'number'>schema.type,
-                    eprecs.takeRight()
+                    eprecs.takeRight(),
+                    Boolean(schema.optional)
                 ]);
             } else {
                 pending.push([stack, owner]); // Save current state for later.
@@ -191,7 +212,8 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
 
                     let object: ObjectNode<T> = [
                         'object',
-                        [builtinPrecs, {}, undefined, precs]
+                        [builtinPrecs, {}, undefined, precs],
+                        Boolean(schema.optional)
                     ];
 
                     let [, args] = object;
@@ -214,7 +236,11 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                     ]);
                 } else if (schema.type === 'array') {
                     let array = <ArrayNode<T>>(
-                        (<Type>['array', [builtinPrecs, , precs]])
+                        (<Type>[
+                            'array',
+                            [builtinPrecs, , precs],
+                            Boolean(schema.optional)
+                        ])
                     );
 
                     let newStack: Item<T>[] = [];

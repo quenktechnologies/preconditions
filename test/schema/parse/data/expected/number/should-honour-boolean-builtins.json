@@ -1,0 +1,9 @@
+[
+    "number",
+    [
+        ["base.type", ["number"]],
+        ["number.min", [1]],
+        ["number.max", [3]]
+    ],
+    false
+]
