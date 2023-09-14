@@ -1,4 +1,4 @@
-import { Type } from '@quenk/noni/lib/data/type';
+import { Type, isString as _isString } from '@quenk/noni/lib/data/type';
 
 import { Precondition } from './';
 import { fail, succeed } from './result';
@@ -6,14 +6,17 @@ import { fail, succeed } from './result';
 /**
  * matches tests if the value satisfies a regular expression.
  */
-export const matches =
-    (pattern: RegExp): Precondition<string, string> =>
-    (value: string) =>
-        !pattern.test(value)
+export const matches = (
+    pattern: RegExp | string
+): Precondition<string, string> => {
+    let regex = _isString(pattern) ? new RegExp(pattern) : pattern;
+    return (value: string) =>
+        !regex.test(value)
             ? fail<string, string>('matches', value, {
                   pattern: pattern.toString()
               })
             : succeed<string, string>(value);
+};
 
 /**
  * maxLength test.
@@ -73,15 +76,17 @@ export const trim: Precondition<string, string> = (value: string) =>
  */
 export const split =
     (token: string): Precondition<string, string[]> =>
-    (value: string) =>
-        succeed<string, string[]>(value.split(token));
+    (value: string) => {
+        let val = value === '' || value === token ? [] : value.split(token);
+        return succeed<string, string[]>(val);
+    };
 
 /**
- * ne tests whether a string is empty or not.
+ * nonEmpty rejects empty strings.
  */
-export const notEmpty: Precondition<string, string> = (value: string) =>
+export const nonEmpty: Precondition<string, string> = (value: string) =>
     value === ''
-        ? fail<string, string>('notEmpty', value)
+        ? fail<string, string>('nonEmpty', value)
         : succeed<string, string>(value);
 
 /**

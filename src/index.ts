@@ -7,7 +7,7 @@
  * however some primitivies are provided to make things easier.
  */
 import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
-import { Type, Pattern, test } from '@quenk/noni/lib/data/type';
+import { Type, Pattern, test, isObject } from '@quenk/noni/lib/data/type';
 
 import { Result, fail, succeed } from './result';
 import { Failure, ModifiedFailure as MF, DualFailure } from './result/failure';
@@ -117,6 +117,15 @@ export const optional =
         value == null || (typeof value === 'string' && value === '')
             ? succeed<A, A>(value)
             : p(value);
+
+/**
+ * defaultValue assigns a default value if the value to the precondition is
+ * nullable.
+ */
+export const defaultValue =
+    <A>(fallback: A): Precondition<A, A> =>
+    (value?: A) =>
+        succeed(value == null ? fallback : value);
 
 /**
  * identity always succeeds with the value it is applied to.
@@ -278,3 +287,18 @@ export const caseOf =
 export const log = <A>(value: A): Result<A, A> => (
     console.log(value), succeed(value)
 );
+
+/**
+ * typeOf tests whether the value has the specified type.
+ */
+export const typeOf =
+    <A>(type: string) =>
+    (value: A) => {
+        let result;
+        if (type === 'array') result = Array.isArray(value);
+        else if (type === 'object') result = isObject(value);
+        else result = typeof value === type;
+        return result
+            ? succeed<A, A>(value)
+            : fail<A, A>(type, value, { type });
+    };

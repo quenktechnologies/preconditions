@@ -8,7 +8,7 @@ import { Preconditions } from '../lib';
 import { Precondition, every } from '../lib';
 import { succeed, fail } from '../lib/result';
 import { typeOf } from '../lib';
-import { runTestSuites } from './tests';
+import { runPrecTestSuites } from './tests';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -250,11 +250,11 @@ describe('record', function () {
     });
 
     // TODO: Migrate remaining tests.
-    runTestSuites({
+    runPrecTestSuites({
         map: [
             {
                 name: 'flat',
-                prec: map(typeOf('string')),
+                precondition: map(typeOf('string')),
                 cases: [
                     { value: { name: 'me' } },
                     { value: 'me', notOk: 'object' },
@@ -265,7 +265,7 @@ describe('record', function () {
 
             {
                 name: 'nested (2)',
-                prec: map(map(typeOf('string'))),
+                precondition: map(map(typeOf('string'))),
                 cases: [
                     {
                         value: {
@@ -305,7 +305,7 @@ describe('record', function () {
 
             {
                 name: 'nested (3)',
-                prec: map(map(map(typeOf('string')))),
+                precondition: map(map(map(typeOf('string')))),
                 cases: [
                     {
                         value: {

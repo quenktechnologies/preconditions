@@ -15,34 +15,30 @@ export const isArray: Precondition<Type, Type[]> = <A>(a: Type) =>
 /**
  * notEmpty tests if an array has at least one member.
  */
-export const notEmpty = <A>(value: A[]) =>
+export const nonEmpty = <A>(value: A[]) =>
     value.length === 0
-        ? fail<A[], A[]>('notEmpty', value, { value })
+        ? fail<A[], A[]>('nonEmpty', value, { value })
         : succeed<A[], A[]>(value);
 
 /**
- * max sets a maximum number of elements the array can contain.
+ * maxItems sets a maximum number of elements the array can contain.
  */
-export const maxLength =
+export const maxItems =
     <A>(target: number): Precondition<A[], A[]> =>
     (value: A[]) =>
         value.length > target
-            ? fail<A[], A[]>('maxLength', value, { target, value })
+            ? fail<A[], A[]>('maxItems', value, { target, value })
             : succeed<A[], A[]>(value);
 
-export { maxLength as max };
-
 /**
- * min sets a minimum number of elements the array can contain.
+ * minItems sets a minimum number of elements the array can contain.
  */
-export const minLength =
+export const minItems =
     <A>(target: number): Precondition<A[], A[]> =>
     (value: A[]) =>
         value.length < target
-            ? fail<A[], A[]>('minLength', value, { target, value })
+            ? fail<A[], A[]>('minItems', value, { target, value })
             : succeed<A[], A[]>(value);
-
-export { minLength as min };
 
 /**
  * range tests whether an array's length falls within a specific min and max range.

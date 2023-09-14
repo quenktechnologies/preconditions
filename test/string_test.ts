@@ -6,7 +6,7 @@ import {
     maxLength,
     minLength,
     range,
-    notEmpty,
+    nonEmpty,
     toString
 } from '../src/string';
 import { PrimFailure } from '../src/result/failure';
@@ -69,10 +69,10 @@ describe('string', function () {
         });
     });
 
-    describe('notEmpty', () => {
+    describe('nonEmpty', () => {
         it('should work', () => {
-            assert(notEmpty('').takeLeft().explain()).equal('notEmpty');
-            assert(notEmpty('[]').takeRight()).equal('[]');
+            assert(nonEmpty('').takeLeft().explain()).equal('nonEmpty');
+            assert(nonEmpty('[]').takeRight()).equal('[]');
         });
     });
 

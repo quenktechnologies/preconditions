@@ -23,6 +23,13 @@ export const tests = {
             'array',
             [
                 [
+                    ['base.default', [[2]]],
+                    ['base.const', [[1]]],
+                    ['base.type', ['array']],
+                    ['array.minItems', [1]],
+                    ['array.maxItems', [3]]
+                ],
+                [
                     'number',
                     [
                         ['base.default', [2]],
@@ -34,14 +41,7 @@ export const tests = {
                         ['number.max', [3]]
                     ]
                 ],
-                [
-                    ['base.default', [[2]]],
-                    ['base.const', [[1]]],
-                    ['base.type', ['array']],
-                    ['base.enum', [[[1], [2], [3]]]],
-                    ['array.minItems', [1]],
-                    ['array.maxItems', [3]]
-                ]
+                []
             ]
         ]
     },
@@ -59,11 +59,12 @@ export const tests = {
         expected: [
             'array',
             [
-                ['number', [['base.type', ['number']]]],
                 [
                     ['base.type', ['array']],
                     ['array.maxItems', [3]]
-                ]
+                ],
+                ['number', [['base.type', ['number']]]],
+                []
             ]
         ]
     },
@@ -90,6 +91,11 @@ export const tests = {
             'array',
             [
                 [
+                    ['base.type', ['array']],
+                    ['array.maxItems', [3]]
+                ],
+
+                [
                     'number',
                     [
                         ['base.type', ['number']],
@@ -99,8 +105,6 @@ export const tests = {
                     ]
                 ],
                 [
-                    ['base.type', ['array']],
-                    ['array.maxItems', [3]],
                     ['custom.one', [[1]]],
                     ['custom.two', [[2]]],
                     ['custom.three', [[3]]]

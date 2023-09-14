@@ -41,6 +41,25 @@ export const tests = {
         expected: [
             'object',
             [
+                [
+                    [
+                        'base.default',
+                        [
+                            {
+                                n: 2
+                            }
+                        ]
+                    ],
+                    [
+                        'base.const',
+                        [
+                            {
+                                n: 1
+                            }
+                        ]
+                    ],
+                    ['base.type', ['object']]
+                ],
                 {
                     n: [
                         'number',
@@ -65,41 +84,7 @@ export const tests = {
                         ['base.enum', [[false]]]
                     ]
                 ],
-                [
-                    [
-                        'base.default',
-                        [
-                            {
-                                n: 2
-                            }
-                        ]
-                    ],
-                    [
-                        'base.const',
-                        [
-                            {
-                                n: 1
-                            }
-                        ]
-                    ],
-                    ['base.type', ['object']],
-                    [
-                        'base.enum',
-                        [
-                            [
-                                {
-                                    n: 1
-                                },
-                                {
-                                    n: 2
-                                },
-                                {
-                                    n: 3
-                                }
-                            ]
-                        ]
-                    ]
-                ]
+                []
             ]
         ]
     },
@@ -114,9 +99,10 @@ export const tests = {
         expected: [
             'object',
             [
+                [['base.type', ['object']]],
                 {},
                 ['boolean', [['base.type', ['boolean']]]],
-                [['base.type', ['object']]]
+                []
             ]
         ]
     },
@@ -171,6 +157,7 @@ export const tests = {
         expected: [
             'object',
             [
+                [['base.type', ['object']]],
                 {
                     n: [
                         'number',
@@ -192,7 +179,6 @@ export const tests = {
                     ]
                 ],
                 [
-                    ['base.type', ['object']],
                     [
                         'custom.one',
                         [

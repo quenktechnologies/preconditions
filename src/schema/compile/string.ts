@@ -3,39 +3,61 @@ import { Record, mapTo, merge } from '@quenk/noni/lib/data/record';
 import { empty } from '@quenk/noni/lib/data/array';
 import { Type } from '@quenk/noni/lib/data/type';
 
+import { parse } from '../parse';
 import { Context, visit } from '.';
 import { Schema } from '..';
-import { parse } from '../parse';
 
 /**
  * Code output.
  */
 export type Code = string;
 
-export interface Options {
-    update?: boolean;
-
-    context?: Partial<Context<Code>>;
+/**
+ * Options for the compile() function.
+ */
+export interface Options extends Context<Code> {
+    /**
+     * reduce a list of Code output into a single Code.
+     *
+     * This is used for the `properties` section of the object schema and can
+     * be specified to determine which precondition to use to combine them.
+     */
+    reduce?: (precs: Code[]) => Code;
 }
 
-export const compile = (opts: Options, schema: Schema) => {
-    let ctx = merge(defaults(opts.update), opts.context || {});
+/**
+ * compile a schema into a string.
+ *
+ * This function produces a string that can be used for code generation from
+ * templates.
+ */
+export const compile = (opts: Partial<Options>, schema: Schema) => {
+    let ctx = defaults(opts);
     return parse<Code>({ visit: node => visit(ctx, node), get }, schema);
 };
 
-const defaults = (update?: boolean) => ({
-    and: (left: Code, right: Code) => `base.and(${left}, ${right})`,
+const defaults = (opts: Partial<Options>) => {
+    let wrap = opts.reduce || 'object.restrict';
+    return merge(
+        {
+            identity: () => 'base.identity',
 
-    or: (left: Code, right: Code) => `base.or(${left},${right})`,
+            and: (left: Code, right: Code) => `base.and(${left},${right})`,
 
-    properties: (props: Record<Code>) => {
-        let out = mapTo(props, (code, key) => `${key} : ${code}`);
-        let meth = update ? 'object.intersect' : 'object.restrict';
-        return `${meth}({${out.join(',')}})`;
-    },
+            or: (left: Code, right: Code) => `base.or(${left},${right})`,
 
-    items: (prec: Code) => `array.map(${prec})`
-});
+            properties: (props: Record<Code>) => {
+                let out = mapTo(props, (code, key) => `${key} : ${code}`);
+                return `${wrap}({${out.join(',')}})`;
+            },
+
+            additionalProperties: (prec: Code) => `object.map(${prec})`,
+
+            items: (prec: Code) => `array.map(${prec})`
+        },
+        opts
+    );
+};
 
 const get = (path: string, args: Type[]) =>
     just(

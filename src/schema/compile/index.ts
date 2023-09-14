@@ -9,6 +9,11 @@ import { Node, PrimNode, ArrayNode, ObjectNode } from '../parse';
  */
 export interface Context<T> {
     /**
+     * identity provides a precondition that always succeeds with its value.
+     */
+    identity: T;
+
+    /**
      * and joins to preconditions via logical and operation.
      */
     and: (left: T, right: T) => T;
@@ -27,8 +32,17 @@ export interface Context<T> {
     properties: (props: Record<T>) => T;
 
     /**
-     * items produces a precondition from a precondition that can be applied to
-     * each item of an array.
+     * additionalProperties wraps a precondition so it can be used on the
+     * encountered properties of an object.
+     */
+    additionalProperties: (prec: T) => T;
+
+    /**
+     * items given a precondition, produces a precondition that will apply it
+     * to each element of an array.
+     *
+     * Note: The resulting precondition should ensure the value passed is an
+     * array first.
      */
     items: (prec: T) => T;
 }
@@ -45,28 +59,48 @@ export const visit = <T>(ctx: Context<T>, node: Node<T>): T => {
 };
 
 const object = <T>(ctx: Context<T>, node: ObjectNode<T>) => {
-    let [, [rec, addProps, self]] = node;
+    let [, [builtins, rec, addProps, precs = []]] = node;
+
+    let builtinPrecs;
+
+    if (!empty(builtins)) builtinPrecs = combine(ctx, builtins);
+
     let props;
 
     if (!isEmpty(rec)) props = ctx.properties(rec);
 
     if (addProps) {
-        if (props) props = ctx.or(props, addProps);
-        else props = addProps;
+        let prec = ctx.additionalProperties(addProps);
+        props = props ? ctx.or(props, prec) : prec;
     }
 
-    if (self) props = ctx.and(<T>props, combine(ctx, self));
+    let result;
 
-    return <T>props;
+    if (builtinPrecs && props) {
+        result = ctx.and(builtinPrecs, props);
+    } else if (builtinPrecs) {
+        result = builtinPrecs;
+    } else if (props) {
+        result = props;
+    }
+
+    if (!empty(precs)) {
+        let prec = combine(ctx, precs);
+        result = result ? ctx.and(result, prec) : prec;
+    }
+
+    return result ? result : ctx.identity;
 };
 
 const array = <T>(ctx: Context<T>, node: ArrayNode<T>) => {
-    let [, [items, precs = []]] = node;
+    let [, [builtins, items, precs = []]] = node;
     let result = ctx.items(items);
 
-    if (empty(precs)) return result;
+    if (!empty(builtins)) result = ctx.and(combine(ctx, builtins), result);
 
-    return ctx.and(result, combine(ctx, precs));
+    if (!empty(precs)) result = ctx.and(result, combine(ctx, precs));
+
+    return result;
 };
 
 const prim = <T>(ctx: Context<T>, [, precs]: PrimNode<T>) =>

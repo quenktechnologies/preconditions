@@ -10,7 +10,7 @@ import { just } from '@quenk/noni/lib/data/maybe';
 import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 
-import { Node, parse } from '../../lib/schema/parse';
+import { Node, parse } from '../../../lib/schema/parse';
 
 const tests = {
     object: object.tests,

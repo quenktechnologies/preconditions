@@ -8,14 +8,14 @@ import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { isObject, Type } from '@quenk/noni/lib/data/type';
 
 const extractors = new Map([
-    ['object', ['base.default', 'base.const', 'base.type', 'base.enum']],
+    ['object', ['base.default', 'base.const', 'base.type']],
     [
         'array',
         [
             'base.default',
             'base.const',
             'base.type',
-            'base.enum',
+            'array.nonEmpty',
             'array.minItems',
             'array.maxItems'
         ]
@@ -28,12 +28,14 @@ const extractors = new Map([
             'base.const',
             'base.type',
             'base.enum',
+            'string.nonEmpty',
             'string.minLength',
             'string.maxLength',
             'string.pattern',
             'string.trim',
             'string.lowerCase',
-            'string.upperCase'
+            'string.upperCase',
+            'string.split'
         ]
     ],
     [
@@ -67,13 +69,26 @@ export type Node<T> = ObjectNode<T> | ArrayNode<T> | PrimNode<T>;
 
 /**
  * ObjectNode holds information about an object precondition.
+ *
+ * The second element is described as follows:
+ *
+ * 0: Any parsed builtin preconditions.
+ * 1: Preconditions parsed from the `properties` key.
+ * 2: Preconditions parsed from the `additionalProperties` key.
+ * 3: Custom specified preconditions.
  */
-export type ObjectNode<T> = ['object', [Record<T>, T?, T[]?]];
+export type ObjectNode<T> = ['object', [T[], Record<T>, T?, T[]?]];
 
 /**
  * ArrayNode holds information about an array precondition.
+ *
+ * The second element is described as follows:
+ *
+ * 0: Any parsed builtin preconditions.
+ * 1: Preconditions parsed from the `items` property.
+ * 2 : Custom specified preconditions.
  */
-export type ArrayNode<T> = ['array', [T, T[]?]];
+export type ArrayNode<T> = ['array', [T[], T, T[]?]];
 
 /**
  * PrimNode holds information about preconditions for primitive values.
@@ -143,26 +158,40 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
         let [stack, owner] = <Frame<T>>pending.pop();
         while (!empty(stack)) {
             let [schema, currentPath, currentTarget] = <Item<T>>stack.pop();
-            let eprecs = takePreconditions(ctx, schema);
-
-            if (eprecs.isLeft()) return raise(eprecs.takeLeft());
-
-            let precs = eprecs.takeRight();
+            let builtins = takeBuiltins(schema);
+            let preconditions = takePreconditions(schema);
 
             if (!isComplex(schema)) {
+                let eprecs = convert(ctx, [...builtins, ...preconditions]);
+
+                if (eprecs.isLeft()) return raise(eprecs.takeLeft());
+
                 (<T[]>currentTarget)[<number>currentPath] = ctx.visit([
                     <'number'>schema.type,
-                    precs
+                    eprecs.takeRight()
                 ]);
             } else {
-                pending.push([stack, owner]);
+                pending.push([stack, owner]); // Save current state for later.
+
+                let ebuiltinPrecs = convert(ctx, builtins);
+
+                if (ebuiltinPrecs.isLeft())
+                    return raise(ebuiltinPrecs.takeLeft());
+
+                let eprecs = convert(ctx, preconditions);
+
+                if (eprecs.isLeft()) return raise(eprecs.takeLeft());
+
+                let builtinPrecs = ebuiltinPrecs.takeRight();
+
+                let precs = eprecs.takeRight();
 
                 if (schema.type === 'object') {
                     let newStack: Item<T>[] = [];
 
                     let object: ObjectNode<T> = [
                         'object',
-                        [{}, undefined, precs]
+                        [builtinPrecs, {}, undefined, precs]
                     ];
 
                     let [, args] = object;
@@ -170,12 +199,12 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                     for (let [key, prop] of Object.entries(
                         schema.properties || {}
                     ))
-                        newStack.push([prop, key, <Record<T>>args[0]]);
+                        newStack.push([prop, key, <Record<T>>args[1]]);
 
                     if (isObject(schema.additionalProperties))
                         newStack.push([
                             <Schema>schema.additionalProperties,
-                            1,
+                            2,
                             <T[]>args
                         ]);
 
@@ -184,11 +213,14 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                         [object, currentPath, currentTarget]
                     ]);
                 } else if (schema.type === 'array') {
-                    //XXX: Items is initially undefined but must always be set.
-                    let array = <ArrayNode<T>>(<Type>['array', [, precs]]);
+                    let array = <ArrayNode<T>>(
+                        (<Type>['array', [builtinPrecs, , precs]])
+                    );
+
                     let newStack: Item<T>[] = [];
 
-                    newStack.push([<Schema>schema.items, 0, <T[]>array[1]]);
+                    newStack.push([<Schema>schema.items, 1, <T[]>array[1]]);
+
                     pending.push([
                         newStack,
                         [array, currentPath, currentTarget]
@@ -208,22 +240,26 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
     return right(<T>result.pop());
 };
 
-const takePreconditions = <T>(
-    ctx: ParseContext<T>,
-    schema: Schema
-): Except<T[]> => {
-    let json: JSONPrecondition[] = [];
-    for (let path of extractors.get(schema.type) || []) {
+const takeBuiltins = (schema: Schema): JSONPrecondition[] =>
+    getExtractors(schema).reduce((result, path) => {
         let [, name] = path.split('.');
         if (
             Object.prototype.hasOwnProperty.call(schema, name) &&
             !(booleanExtractors.includes(name) && schema[name] === false)
         )
-            json.push([path, [schema[name]]]);
-    }
+            result.push([path, [schema[name]]]);
+        return result;
+    }, <JSONPrecondition[]>[]);
 
+const takePreconditions = (schema: Schema): JSONPrecondition[] =>
+    schema.preconditions || [];
+
+const convert = <T>(
+    ctx: ParseContext<T>,
+    list: JSONPrecondition[]
+): Except<T[]> => {
     let result = [];
-    for (let [path, args] of [...json, ...(schema.preconditions || [])]) {
+    for (let [path, args] of list) {
         let mprec = ctx.get(path, args);
 
         if (mprec.isNothing()) return raise(`Unknown provider "${path}"!`);
@@ -233,6 +269,8 @@ const takePreconditions = <T>(
 
     return right(result);
 };
+
+const getExtractors = (schema: Schema) => extractors.get(schema.type) || [];
 
 const complex = ['object', 'array'];
 

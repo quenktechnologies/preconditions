@@ -5,6 +5,7 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
 
 import { Precondition } from '../lib';
+import { Schema } from '../lib/schema';
 
 /**
  * TestCase is a single input->output test.
@@ -12,10 +13,9 @@ import { Precondition } from '../lib';
 export type TestCase = { value?: Type; ok?: Value; notOk?: Value };
 
 /**
- * TestSuite is a collection containing a precondition an various test cases
- * to apply to it.
+ * BaseTestSuite
  */
-interface TestSuite<A, B> {
+interface BaseTestSuite {
     /**
      * name identifies the particular test suite and can be used to run only
      * that test by specifying the TEST_SUITE_NAME env var.
@@ -23,12 +23,7 @@ interface TestSuite<A, B> {
     name: string;
 
     /**
-     * prec is the precondition to test.
-     */
-    prec: Precondition<A, B>;
-
-    /**
-     * cases are all the test cases to test the precondition under.
+     * cases are all the test cases to test a precondition/schema under.
      *
      * The env var TEST_CASE_INDEX can be specified to indicate which case to
      * run.
@@ -37,12 +32,49 @@ interface TestSuite<A, B> {
 }
 
 /**
+ * PrecTestSuite is for testing a precondition directly.
+ */
+interface PrecTestSuite extends BaseTestSuite {
+    /**
+     * precondition to test.
+     */
+    precondition: Precondition<Type, Type>;
+}
+
+/**
+ *  SchemaTestSuite for testing a schema.
+ */
+interface SchemaTestSuite extends BaseTestSuite {
+    /**
+     * schena to test
+     */
+    schema: Schema;
+}
+
+/**
+ * runPrecTestSuites tests preconditions directly.
+ */
+export const runPrecTestSuites = (tests: Record<PrecTestSuite[]>) =>
+    runTestSuites(tests, s => s.precondition);
+
+/**
+ * runSchemaTestSuites tests schemas.
+ */
+export const runSchemaTestSuites = (
+    tests: Record<SchemaTestSuite[]>,
+    compile: (s: Schema) => Precondition<Type, Type>
+) => runTestSuites(tests, s => compile(s.schema));
+
+/**
  * runTestSuites sets up multiple TestSuites.
  *
  * TestSuites are further grouped into a record so that related suites are in
  * their own collection.
  */
-export const runTestSuites = <A, B>(tests: Record<TestSuite<A, B>[]>) => {
+const runTestSuites = <S extends BaseTestSuite>(
+    tests: Record<S[]>,
+    take: (s: S) => Precondition<Type, Type>
+) => {
     for (let [suite, targets] of Object.entries(tests))
         describe(suite, () => {
             let runTarget;
@@ -50,10 +82,16 @@ export const runTestSuites = <A, B>(tests: Record<TestSuite<A, B>[]>) => {
             if (process.env.TEST_SUITE_NAME)
                 runTarget = new RegExp(process.env.TEST_SUITE_NAME);
 
-            for (let { name, prec, cases } of targets) {
+            for (let target of targets) {
+                let { name, cases } = target;
                 if (runTarget && !runTarget.test(name)) continue;
 
                 describe(name, () => {
+                    let prec;
+                    before(() => {
+                        prec = take(target);
+                    });
+
                     let runCase = Number(process.env.TEST_CASE_INDEX);
 
                     for (let i = 0; i < cases.length; i++) {

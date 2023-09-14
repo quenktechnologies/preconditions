@@ -17,6 +17,4 @@ export const isBoolean: Precondition<Type, boolean> = <A>(n: A) =>
  * Basically anything that is not null or undefined results in true.
  */
 export const toBoolean: Precondition<Type, boolean> = <A>(value: A) =>
-    value == null || <Type>value === false
-        ? succeed<A, boolean>(false)
-        : succeed<A, boolean>(true);
+    succeed<A, boolean>(Boolean(value));

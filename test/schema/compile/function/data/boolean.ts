@@ -1,0 +1,72 @@
+export const tests = [
+    {
+        name: 'type=boolean',
+        schema: { type: 'boolean' },
+        cases: [
+            { value: true, ok: true },
+            { value: false, ok: false },
+            { value: 'true', notOk: 'boolean' },
+            { value: 'false', notOk: 'boolean' },
+            { value: [], notOk: 'boolean' }
+        ]
+    },
+    {
+        name: 'const=true',
+        schema: {
+            type: 'boolean',
+            const: true
+        },
+        cases: [
+            { value: true, ok: true },
+            { value: false, ok: true },
+            { value: [true], ok: true }
+        ]
+    },
+    {
+        name: 'const=false',
+        schema: {
+            type: 'boolean',
+            const: false
+        },
+        cases: [
+            { value: true, ok: false },
+            { value: false, ok: false },
+            { value: [true], ok: false }
+        ]
+    },
+    {
+        name: 'default=true',
+        schema: { type: 'boolean', default: true },
+        cases: [
+            { ok: true },
+            { value: null, ok: true },
+            { value: false, ok: false },
+            { value: 'true', notOk: 'boolean' }
+        ]
+    },
+    {
+        name: 'default=false',
+        schema: { type: 'boolean', default: false },
+        cases: [
+            { ok: false },
+            { value: true, ok: true },
+            { value: 'true', notOk: 'boolean' }
+        ]
+    },
+    {
+        name: 'cast=true',
+        schema: { type: 'boolean', cast: true },
+        cases: [
+            { value: 0, ok: false },
+            { value: 1, ok: true }
+        ]
+    },
+    {
+        name: 'enum',
+        schema: { type: 'boolean', enum: [false] },
+        cases: [
+            { value: false, ok: false },
+            { value: true, notOk: 'exists' }
+        ]
+    }
+];
