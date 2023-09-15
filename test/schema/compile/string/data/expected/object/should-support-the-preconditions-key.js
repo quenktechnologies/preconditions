@@ -1,0 +1,1 @@
+base.and(base.and(base.type("object"),base.or(object.restrict({n : base.and(base.and(base.and(base.type("number"),custom.one(1)),custom.two(2)),custom.three(3))}),object.map(base.and(base.and(base.and(base.type("boolean"),custom.one(true)),custom.two(false)),custom.three(true))))),base.and(base.and(custom.one({"n":1}),custom.two({"n":2})),custom.three({"n":3})))

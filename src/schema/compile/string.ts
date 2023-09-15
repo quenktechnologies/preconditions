@@ -42,6 +42,8 @@ const defaults = (opts: Partial<Options>) => {
         {
             identity: () => 'base.identity',
 
+            optional: (code: Code) => `base.optional(${code})`,
+
             and: (left: Code, right: Code) => `base.and(${left},${right})`,
 
             or: (left: Code, right: Code) => `base.or(${left},${right})`,

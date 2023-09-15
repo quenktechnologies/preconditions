@@ -68,5 +68,10 @@ export const tests = [
             { value: false, ok: false },
             { value: true, notOk: 'exists' }
         ]
+    },
+    {
+        name: 'optional',
+        schema: { type: 'boolean', optional: true },
+        cases: [{ value: true }, {}, { value: 1, notOk: 'boolean' }]
     }
 ];

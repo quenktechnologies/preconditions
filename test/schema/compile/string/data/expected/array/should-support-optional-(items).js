@@ -1,0 +1,1 @@
+base.and(base.type("array"),array.map(base.optional(base.type("string"))))

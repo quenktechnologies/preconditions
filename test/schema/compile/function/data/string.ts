@@ -315,5 +315,10 @@ export const tests = [
                 notOk: 'string'
             }
         ]
+    },
+    {
+        name: 'optional',
+        schema: { type: 'string', optional: true },
+        cases: [{ value: 'hi' }, {}, { value: [], notOk: 'string' }]
     }
 ];

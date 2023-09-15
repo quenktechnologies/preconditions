@@ -8,7 +8,7 @@ import { Preconditions } from '../lib';
 import { Precondition, every } from '../lib';
 import { succeed, fail } from '../lib/result';
 import { typeOf } from '../lib';
-import { runPrecTestSuites } from './tests';
+import { runPrecTests } from './tests';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -250,7 +250,7 @@ describe('record', function () {
     });
 
     // TODO: Migrate remaining tests.
-    runPrecTestSuites({
+    runPrecTests({
         map: [
             {
                 name: 'flat',

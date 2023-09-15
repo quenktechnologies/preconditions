@@ -171,5 +171,25 @@ export const tests = [
                 notOk: 'nonEmpty'
             }
         ]
+    },
+    {
+        name: 'optional',
+        schema: { type: 'array', optional: true, items: { type: 'number' } },
+        cases: [
+            { value: [1] },
+            { value: [] },
+            {},
+            { value: ['1'], notOk: { '0': 'number' } }
+        ]
+    },
+    {
+        name: 'optional (items)',
+        schema: { type: 'array', items: { type: 'number', optional: true } },
+        cases: [
+            { value: [1] },
+            { value: [] },
+            { value: [undefined] },
+            { value: ['1'], notOk: { '0': 'number' } }
+        ]
     }
 ];

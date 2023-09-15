@@ -69,5 +69,10 @@ export const tests = [
             { value: 24, notOk: 'max' },
             { value: Infinity, notOk: 'max' }
         ]
+    },
+    {
+        name: 'optional',
+        schema: { type: 'number', optional: true },
+        cases: [{ value: 12 }, {}, { value: '12', notOk: 'number' }]
     }
 ];

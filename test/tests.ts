@@ -3,6 +3,8 @@ import { assert } from '@quenk/test/lib/assert';
 import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
+import { readJSONFile, readTextFile, writeFile } from '@quenk/noni/lib/io/file';
+import { Either } from '@quenk/noni/lib/data/either';
 
 import { Precondition } from '../lib';
 import { Schema } from '../lib/schema';
@@ -52,26 +54,26 @@ interface SchemaTestSuite extends BaseTestSuite {
 }
 
 /**
- * runPrecTestSuites tests preconditions directly.
+ * runPrecTests tests preconditions directly.
  */
-export const runPrecTestSuites = (tests: Record<PrecTestSuite[]>) =>
-    runTestSuites(tests, s => s.precondition);
+export const runPrecTests = (tests: Record<PrecTestSuite[]>) =>
+    runBaseTests(tests, s => s.precondition);
 
 /**
- * runSchemaTestSuites tests schemas.
+ * runCompileTests tests schemas.
  */
-export const runSchemaTestSuites = (
+export const runCompileTests = (
     tests: Record<SchemaTestSuite[]>,
     compile: (s: Schema) => Precondition<Type, Type>
-) => runTestSuites(tests, s => compile(s.schema));
+) => runBaseTests(tests, s => compile(s.schema));
 
 /**
- * runTestSuites sets up multiple TestSuites.
+ * runBaseTests sets up multiple TestSuites.
  *
  * TestSuites are further grouped into a record so that related suites are in
  * their own collection.
  */
-const runTestSuites = <S extends BaseTestSuite>(
+const runBaseTests = <S extends BaseTestSuite>(
     tests: Record<S[]>,
     take: (s: S) => Precondition<Type, Type>
 ) => {
@@ -119,4 +121,67 @@ const runTestSuites = <S extends BaseTestSuite>(
                 });
             }
         });
+};
+
+/**
+ * ParseTestSuiteOptions
+ */
+export interface ParseTestSuiteOptions {
+    /**
+     * json if true will parse/stringify the output from and to the file.
+     */
+    json?: boolean;
+
+    /**
+     * path generates the path to read/generate output for a schema.
+     */
+    mkpath: (suite: string, test: string) => string;
+
+    /**
+     * parse (or compile function).
+     *
+     * It should return a string or AST.
+     */
+    parse: (schema: Schema) => Either<Type, Type>;
+}
+
+/**
+ * runParseTests compares the output of a parse/compile to files stored on disk.
+ */
+export const runParseTests = (
+    { json, mkpath, parse }: ParseTestSuiteOptions,
+    tests: Record<Record<Schema>>
+) => {
+    for (let [suite, target] of Object.entries(tests)) {
+        if (
+            process.env.TEST_SUITE_NAME &&
+            !new RegExp(process.env.TEST_SUITE_NAME).test(suite)
+        )
+            continue;
+        describe(suite, () => {
+            for (let [test, input] of Object.entries(target)) {
+                if (
+                    process.env.TEST_NAME &&
+                    !new RegExp(process.env.TEST_NAME).test(test)
+                )
+                    continue;
+                it(test, async () => {
+                    let path = mkpath(suite, test);
+                    let mresult = parse(input);
+                    assert(mresult.isRight(), 'parse successful').true();
+
+                    let result = mresult.takeRight();
+
+                    if (process.env.GENERATE)
+                        return writeFile(
+                            path,
+                            json ? JSON.stringify(result) : result
+                        );
+                    assert(result).equate(
+                        await (json ? readJSONFile(path) : readTextFile(path))
+                    );
+                });
+            }
+        });
+    }
 };

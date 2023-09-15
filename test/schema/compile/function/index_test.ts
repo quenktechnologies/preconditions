@@ -5,11 +5,11 @@ import * as boolean from './data/boolean';
 import * as number from './data/number';
 
 import { compile } from '../../../../lib/schema/compile/function';
-import { runSchemaTestSuites } from '../../../tests';
+import { runCompileTests } from '../../../tests';
 
 describe('compile', () => {
     describe('function', () =>
-        runSchemaTestSuites(
+        runCompileTests(
             {
                 object: object.tests,
                 array: array.tests,

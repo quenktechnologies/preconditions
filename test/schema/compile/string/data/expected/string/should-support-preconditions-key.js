@@ -1,0 +1,1 @@
+base.and(base.and(base.and(base.type("string"),custom.one(1)),custom.two(2)),custom.three(3))

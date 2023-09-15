@@ -330,7 +330,7 @@ export const tests = [
                 }
             }
         ]
-    }
+    },
     /*TODO: #94 {
       name: 'properties and additionalProperties',
       schema: {
@@ -346,4 +346,43 @@ export const tests = [
         { value: {id: 1, name: 2}, notOk: { name: 'string' }}
       ]
     }*/
+    {
+        name: 'optional',
+        schema: { type: 'object', optional: true },
+        cases: [
+            { value: { n: 1 } },
+            { value: {} },
+            {},
+            { value: [{}], notOk: 'object' }
+        ]
+    },
+    {
+        name: 'optional (properties)',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'number' },
+                name: { type: 'string', optional: true }
+            }
+        },
+        cases: [
+            { value: { id: 1 } },
+            { value: { id: 1, name: 'foo' } },
+            { value: { id: 1, name: 2 }, notOk: { name: 'string' } },
+            { notOk: 'object' }
+        ]
+    },
+    {
+        name: 'optional (additionalProperties)',
+        schema: {
+            type: 'object',
+            additionalProperties: { type: 'number', optional: true }
+        },
+        cases: [
+            { value: { id: 1 } },
+            { value: {} },
+            { value: { name: 'me' }, notOk: { name: 'number' } },
+            { notOk: 'object' }
+        ]
+    }
 ];

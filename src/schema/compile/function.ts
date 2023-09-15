@@ -120,6 +120,8 @@ export const compile = (opts: Partial<Options>, schema: Schema) => {
 const defaults = {
     identity: base.identity,
 
+    optional: base.optional,
+
     and: base.and,
 
     or: base.or,

@@ -1,0 +1,1 @@
+base.and(base.type("object"),object.map(base.type("boolean")))

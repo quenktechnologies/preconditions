@@ -14,6 +14,12 @@ export interface Context<T> {
     identity: T;
 
     /**
+     * optional wraps a precondition in an optional precondition wrapper to
+     * prevent execution if a value is not specified.
+     */
+    optional: (prec: T) => T;
+
+    /**
      * and joins to preconditions via logical and operation.
      */
     and: (left: T, right: T) => T;
@@ -53,9 +59,12 @@ export interface Context<T> {
  * @internal
  */
 export const visit = <T>(ctx: Context<T>, node: Node<T>): T => {
-    if (node[0] === 'object') return object(ctx, node);
-    else if (node[0] === 'array') return array(ctx, node);
-    else return prim(ctx, node);
+    let result;
+    if (node[0] === 'object') result = object(ctx, node);
+    else if (node[0] === 'array') result = array(ctx, node);
+    else result = prim(ctx, node);
+
+    return node[2] === true ? ctx.optional(result) : result;
 };
 
 const object = <T>(ctx: Context<T>, node: ObjectNode<T>) => {

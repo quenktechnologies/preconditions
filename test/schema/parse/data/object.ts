@@ -1,4 +1,8 @@
-export const tests = {
+import { Record } from '@quenk/noni/lib/data/record';
+
+import { Schema } from '../../.../../../../lib/schema';
+
+export const tests: Record<Schema> = {
     'should parse object schema': {
         type: 'object',
         const: {
