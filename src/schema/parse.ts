@@ -1,62 +1,11 @@
 import { Except, raise } from '@quenk/noni/lib/control/except';
 import { empty } from '@quenk/noni/lib/data/array';
 import { right } from '@quenk/noni/lib/data/either';
-import { Record } from '@quenk/noni/lib/data/record';
+import { merge, Record } from '@quenk/noni/lib/data/record';
 
 import { JSONPrecondition, Schema } from './';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { isObject, Type } from '@quenk/noni/lib/data/type';
-
-const extractors = new Map([
-    ['object', ['base.default', 'base.const', 'base.type']],
-    [
-        'array',
-        [
-            'base.default',
-            'base.const',
-            'base.type',
-            'array.nonEmpty',
-            'array.minItems',
-            'array.maxItems'
-        ]
-    ],
-    [
-        'string',
-        [
-            'base.default',
-            'string.cast',
-            'base.const',
-            'base.type',
-            'base.enum',
-            'string.nonEmpty',
-            'string.minLength',
-            'string.maxLength',
-            'string.pattern',
-            'string.trim',
-            'string.lowerCase',
-            'string.upperCase',
-            'string.split'
-        ]
-    ],
-    [
-        'number',
-        [
-            'base.default',
-            'number.cast',
-            'base.const',
-            'base.type',
-            'base.enum',
-            'number.min',
-            'number.max'
-        ]
-    ],
-    [
-        'boolean',
-        ['base.default', 'boolean.cast', 'base.const', 'base.type', 'base.enum']
-    ]
-]);
-
-const booleanExtractors = ['trim', 'lowerCase', 'upperCase', 'cast'];
 
 /**
  * Node holds information about a single schema type that has been parsed
@@ -119,8 +68,8 @@ export type Optional = boolean;
  * A string used to resolve a precondition's name consisting of it's module
  * and name separated by a "dot".
  *
- * For example: "base.every" indicates the "every" precondition from the main
- * export of the preconditions library.
+ * For example: "base.every" indicates the "every" precondition from the "base"
+ * module.
  */
 export type Path = string;
 
@@ -132,6 +81,13 @@ export type Path = string;
  * specified via the visit function.
  */
 export interface ParseContext<T> {
+    /**
+     * builtinsAvailable to be automatically included in the parsed preconditions.
+     *
+     * Each schema type has its own list and is included in order.
+     */
+    builtinsAvailable?: Partial<BuiltinsAvailable>;
+
     /**
      * visit a Node in the tree returning a transformation.
      *
@@ -145,6 +101,37 @@ export interface ParseContext<T> {
     get: (path: Path, args: Type[]) => Maybe<T>;
 }
 
+/**
+ * BuiltinsAvailable specifies which of the builtins to recognize in each schema
+ * type.
+ */
+export interface BuiltinsAvailable {
+    /**
+     * object schema builtins.
+     */
+    object: Path[];
+
+    /**
+     * array schema builtins.
+     */
+    array: Path[];
+
+    /**
+     * string schema builtins.
+     */
+    string: Path[];
+
+    /**
+     * boolean schema builtins.
+     */
+    boolean: Path[];
+
+    /**
+     * number schema builtins.
+     */
+    number: Path[];
+}
+
 type Index = string | number;
 
 type Frame<T> = [Item<T>[], Owner<T>?];
@@ -154,6 +141,54 @@ type Owner<T> = [Node<T>, Index, Target<T>];
 type Target<T> = Record<T> | T[];
 
 type Item<T> = [Schema, Index, Target<T>];
+
+/**
+ * defaultBuiltins available.
+ */
+export const defaultBuiltins: BuiltinsAvailable = {
+    object: ['base.default', 'base.const', 'base.type'],
+    array: [
+        'base.default',
+        'base.const',
+        'base.type',
+        'array.nonEmpty',
+        'array.minItems',
+        'array.maxItems'
+    ],
+    string: [
+        'base.default',
+        'string.cast',
+        'base.const',
+        'base.type',
+        'base.enum',
+        'string.nonEmpty',
+        'string.minLength',
+        'string.maxLength',
+        'string.pattern',
+        'string.trim',
+        'string.lowerCase',
+        'string.upperCase',
+        'string.split'
+    ],
+    number: [
+        'base.default',
+        'number.cast',
+        'base.const',
+        'base.type',
+        'base.enum',
+        'number.min',
+        'number.max'
+    ],
+    boolean: [
+        'base.default',
+        'boolean.cast',
+        'base.const',
+        'base.type',
+        'base.enum'
+    ]
+};
+
+const booleanExtractors = ['trim', 'lowerCase', 'upperCase', 'cast'];
 
 /**
  * parse a Schema into a representation.
@@ -178,7 +213,12 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
         let [stack, owner] = <Frame<T>>pending.pop();
         while (!empty(stack)) {
             let [schema, currentPath, currentTarget] = <Item<T>>stack.pop();
-            let builtins = takeBuiltins(schema);
+
+            let builtins = takeBuiltins(
+                merge(defaultBuiltins, ctx.builtinsAvailable || {}),
+                schema
+            );
+
             let preconditions = takePreconditions(schema);
 
             if (!isComplex(schema)) {
@@ -266,8 +306,11 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
     return right(<T>result.pop());
 };
 
-const takeBuiltins = (schema: Schema): JSONPrecondition[] =>
-    getExtractors(schema).reduce((result, path) => {
+const takeBuiltins = (
+    available: BuiltinsAvailable,
+    schema: Schema
+): JSONPrecondition[] =>
+    (available[<'number'>schema.type] || []).reduce((result, path) => {
         let [, name] = path.split('.');
         if (
             Object.prototype.hasOwnProperty.call(schema, name) &&
@@ -295,8 +338,6 @@ const convert = <T>(
 
     return right(result);
 };
-
-const getExtractors = (schema: Schema) => extractors.get(schema.type) || [];
 
 const complex = ['object', 'array'];
 

@@ -1,0 +1,12 @@
+[
+    "number",
+    [
+        ["base.default", [2]],
+        ["number.cast", [true]],
+        ["base.const", [1]],
+        ["base.type", ["number"]],
+        ["number.min", [1]],
+        ["number.max", [3]]
+    ],
+    false
+]

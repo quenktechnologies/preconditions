@@ -1,0 +1,10 @@
+[
+    "boolean",
+    [
+        ["base.default", [true]],
+        ["boolean.cast", [true]],
+        ["base.const", [false]],
+        ["base.enum", [[false]]]
+    ],
+    false
+]

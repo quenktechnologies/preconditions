@@ -12,7 +12,11 @@ import { Schema } from '../lib/schema';
 /**
  * TestCase is a single input->output test.
  */
-export type TestCase = { value?: Type; ok?: Value; notOk?: Value };
+export type TestCase = {
+    value?: Type;
+    ok?: Value;
+    notOk?: Value;
+};
 
 /**
  * BaseTestSuite
@@ -146,9 +150,10 @@ export interface ParseTestSuiteOptions {
 }
 
 /**
- * runParseTests compares the output of a parse/compile to files stored on disk.
+ * runParseSuites runs multiple parse/compile comparison tests that are grouped
+ * together by object schema types.
  */
-export const runParseTests = (
+export const runParseSuites = (
     { json, mkpath, parse }: ParseTestSuiteOptions,
     tests: Record<Record<Schema>>
 ) => {
@@ -159,29 +164,63 @@ export const runParseTests = (
         )
             continue;
         describe(suite, () => {
-            for (let [test, input] of Object.entries(target)) {
+            for (let [name, schema] of Object.entries(target)) {
                 if (
                     process.env.TEST_NAME &&
-                    !new RegExp(process.env.TEST_NAME).test(test)
+                    !new RegExp(process.env.TEST_NAME).test(name)
                 )
                     continue;
-                it(test, async () => {
-                    let path = mkpath(suite, test);
-                    let mresult = parse(input);
-                    assert(mresult.isRight(), 'parse successful').true();
-
-                    let result = mresult.takeRight();
-
-                    if (process.env.GENERATE)
-                        return writeFile(
-                            path,
-                            json ? JSON.stringify(result) : result
-                        );
-                    assert(result).equate(
-                        await (json ? readJSONFile(path) : readTextFile(path))
-                    );
-                });
+                runParseTest(
+                    {
+                        json,
+                        suite,
+                        name,
+                        mkpath,
+                        parse
+                    },
+                    schema
+                );
             }
         });
     }
+};
+
+/**
+ * RunParseTestOptions
+ */
+export interface RunParseTestOptions extends ParseTestSuiteOptions {
+    /**
+     * name of the test.
+     */
+    name: string;
+
+    /**
+     * suite the test belongs to.
+     *
+     * Used when creating the read/write path for comparison.
+     */
+    suite: string;
+}
+
+/**
+ * runParseTests compares the output of a parse/compile to files stored on disk.
+ */
+export const runParseTest = (
+    { json, name, suite, mkpath, parse }: RunParseTestOptions,
+    schema: Schema
+) => {
+    it(name, async () => {
+        let mresult = parse(schema);
+        assert(mresult.isRight(), 'parse successful').true();
+
+        let result = mresult.takeRight();
+
+        let path = mkpath(suite, name);
+
+        if (process.env.GENERATE)
+            return writeFile(path, json ? JSON.stringify(result) : result);
+        assert(result).equate(
+            await (json ? readJSONFile(path) : readTextFile(path))
+        );
+    });
 };
