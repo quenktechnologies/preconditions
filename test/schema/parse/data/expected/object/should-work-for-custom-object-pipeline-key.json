@@ -1,0 +1,27 @@
+[
+    "object",
+    [
+        [["base.type", ["object"]]],
+        {
+            "name": [
+                "string",
+                [
+                    ["base.type", ["string"]],
+                    ["stringify", []]
+                ],
+                false
+            ],
+            "id": ["string", [["base.type", ["string"]]], false]
+        },
+        [
+            "number",
+            [
+                ["base.type", ["number"]],
+                ["numberify", []]
+            ],
+            false
+        ],
+        [["objectify", []]]
+    ],
+    false
+]

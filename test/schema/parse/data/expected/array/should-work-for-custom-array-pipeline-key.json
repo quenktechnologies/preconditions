@@ -1,0 +1,16 @@
+[
+    "array",
+    [
+        [["base.type", ["array"]]],
+        [
+            "number",
+            [
+                ["base.type", ["number"]],
+                ["numberify", []]
+            ],
+            false
+        ],
+        [["arrayify", []]]
+    ],
+    false
+]

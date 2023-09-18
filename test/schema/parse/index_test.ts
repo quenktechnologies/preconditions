@@ -12,6 +12,7 @@ import { merge } from '@quenk/noni/lib/data/record';
 import { Node, parse, defaultBuiltins } from '../../../lib/schema/parse';
 import { runParseSuites, runParseTest } from '../../tests';
 import { allBuiltins } from './data/builtins';
+import { pipelines } from './data/pipeline-key';
 
 const tests = {
     object: object.tests,
@@ -27,14 +28,16 @@ const context = {
     get: (path: string, args: Type[]) => just([path, args])
 };
 
+const mkpath = (suite, name) =>
+    `${__dirname}/data/expected/${suite}/` +
+    name.split(' ').join('-').split('"').join('').split('.').join('-') +
+    '.json';
+
 describe('parse', () => {
     runParseSuites(
         {
             json: true,
-            mkpath: (suite, name) =>
-                `${__dirname}/data/expected/${suite}/` +
-                name.split(' ').join('-') +
-                '.json',
+            mkpath,
             parse: schema => parse(context, schema)
         },
         tests
@@ -43,17 +46,6 @@ describe('parse', () => {
     describe('builtinsAvailable', () => {
         for (let [suite, schema] of Object.entries(allBuiltins)) {
             describe(suite, () => {
-                let mkpath = (suite, name) =>
-                    `${__dirname}/data/expected/${suite}/` +
-                    name
-                        .split(' ')
-                        .join('-')
-                        .split('"')
-                        .join('')
-                        .split('.')
-                        .join('-') +
-                    '.json';
-
                 for (let builtin of defaultBuiltins[suite]) {
                     describe(builtin, () => {
                         runParseTest(
@@ -113,6 +105,27 @@ describe('parse', () => {
                                         [suite]: []
                                     }
                                 }),
+                                schema
+                            )
+                    },
+                    schema
+                );
+            });
+        }
+    });
+
+    describe('pipeline key', () => {
+        for (let [suite, schema] of Object.entries(pipelines)) {
+            describe(suite, () => {
+                runParseTest(
+                    {
+                        json: true,
+                        name: `should work for custom ${suite} pipeline key`,
+                        suite,
+                        mkpath,
+                        parse: schema =>
+                            parse(
+                                merge(context, { pipelineKey: 'pipes' }),
                                 schema
                             )
                     },

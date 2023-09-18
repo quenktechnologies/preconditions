@@ -7,6 +7,8 @@ import { JSONPrecondition, Schema } from './';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { isObject, Type } from '@quenk/noni/lib/data/type';
 
+export const DEFAULT_PIPELINE_KEY = 'preconditions';
+
 /**
  * Node holds information about a single schema type that has been parsed
  * to produce a precondition.
@@ -81,6 +83,13 @@ export type Path = string;
  * specified via the visit function.
  */
 export interface ParseContext<T> {
+    /**
+     * pipelineKey is the key that will be read to fetch the pipeline.
+     *
+     * Defaults to the constant DEFAULT_PIPELINE_KEY.
+     */
+    pipelineKey?: string;
+
     /**
      * builtinsAvailable to be automatically included in the parsed preconditions.
      *
@@ -219,10 +228,16 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                 schema
             );
 
-            let preconditions = takePreconditions(schema);
+            let preconditions = takePreconditions(
+                ctx.pipelineKey || DEFAULT_PIPELINE_KEY,
+                schema
+            );
 
             if (!isComplex(schema)) {
-                let eprecs = convert(ctx, [...builtins, ...preconditions]);
+                let eprecs = toPrecondition(ctx, [
+                    ...builtins,
+                    ...preconditions
+                ]);
 
                 if (eprecs.isLeft()) return raise(eprecs.takeLeft());
 
@@ -234,12 +249,12 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
             } else {
                 pending.push([stack, owner]); // Save current state for later.
 
-                let ebuiltinPrecs = convert(ctx, builtins);
+                let ebuiltinPrecs = toPrecondition(ctx, builtins);
 
                 if (ebuiltinPrecs.isLeft())
                     return raise(ebuiltinPrecs.takeLeft());
 
-                let eprecs = convert(ctx, preconditions);
+                let eprecs = toPrecondition(ctx, preconditions);
 
                 if (eprecs.isLeft()) return raise(eprecs.takeLeft());
 
@@ -320,10 +335,10 @@ const takeBuiltins = (
         return result;
     }, <JSONPrecondition[]>[]);
 
-const takePreconditions = (schema: Schema): JSONPrecondition[] =>
-    schema.preconditions || [];
+const takePreconditions = (key: string, schema: Schema): JSONPrecondition[] =>
+    <JSONPrecondition[]>schema[key] || [];
 
-const convert = <T>(
+const toPrecondition = <T>(
     ctx: ParseContext<T>,
     list: JSONPrecondition[]
 ): Except<T[]> => {

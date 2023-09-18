@@ -1,0 +1,8 @@
+[
+    "string",
+    [
+        ["base.type", ["string"]],
+        ["stringify", []]
+    ],
+    false
+]

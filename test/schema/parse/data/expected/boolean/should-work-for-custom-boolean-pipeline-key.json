@@ -1,0 +1,8 @@
+[
+    "boolean",
+    [
+        ["base.type", ["boolean"]],
+        ["booleanify", []]
+    ],
+    false
+]
