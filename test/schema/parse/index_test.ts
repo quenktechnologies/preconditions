@@ -12,7 +12,6 @@ import { merge } from '@quenk/noni/lib/data/record';
 import { Node, parse, defaultBuiltins } from '../../../lib/schema/parse';
 import { runParseSuites, runParseTest } from '../../tests';
 import { allBuiltins } from './data/builtins';
-import { pipelines } from './data/pipeline-key';
 
 const tests = {
     object: object.tests,
@@ -23,9 +22,13 @@ const tests = {
 };
 
 const context = {
-    visit: (entry: Node<Value>) => entry,
+    builtinsAvailable: {},
 
-    get: (path: string, args: Type[]) => just([path, args])
+    get: (path: string, args: Type[]) => just([path, args]),
+
+    getPipeline: schema => <Type>schema.preconditions || [],
+
+    visit: (entry: Node<Value>) => entry
 };
 
 const mkpath = (suite, name) =>
@@ -38,7 +41,7 @@ describe('parse', () => {
         {
             json: true,
             mkpath,
-            parse: schema => parse(context, schema)
+            parse: schema => parse<Value>(context, schema)
         },
         tests
     );
@@ -55,7 +58,7 @@ describe('parse', () => {
                                 suite,
                                 mkpath,
                                 parse: schema =>
-                                    parse(
+                                    parse<Value>(
                                         merge(context, {
                                             builtinsAvailable: {
                                                 [suite]: defaultBuiltins[
@@ -78,7 +81,7 @@ describe('parse', () => {
                                 suite,
                                 mkpath,
                                 parse: schema =>
-                                    parse(
+                                    parse<Value>(
                                         merge(context, {
                                             builtinsAvailable: {
                                                 [suite]: [builtin]
@@ -99,33 +102,12 @@ describe('parse', () => {
                         suite,
                         mkpath,
                         parse: schema =>
-                            parse(
+                            parse<Value>(
                                 merge(context, {
                                     builtinsAvailable: {
                                         [suite]: []
                                     }
                                 }),
-                                schema
-                            )
-                    },
-                    schema
-                );
-            });
-        }
-    });
-
-    describe('pipeline key', () => {
-        for (let [suite, schema] of Object.entries(pipelines)) {
-            describe(suite, () => {
-                runParseTest(
-                    {
-                        json: true,
-                        name: `should work for custom ${suite} pipeline key`,
-                        suite,
-                        mkpath,
-                        parse: schema =>
-                            parse(
-                                merge(context, { pipelineKey: 'pipes' }),
                                 schema
                             )
                     },

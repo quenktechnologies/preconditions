@@ -7,6 +7,7 @@ import { readJSONFile, readTextFile, writeFile } from '@quenk/noni/lib/io/file';
 import { Either } from '@quenk/noni/lib/data/either';
 
 import { Precondition } from '../lib';
+import { compile, Options } from '../lib/schema/compile/function';
 import { Schema } from '../lib/schema';
 
 /**
@@ -48,9 +49,14 @@ interface PrecTestSuite extends BaseTestSuite {
 }
 
 /**
- *  SchemaTestSuite for testing a schema.
+ *  SchemaTestSuite for testing a compiled schema.
  */
 interface SchemaTestSuite extends BaseTestSuite {
+    /**
+     * options passed to the compile function.
+     */
+    options?: Partial<Options>;
+
     /**
      * schena to test
      */
@@ -64,12 +70,10 @@ export const runPrecTests = (tests: Record<PrecTestSuite[]>) =>
     runBaseTests(tests, s => s.precondition);
 
 /**
- * runCompileTests tests schemas.
+ * runFuncCompileTests tests functions compiled from a schema.
  */
-export const runCompileTests = (
-    tests: Record<SchemaTestSuite[]>,
-    compile: (s: Schema) => Precondition<Type, Type>
-) => runBaseTests(tests, s => compile(s.schema));
+export const runFuncCompileTests = (tests: Record<SchemaTestSuite[]>) =>
+    runBaseTests(tests, s => compile(s.options || {}, s.schema).takeRight());
 
 /**
  * runBaseTests sets up multiple TestSuites.
@@ -219,6 +223,7 @@ export const runParseTest = (
 
         if (process.env.GENERATE)
             return writeFile(path, json ? JSON.stringify(result) : result);
+
         assert(result).equate(
             await (json ? readJSONFile(path) : readTextFile(path))
         );

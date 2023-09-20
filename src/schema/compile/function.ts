@@ -4,33 +4,24 @@ import * as array from '../../array';
 import * as string from '../../string';
 import * as boolean from '../../boolean';
 import * as number from '../../number';
+import * as async from '../../async';
+import * as asyncObject from '../../async/record';
+import * as asyncArray from '../../async/array';
 
-import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { Record, merge3, rmerge } from '@quenk/noni/lib/data/record';
-import { get as _get } from '@quenk/noni/lib/data/record/path';
+import { just, Maybe, nothing } from '@quenk/noni/lib/data/maybe';
+import { Record, rmerge, merge3 } from '@quenk/noni/lib/data/record';
+import { get } from '@quenk/noni/lib/data/record/path';
 import { Value } from '@quenk/noni/lib/data/jsonx';
-import { Type } from '@quenk/noni/lib/data/type';
+import { Type, isFunction } from '@quenk/noni/lib/data/type';
 
 import { parse, Path } from '../parse';
-import { Context, visit } from '.';
 import { Schema } from '..';
+import { BaseOptions, CompileContext } from '.';
 
 /**
  * Precondition specialized to jsonx values.
  */
 export type Precondition = base.Precondition<Value, Value>;
-
-/**
- * Preconditions specialised to jsonx values.
- */
-export type Preconditions = base.Preconditions<Value, Value>;
-
-/**
- * Options for the compile() function.
- */
-export interface Options extends Context<Precondition> {
-    available: PreconditionsAvailable;
-}
 
 /**
  * Provider provides a precondition given some arguments.
@@ -40,7 +31,25 @@ export type Provider = (...args: Type[]) => Precondition;
 /**
  * PreconditionsAvailable is a namespaced map or a map of providers.
  */
-export interface PreconditionsAvailable extends Record<Record<Provider>> {}
+export interface PreconditionsAvailable
+    extends Record<Provider | Record<Provider>> {}
+
+/**
+ * Options that can be configured when compiling functions.
+ */
+export interface Options extends BaseOptions {
+    /**
+     * preconditions is used to resolve precondition references.
+     */
+    preconditions: PreconditionsAvailable;
+}
+
+const props = {
+    restrict: object.restrict,
+    intersect: object.intersect,
+    disjoint: object.disjoint,
+    union: object.union
+};
 
 /**
  * @internal
@@ -100,41 +109,142 @@ export const defaultAvailables: PreconditionsAvailable = {
 };
 
 /**
- * compile a schema into a string.
- *
- * This function produces a string that can be used for code generation from
- * templates.
+ * FunctionContext is used for compilation of a schema to a synchronous
+ * precondition function.
  */
-export const compile = (opts: Partial<Options>, schema: Schema) => {
-    let available = rmerge(defaultAvailables, opts.available || {});
-    let ctx = merge3(defaults, opts, { available });
-    return parse(
-        {
-            visit: node => visit(ctx, node),
-            get: get(ctx)
-        },
+export class FunctionContext extends CompileContext<Precondition, Options> {
+    identity = base.identity;
+
+    optional = base.optional;
+
+    and = base.and;
+
+    or = base.or;
+
+    properties = <Provider>props[<'restrict'>this.options.propMode];
+
+    additionalProperties = <Provider>object.map;
+
+    items = (prec: Precondition) =>
+        <Precondition>base.and(base.typeOf<Value[]>('array'), array.map(prec));
+
+    get = (path: Path, args: Type[]): Maybe<Precondition> =>
+        get(path, this.options.preconditions).chain(fn =>
+            isFunction(fn) ? just(fn.apply(null, args)) : nothing()
+        );
+}
+
+/**
+ * compile a schema into a single precondition function.
+ */
+export const compile = (opts: Partial<Options>, schema: Schema) =>
+    parse(
+        new FunctionContext(
+            merge3(
+                { key: 'preconditions', propMode: 'restrict', builtins: true },
+                opts,
+                {
+                    preconditions: rmerge(
+                        defaultAvailables,
+                        opts.preconditions || {}
+                    )
+                }
+            )
+        ),
         schema
     );
+
+/**
+ * AsyncPrecondition specialized to jsonx values.
+ */
+export type AsyncPrecondition = async.AsyncPrecondition<Value, Value>;
+
+/**
+ * AsyncProvider provides an async precondition given some arguments.
+ */
+export type AsyncProvider = (...args: Type[]) => AsyncPrecondition;
+
+/**
+ * AsyncOptions used for async precondition compilation.
+ */
+export interface AsyncOptions extends BaseOptions {
+    /**
+     * asyncPreconditions is used to resolve async precondition
+     * references.
+     */
+    asyncPreconditions: AsyncPreconditionsAvailable;
+}
+
+/**
+ * AsyncPreconditionsAvailable is a namespaced map or a map of async providers.
+ */
+export interface AsyncPreconditionsAvailable
+    extends Record<Record<AsyncProvider>> {}
+
+const asyncProps = {
+    restrict: asyncObject.restrict,
+    intersect: asyncObject.intersect,
+    disjoint: asyncObject.disjoint,
+    union: asyncObject.union
 };
 
-const defaults = {
-    identity: base.identity,
+/**
+ * AsyncFunctionContext is used for compilation of a schema to an async
+ * precondition function.
+ */
+export class AsyncFunctionContext extends CompileContext<
+    AsyncPrecondition,
+    AsyncOptions
+> {
+    identity = async.identity;
 
-    optional: base.optional,
+    optional = async.optional;
 
-    and: base.and,
+    and = async.and;
 
-    or: base.or,
+    or = async.or;
 
-    properties: object.restrict,
+    properties = <AsyncProvider>asyncProps[<'restrict'>this.options.propMode];
 
-    additionalProperties: object.map,
+    additionalProperties = <AsyncProvider>asyncObject.map;
 
-    items: (prec: Precondition) =>
-        base.and(base.typeOf<Value[]>('array'), array.map(prec))
-};
+    items = (prec: AsyncPrecondition) =>
+        <AsyncPrecondition>(
+            async.and(
+                async.async(base.typeOf<Value[]>('array')),
+                asyncArray.map(prec)
+            )
+        );
 
-const get =
-    (ctx: Options) =>
-    (path: Path, args: Type[]): Maybe<Precondition> =>
-        _get(path, ctx.available).map(fn => fn.apply(null, args));
+    get = (path: Path, args: Type[]): Maybe<AsyncPrecondition> =>
+        get(path, this.options.asyncPreconditions).map(fn =>
+            fn.apply(null, args)
+        );
+}
+
+/**
+ * compileAsync a schema into a single async precondition function.
+ *
+ * This function disables builtins and changes the default precondition key to
+ * "asyncPreconditions".
+ */
+export const compileAsync = (opts: Partial<AsyncOptions>, schema: Schema) =>
+    parse(
+        new AsyncFunctionContext(
+            merge3(
+                {
+                    key: 'asyncPreconditions',
+                    propMode: 'restrict'
+                },
+                opts,
+                {
+                    builtins: false,
+                    asyncPreconditions: rmerge(
+                        {},
+                        opts.asyncPreconditions || {}
+                    )
+                }
+            )
+        ),
+        schema
+    );

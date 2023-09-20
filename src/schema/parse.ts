@@ -79,23 +79,27 @@ export type Path = string;
  * ParseContext is used to shape the output of a parsed schema into a
  * precondition.
  *
- * The generic type <T> determines what a precondition looks like and is
- * specified via the visit function.
+ * @typeparam T - determines what a precondition looks like and is specified by
+ *                the result of visit().
  */
 export interface ParseContext<T> {
-    /**
-     * pipelineKey is the key that will be read to fetch the pipeline.
-     *
-     * Defaults to the constant DEFAULT_PIPELINE_KEY.
-     */
-    pipelineKey?: string;
-
     /**
      * builtinsAvailable to be automatically included in the parsed preconditions.
      *
      * Each schema type has its own list and is included in order.
      */
-    builtinsAvailable?: Partial<BuiltinsAvailable>;
+    builtinsAvailable: Partial<BuiltinsAvailable>;
+
+    /**
+     * get a single precondition T given its path and any arguments.
+     */
+    get: (path: Path, args: Type[]) => Maybe<T>;
+
+    /**
+     * getPipeline given a Schema, returns its pipeline or an empty array if
+     * none exists.
+     */
+    getPipeline(schema: Schema): JSONPrecondition[];
 
     /**
      * visit a Node in the tree returning a transformation.
@@ -103,11 +107,6 @@ export interface ParseContext<T> {
      * This function is called on each Node in a tree recursively.
      */
     visit: (entry: Node<T>) => T;
-
-    /**
-     * get a single precondition given its path.
-     */
-    get: (path: Path, args: Type[]) => Maybe<T>;
 }
 
 /**
@@ -228,10 +227,7 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                 schema
             );
 
-            let preconditions = takePreconditions(
-                ctx.pipelineKey || DEFAULT_PIPELINE_KEY,
-                schema
-            );
+            let preconditions = ctx.getPipeline(schema);
 
             if (!isComplex(schema)) {
                 let eprecs = toPrecondition(ctx, [
@@ -334,9 +330,6 @@ const takeBuiltins = (
             result.push([path, [schema[name]]]);
         return result;
     }, <JSONPrecondition[]>[]);
-
-const takePreconditions = (key: string, schema: Schema): JSONPrecondition[] =>
-    <JSONPrecondition[]>schema[key] || [];
 
 const toPrecondition = <T>(
     ctx: ParseContext<T>,

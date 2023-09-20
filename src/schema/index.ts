@@ -76,14 +76,6 @@ export interface PropertyTypeSchema extends Object {
      * optional indicates the schema is optional and its value can be omitted.
      */
     optional?: boolean;
-
-    /**
-     * preconditions is a list of custom preconditions to apply to the value.
-     *
-     * These are applied after any automatically generated preconditions have
-     * been applied successfully.
-     */
-    preconditions?: JSONPrecondition[];
 }
 
 /**

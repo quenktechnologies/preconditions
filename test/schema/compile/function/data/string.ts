@@ -1,3 +1,5 @@
+import { preconditions } from './preconditions';
+
 export const tests = [
     {
         name: 'type=string',
@@ -320,5 +322,17 @@ export const tests = [
         name: 'optional',
         schema: { type: 'string', optional: true },
         cases: [{ value: 'hi' }, {}, { value: [], notOk: 'string' }]
+    },
+    {
+        name: 'key=pipes',
+        options: { key: 'pipes', preconditions },
+        schema: { type: 'string', pipes: [['concat', ['!']]] },
+        cases: [{ value: 'hello', ok: 'hello!' }]
+    },
+    {
+        name: 'key=pipes (original key)',
+        options: { key: 'pipes', preconditions },
+        schema: { type: 'string', preconditions: [['concat', ['!']]] },
+        cases: [{ value: 'hello' }]
     }
 ];

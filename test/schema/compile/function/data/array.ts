@@ -1,3 +1,5 @@
+import { preconditions } from './preconditions';
+
 export const tests = [
     {
         name: 'type=array',
@@ -191,5 +193,25 @@ export const tests = [
             { value: [undefined] },
             { value: ['1'], notOk: { '0': 'number' } }
         ]
+    },
+    {
+        name: 'key=pipes',
+        options: { key: 'pipes', preconditions },
+        schema: {
+            type: 'array',
+            items: { type: 'number' },
+            pipes: [['stringify', []]]
+        },
+        cases: [{ value: [1, 2, 3], ok: '1,2,3' }]
+    },
+    {
+        name: 'key=pipes (original key)',
+        options: { key: 'pipes', preconditions },
+        schema: {
+            type: 'array',
+            items: { type: 'number' },
+            preconditions: [['stringify', []]]
+        },
+        cases: [{ value: [1, 2, 3] }]
     }
 ];
