@@ -1,5 +1,3 @@
-import { preconditions } from './preconditions';
-
 export const tests = [
     {
         name: 'type=array',
@@ -196,7 +194,7 @@ export const tests = [
     },
     {
         name: 'key=pipes',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: {
             type: 'array',
             items: { type: 'number' },
@@ -206,7 +204,7 @@ export const tests = [
     },
     {
         name: 'key=pipes (original key)',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: {
             type: 'array',
             items: { type: 'number' },

@@ -4,12 +4,10 @@ import * as string from '../../parse/data/string';
 import * as boolean from '../../parse/data/boolean';
 import * as number from '../../parse/data/number';
 
-import { merge } from '@quenk/noni/lib/data/record';
-
 import { compile } from '../../../../lib/schema/compile/string';
+import { tests as asyncSchema } from '../function/data/async';
 import { runParseSuites, runParseTest } from '../../../tests';
 import { pipelines } from './data/key';
-import { asyncSchema } from './data/async';
 
 const tests = {
     object: object.tests,
@@ -19,16 +17,22 @@ const tests = {
     number: number.tests
 };
 
-            const mkpath = (suite, name) =>
-                `${__dirname}/data/expected/${suite}/` +
-                name
-                    .split(' ')
-                    .join('-')
-                    .split('"')
-                    .join('')
-                    .split('.')
-                    .join('-') +
-                '.json';
+const replacements = {
+    ' ': '-',
+    '"': '',
+    '.': '-',
+    is: ' equals ',
+    '(': '',
+    ')': ''
+};
+
+const mkpath = (suite, name) => {
+    let str = name;
+    for (let [target, dest] of Object.entries(replacements))
+        str = str.split(target).join(dest);
+
+    return `${__dirname}/data/expected/${suite}/${str}.json`;
+};
 
 describe('string', () => {
     describe('compile', () => {
@@ -40,19 +44,15 @@ describe('string', () => {
             tests
         );
 
-        describe('key', () => {
-                        for (let [suite, schema] of Object.entries(pipelines)) {
+        describe('options.key', () => {
+            for (let [suite, schema] of Object.entries(pipelines)) {
                 describe(suite, () => {
                     runParseTest(
                         {
                             name: `should work for custom ${suite} key`,
                             suite,
                             mkpath,
-                            parse: schema =>
-                                compile(
-                                     { key: 'pipes' },
-                                    schema
-                                )
+                            parse: schema => compile({ key: 'pipes' }, schema)
                         },
                         schema
                     );
@@ -60,22 +60,21 @@ describe('string', () => {
             }
         });
 
- describe('async', () => {
-                        for (let [suite, schema] of Object.entries(asyncSchema)) {
+        describe('options.async', () => {
+            for (let [suite, tests] of Object.entries(asyncSchema)) {
                 describe(suite, () => {
-                    runParseTest(
-                        {
-                            name: `should work for async ${suite}`,
-                            suite,
-                            mkpath,
-                            parse: schema =>
-                                compile(
-                                   {async:true},
-                                    schema
-                                )
-                        },
-                        schema
-                    );
+                    for (let test of tests) {
+                        runParseTest(
+                            {
+                                name: test.name,
+                                suite,
+                                mkpath,
+                                parse: schema =>
+                                    compile({ async: true }, schema)
+                            },
+                            test.schema
+                        );
+                    }
                 });
             }
         });

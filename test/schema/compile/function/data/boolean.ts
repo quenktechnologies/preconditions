@@ -1,5 +1,3 @@
-import { preconditions } from './preconditions';
-
 export const tests = [
     {
         name: 'type=boolean',
@@ -78,13 +76,13 @@ export const tests = [
     },
     {
         name: 'key=pipes',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: { type: 'boolean', pipes: [['flip', []]] },
         cases: [{ value: true, ok: false }]
     },
     {
         name: 'key=pipes (original key)',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: { type: 'boolean', preconditions: [['flip', []]] },
         cases: [{ value: true }]
     }

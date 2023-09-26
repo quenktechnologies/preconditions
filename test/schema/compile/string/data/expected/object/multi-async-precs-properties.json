@@ -1,0 +1,1 @@
+object.restrict({n : base.and(base.and(inc(1),identity),inc(1))})

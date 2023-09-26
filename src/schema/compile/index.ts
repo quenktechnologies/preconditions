@@ -197,7 +197,7 @@ export abstract class CompileContext<T, O extends BaseOptions = BaseOptions>
      */
     visitArray = (node: ArrayNode<T>) => {
         let [, [builtins, items, precs = []]] = node;
-        let result = this.items(items);
+        let result = items ? this.items(items) : this.identity;
 
         if (!empty(builtins)) result = this.and(this.every(builtins), result);
 
@@ -209,7 +209,8 @@ export abstract class CompileContext<T, O extends BaseOptions = BaseOptions>
     /**
      * visitPrim turns a primitive node into a single precondition.
      */
-    visitPrim = ([, precs]: PrimNode<T>) => this.every(precs);
+    visitPrim = ([, precs]: PrimNode<T>) =>
+        empty(precs) ? this.identity : this.every(precs);
 
     visit = (node: Node<T>): T => {
         let type = node[0];

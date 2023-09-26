@@ -1,5 +1,3 @@
-import { preconditions } from './preconditions';
-
 export const tests = [
     {
         name: 'type=object',
@@ -118,6 +116,7 @@ export const tests = [
                     id: 1
                 }
             },
+            { value: { id: 1, age: 12 }, ok: { id: 1 } },
             {
                 value: {},
                 notOk: {
@@ -389,7 +388,7 @@ export const tests = [
     },
     {
         name: 'key=pipes',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: {
             type: 'object',
             properties: { n: { type: 'number' } },
@@ -399,7 +398,7 @@ export const tests = [
     },
     {
         name: 'key=pipes (original key)',
-        options: { key: 'pipes', preconditions },
+        options: { key: 'pipes' },
         schema: {
             type: 'object',
             properties: { n: { type: 'number' } },

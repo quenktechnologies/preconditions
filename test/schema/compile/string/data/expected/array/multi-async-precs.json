@@ -1,0 +1,1 @@
+base.and(array.map(base.identity),base.and(base.and(count,inc(1)),inc(1)))

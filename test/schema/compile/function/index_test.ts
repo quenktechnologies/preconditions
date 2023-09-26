@@ -3,11 +3,12 @@ import * as array from './data/array';
 import * as string from './data/string';
 import * as boolean from './data/boolean';
 import * as number from './data/number';
+import * as async from './data/async';
 
-import { runFuncCompileTests } from '../../../tests';
+import { runFuncCompileTests, runAsyncFuncCompileTests } from '../../../tests';
 
-describe('compile', () => {
-    describe('function', () =>
+describe('function', () => {
+    describe('compile', () =>
         runFuncCompileTests({
             object: object.tests,
             array: array.tests,
@@ -15,4 +16,6 @@ describe('compile', () => {
             boolean: boolean.tests,
             number: number.tests
         }));
+
+    describe('compileAsync', () => runAsyncFuncCompileTests(async.tests));
 });

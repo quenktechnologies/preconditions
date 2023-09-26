@@ -1,8 +1,0 @@
-[
-    "number",
-    [
-        ["base.type", ["number"]],
-        ["numberify", []]
-    ],
-    false
-]

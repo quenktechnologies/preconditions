@@ -1,3 +1,5 @@
+import * as precs from './preconditions';
+
 import { assert } from '@quenk/test/lib/assert';
 
 import { Value } from '@quenk/noni/lib/data/jsonx';
@@ -5,10 +7,17 @@ import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
 import { readJSONFile, readTextFile, writeFile } from '@quenk/noni/lib/io/file';
 import { Either } from '@quenk/noni/lib/data/either';
+import { merge } from '@quenk/noni/lib/data/record';
 
 import { Precondition } from '../lib';
-import { compile, Options } from '../lib/schema/compile/function';
+import {
+    AsyncOptions,
+    compile,
+    compileAsync,
+    Options
+} from '../lib/schema/compile/function';
 import { Schema } from '../lib/schema';
+import { AsyncPrecondition } from '../lib/async';
 
 /**
  * TestCase is a single input->output test.
@@ -55,7 +64,7 @@ interface SchemaTestSuite extends BaseTestSuite {
     /**
      * options passed to the compile function.
      */
-    options?: Partial<Options>;
+    options?: Partial<Options | AsyncOptions>;
 
     /**
      * schena to test
@@ -69,11 +78,30 @@ interface SchemaTestSuite extends BaseTestSuite {
 export const runPrecTests = (tests: Record<PrecTestSuite[]>) =>
     runBaseTests(tests, s => s.precondition);
 
+const options = {
+    preconditions: precs.preconditions,
+    asyncPreconditions: precs.asyncPreconditions
+};
+
 /**
  * runFuncCompileTests tests functions compiled from a schema.
  */
 export const runFuncCompileTests = (tests: Record<SchemaTestSuite[]>) =>
-    runBaseTests(tests, s => compile(s.options || {}, s.schema).takeRight());
+    runBaseTests(tests, s => {
+        let eresult = compile(merge(options, s.options || {}), s.schema);
+        if (eresult.isLeft()) throw new Error(eresult.takeLeft().message);
+        return eresult.takeRight();
+    });
+
+/**
+ * runAsyncFuncCompileTests tests async functions compiled from a schema.
+ */
+export const runAsyncFuncCompileTests = (tests: Record<SchemaTestSuite[]>) =>
+    runBaseTests(tests, s => {
+        let eresult = compileAsync(merge(options, s.options || {}), s.schema);
+        if (eresult.isLeft()) throw new Error(eresult.takeLeft().message);
+        return eresult.takeRight();
+    });
 
 /**
  * runBaseTests sets up multiple TestSuites.
@@ -83,7 +111,7 @@ export const runFuncCompileTests = (tests: Record<SchemaTestSuite[]>) =>
  */
 const runBaseTests = <S extends BaseTestSuite>(
     tests: Record<S[]>,
-    take: (s: S) => Precondition<Type, Type>
+    take: (s: S) => Precondition<Type, Type> | AsyncPrecondition<Type, Type>
 ) => {
     for (let [suite, targets] of Object.entries(tests))
         describe(suite, () => {
@@ -107,9 +135,9 @@ const runBaseTests = <S extends BaseTestSuite>(
                     for (let i = 0; i < cases.length; i++) {
                         if (!isNaN(runCase) && i !== runCase) continue;
 
-                        it(`Test Case ${i}`, () => {
+                        it(`Test Case ${i}`, async () => {
                             let kase = cases[i];
-                            let eresult = prec(kase.value);
+                            let eresult = await prec(kase.value);
                             if (kase.hasOwnProperty('notOk')) {
                                 assert(
                                     eresult.isLeft(),
@@ -217,7 +245,7 @@ export const runParseTest = (
         let mresult = parse(schema);
         assert(mresult.isRight(), 'parse successful').true();
 
-        let result = mresult.takeRight();
+        let result = mresult.takeRight() || '';
 
         let path = mkpath(suite, name);
 

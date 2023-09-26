@@ -179,7 +179,7 @@ export interface AsyncOptions extends BaseOptions {
  * AsyncPreconditionsAvailable is a namespaced map or a map of async providers.
  */
 export interface AsyncPreconditionsAvailable
-    extends Record<Record<AsyncProvider>> {}
+    extends Record<AsyncProvider | Record<AsyncProvider>> {}
 
 const asyncProps = {
     restrict: asyncObject.restrict,
@@ -217,8 +217,8 @@ export class AsyncFunctionContext extends CompileContext<
         );
 
     get = (path: Path, args: Type[]): Maybe<AsyncPrecondition> =>
-        get(path, this.options.asyncPreconditions).map(fn =>
-            fn.apply(null, args)
+        get(path, this.options.asyncPreconditions).chain(fn =>
+            isFunction(fn) ? just(fn.apply(null, args)) : nothing()
         );
 }
 
