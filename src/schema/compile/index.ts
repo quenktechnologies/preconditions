@@ -1,3 +1,4 @@
+import { Maybe } from '@quenk/noni/lib/data/maybe';
 import {
     Record,
     empty as isEmpty,
@@ -5,6 +6,7 @@ import {
     map
 } from '@quenk/noni/lib/data/record';
 import { empty } from '@quenk/noni/lib/data/array';
+import { Type } from '@quenk/noni/lib/data/type';
 
 import {
     Node,
@@ -14,9 +16,7 @@ import {
     BuiltinsAvailable,
     ParseContext
 } from '../parse';
-import { Maybe } from '@quenk/noni/lib/data/maybe';
-import { JSONPrecondition, Schema } from '..';
-import { Type } from '@quenk/noni/lib/data/type';
+import { JSONPrecondition, PreconditionSpec, Schema } from '..';
 
 /**
  * BuiltinsConf allow for the configuration of the builtinsAvailable parser
@@ -150,10 +150,13 @@ export abstract class CompileContext<T, O extends BaseOptions = BaseOptions>
      */
     abstract items: (prec: T) => T;
 
-    abstract get: (path: string, args: Type[]) => Maybe<T>;
+    /**
+     * get a precondition given a spec for it.
+     */
+    abstract get: (spec: PreconditionSpec<T>) => Maybe<T>;
 
     getPipeline = (schema: Schema) =>
-        <JSONPrecondition[]>schema[this.options.key] || [];
+        <JSONPrecondition[]>(<Type>schema)[this.options.key] || [];
 
     /**
      * visitObject turns an object node into a single precondition.

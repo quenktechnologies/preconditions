@@ -1,0 +1,1 @@
+base.and(base.and(base.type("object"),base.or(object.restrict({name : base.and(base.and(base.and(base.type("string"),string.trim(true)),stringify),uppercase),id : base.type("string")}),object.map(base.and(base.and(base.and(base.type("number"),number.min(12)),numberify),inc(1))))),base.and(objectify,dedupe))

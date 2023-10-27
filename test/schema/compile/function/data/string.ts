@@ -1,3 +1,5 @@
+import { preconditions } from '../../../../data/preconditions';
+
 export const tests = [
     {
         name: 'type=string',
@@ -332,5 +334,10 @@ export const tests = [
         options: { key: 'pipes' },
         schema: { type: 'string', preconditions: [['concat', ['!']]] },
         cases: [{ value: 'hello' }]
+    },
+    {
+        name: 'inline',
+        schema: { type: 'string', preconditions: [preconditions.concat('!')] },
+        cases: [{ value: 'hello', ok: 'hello!' }]
     }
 ];

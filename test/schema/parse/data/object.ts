@@ -1,8 +1,4 @@
-import { Record } from '@quenk/noni/lib/data/record';
-
-import { Schema } from '../../.../../../../lib/schema';
-
-export const tests: Record<Schema> = {
+export const tests = {
     'should parse object schema': {
         type: 'object',
         const: {
@@ -11,17 +7,6 @@ export const tests: Record<Schema> = {
         default: {
             n: 2
         },
-        enum: [
-            {
-                n: 1
-            },
-            {
-                n: 2
-            },
-            {
-                n: 3
-            }
-        ],
         properties: {
             n: {
                 type: 'number',

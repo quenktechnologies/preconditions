@@ -1,11 +1,11 @@
-import { just } from '@quenk/noni/lib/data/maybe';
+import { just, nothing } from '@quenk/noni/lib/data/maybe';
 import { Record, mapTo, merge } from '@quenk/noni/lib/data/record';
 import { empty } from '@quenk/noni/lib/data/array';
-import { Type } from '@quenk/noni/lib/data/type';
+import { isString } from '@quenk/noni/lib/data/type';
 
 import { parse } from '../parse';
 import { BaseOptions, CompileContext } from '.';
-import { Schema } from '..';
+import { PreconditionSpec, Schema } from '..';
 
 /**
  * Code output.
@@ -46,17 +46,25 @@ export class StringContext extends CompileContext<Code> {
 
     items = (prec: Code) => `array.map(${prec})`;
 
-    get = (path: string, args: Type[]) =>
-        just(
-            empty(args)
-                ? path
-                : [
-                      path,
-                      '(',
-                      args.map(val => JSON.stringify(val)).join(','),
-                      ')'
-                  ].join('')
-        );
+    get = (spec: PreconditionSpec<Code>) => {
+        if (Array.isArray(spec)) {
+            let [path, args] = spec;
+            return just(
+                empty(args)
+                    ? path
+                    : [
+                          path,
+                          '(',
+                          args.map(val => JSON.stringify(val)).join(','),
+                          ')'
+                      ].join('')
+            );
+        } else if (isString(spec)) {
+            return just(spec);
+        } else {
+            return nothing<Code>();
+        }
+    };
 }
 
 const defaultOptions = (opts: Partial<Options>) =>

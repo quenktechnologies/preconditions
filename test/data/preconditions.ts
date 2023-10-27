@@ -1,8 +1,8 @@
 import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 
-import { AsyncPreconditionsAvailable } from '../lib/schema/compile/function';
-import { succeed } from '../lib/result';
-import { lift } from '../lib/async';
+import { AsyncPreconditionsAvailable } from '../../lib/schema/compile/function';
+import { succeed } from '../../lib/result';
+import { lift } from '../../lib/async';
 
 export const preconditions = {
     identity: () => (val: Value) => succeed<Value, Value>(val),
@@ -10,7 +10,7 @@ export const preconditions = {
     flip: () => (val: boolean) => succeed<Value, Value>(!val),
     concat: (str: string) => (val: string) =>
         succeed<string, string>(val + str),
-    stringify: () => (val: Value) => succeed<Value, Value>(String(val)),
+    stringify: () => (val: Value) => succeed<Value, Value>(JSON.stringify(val)),
     count: () => (val: Value) =>
         succeed<Value, Value>(
             Array.isArray(val) ? val.length : Object.keys(val).length
@@ -19,7 +19,7 @@ export const preconditions = {
     set: (val: Value) => () => succeed<Value, Value>(val)
 };
 
-export const asyncPreconditions: AsyncPreconditionsAvailable = {
+export const asyncPreconditionsRaw = {
     identity: () => lift(preconditions.identity()),
     inc: (n: number) => lift(preconditions.inc(n)),
     flip: () => lift(preconditions.flip()),
@@ -29,3 +29,6 @@ export const asyncPreconditions: AsyncPreconditionsAvailable = {
     get: (name: string) => lift(preconditions.get(name)),
     set: (val: Value) => lift(preconditions.set(val))
 };
+
+export const asyncPreconditions: AsyncPreconditionsAvailable =
+    asyncPreconditionsRaw;

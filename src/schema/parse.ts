@@ -3,7 +3,13 @@ import { empty } from '@quenk/noni/lib/data/array';
 import { right } from '@quenk/noni/lib/data/either';
 import { merge, Record } from '@quenk/noni/lib/data/record';
 
-import { JSONPrecondition, Schema } from './';
+import {
+    ArrayTypeSchema,
+    JSONPrecondition,
+    ObjectTypeSchema,
+    PreconditionSpec,
+    Schema
+} from './';
 import { Maybe } from '@quenk/noni/lib/data/maybe';
 import { isObject, Type } from '@quenk/noni/lib/data/type';
 
@@ -91,15 +97,15 @@ export interface ParseContext<T> {
     builtinsAvailable: Partial<BuiltinsAvailable>;
 
     /**
-     * get a single precondition T given its path and any arguments.
+     * get a single precondition T given a spec.
      */
-    get: (path: Path, args: Type[]) => Maybe<T>;
+    get: (spec: PreconditionSpec<T>) => Maybe<T>;
 
     /**
      * getPipeline given a Schema, returns its pipeline or an empty array if
      * none exists.
      */
-    getPipeline(schema: Schema): JSONPrecondition[];
+    getPipeline(schema: Schema): PreconditionSpec<T>[];
 
     /**
      * visit a Node in the tree returning a transformation.
@@ -220,16 +226,18 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
     PENDING: while (!empty(pending)) {
         let [stack, owner] = <Frame<T>>pending.pop();
         while (!empty(stack)) {
-            let [schema, currentPath, currentTarget] = <Item<T>>stack.pop();
+            let [currentSchema, currentPath, currentTarget] = <Item<T>>(
+                stack.pop()
+            );
 
             let builtins = takeBuiltins(
                 merge(defaultBuiltins, ctx.builtinsAvailable || {}),
-                schema
+                currentSchema
             );
 
-            let preconditions = ctx.getPipeline(schema);
+            let preconditions = ctx.getPipeline(currentSchema);
 
-            if (!isComplex(schema)) {
+            if (!isComplex(currentSchema)) {
                 let eprecs = toPrecondition(ctx, [
                     ...builtins,
                     ...preconditions
@@ -238,9 +246,9 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                 if (eprecs.isLeft()) return raise(eprecs.takeLeft());
 
                 (<T[]>currentTarget)[<number>currentPath] = ctx.visit([
-                    <'number'>schema.type,
+                    <'number'>currentSchema.type,
                     eprecs.takeRight(),
-                    Boolean(schema.optional)
+                    Boolean(currentSchema.optional)
                 ]);
             } else {
                 pending.push([stack, owner]); // Save current state for later.
@@ -258,7 +266,8 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
 
                 let precs = eprecs.takeRight();
 
-                if (schema.type === 'object') {
+                if (currentSchema.type === 'object') {
+                    let schema = <ObjectTypeSchema>currentSchema;
                     let newStack: Item<T>[] = [];
 
                     let object: ObjectNode<T> = [
@@ -285,7 +294,8 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                         newStack,
                         [object, currentPath, currentTarget]
                     ]);
-                } else if (schema.type === 'array') {
+                } else if (currentSchema.type === 'array') {
+                    let schema = <ArrayTypeSchema>currentSchema;
                     let array = <ArrayNode<T>>(
                         (<Type>[
                             'array',
@@ -296,7 +306,11 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
 
                     let newStack: Item<T>[] = [];
 
-                    newStack.push([<Schema>schema.items, 1, <T[]>array[1]]);
+                    newStack.push([
+                        <Schema>(<ArrayTypeSchema>schema).items,
+                        1,
+                        <T[]>array[1]
+                    ]);
 
                     pending.push([
                         newStack,
@@ -325,21 +339,27 @@ const takeBuiltins = (
         let [, name] = path.split('.');
         if (
             Object.prototype.hasOwnProperty.call(schema, name) &&
-            !(booleanExtractors.includes(name) && schema[name] === false)
+            !(
+                booleanExtractors.includes(name) &&
+                (<Type>schema)[name] === false
+            )
         )
-            result.push([path, [schema[name]]]);
+            result.push([path, [(<Type>schema)[name]]]);
         return result;
     }, <JSONPrecondition[]>[]);
 
 const toPrecondition = <T>(
     ctx: ParseContext<T>,
-    list: JSONPrecondition[]
+    list: PreconditionSpec<T>[]
 ): Except<T[]> => {
     let result = [];
-    for (let [path, args] of list) {
-        let mprec = ctx.get(path, args);
+    for (let spec of list) {
+        let mprec = ctx.get(spec);
 
-        if (mprec.isNothing()) return raise(`Unknown provider "${path}"!`);
+        if (mprec.isNothing())
+            return raise(
+                `Could not resolve the following value to a precondition: ${spec} !`
+            );
 
         result.push(mprec.get());
     }

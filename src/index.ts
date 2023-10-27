@@ -178,7 +178,8 @@ export const and =
                 return left<Failure<A>, C>(
                     MF.create(value, result2.takeLeft())
                 );
-            else return right<Failure<A>, C>(result2.takeRight());
+
+            return right<Failure<A>, C>(result2.takeRight());
         }
     };
 

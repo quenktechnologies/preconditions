@@ -3,7 +3,7 @@
  * like syntax.
  */
 import { Record } from '@quenk/noni/lib/data/record';
-import { Object, Value } from '@quenk/noni/lib/data/jsonx';
+import { Value } from '@quenk/noni/lib/data/jsonx';
 
 export const TYPE_OBJECT = 'object';
 export const TYPE_ARRAY = 'array';
@@ -25,10 +25,12 @@ export type Path = string;
 export type JSONPrecondition = [Path, Value[]];
 
 /**
- * JSONPreconditionSpec is a precondition or ref to one that form part of a
- * pipeline to be applied to a data value.
+ * PreconditionSpec specifies a precondtion.
+ *
+ * This can be a JSONPrecondition or an actual precondition value represented
+ * by the type T output from the parse/compile function.
  */
-export type JSONPreconditionSpec = Path | JSONPrecondition;
+export type PreconditionSpec<T> = JSONPrecondition | T;
 
 /**
  * Schema is a valid form of one of the supported schemas.
@@ -50,7 +52,7 @@ export type SchemaType = string;
  * `properties` or `additionalProperties` keys of an object schema or the `items`
  * key of an array schema.
  */
-export interface PropertyTypeSchema extends Object {
+export interface PropertyTypeSchema {
     /**
      * type indicates the type of data that is valid for this schema.
      */
@@ -59,6 +61,8 @@ export interface PropertyTypeSchema extends Object {
     /**
      * cast if true indicates the field should be auto cast to the specified
      * type.
+     *
+     * Note that this is only honoured for string, boolean and number schema.
      */
     cast?: boolean;
 
@@ -121,6 +125,11 @@ export interface ArrayTypeSchema extends PropertyTypeSchema {
      * maxLength specifies the maximum array length allowed.
      */
     maxLength?: number;
+
+    /**
+     * nonEmpty if true, indicates the array must have at least 1 element.
+     */
+    nonEmpty?: boolean;
 }
 
 /**
@@ -147,6 +156,45 @@ export interface StringTypeSchema extends PropertyTypeSchema {
      * enum if specified, restricts the valid values to the specified list.
      */
     enum?: string[];
+
+    /**
+     * nonEmpty if true, indicates the string must not be an empty string.
+     */
+    nonEmpty?: boolean;
+
+    /**
+     * trim if true, indicates the string should be trimmed of whitespace on
+     * both ends.
+     */
+    trim?: boolean;
+
+    /**
+     * lowerCase if true, indicates toLowerCase() should be called on the
+     * string.
+     */
+    lowerCase?: boolean;
+
+    /**
+     * upperCase if true, indicates toUpperCase() should be called on the
+     * string.
+     */
+    upperCase?: boolean;
+
+    /**
+     * split if specified splits the string into an array based on the
+     * token provided.
+     */
+    split?: string;
+}
+
+/**
+ * BooleanTypeSchema represents a value that may be true or false.
+ */
+export interface BooleanTypeSchema extends PropertyTypeSchema {
+    /**
+     * enum if specified, restricts the valid values to the specified list.
+     */
+    enum?: boolean[];
 }
 
 /**
@@ -168,44 +216,3 @@ export interface NumberTypeSchema extends PropertyTypeSchema {
      */
     enum?: number[];
 }
-
-/**
- * BooleanTypeSchema represents a value that may be true or false.
- */
-export type BooleanTypeSchema = PropertyTypeSchema;
-
-/**
- * JSONPreconditionProvider is a function that once invoked provides a
- * precondition.
- */
-export type JSONPreconditionProvider = (...args: Value[]) => JSONPrecondition;
-
-/**
- * Options used during schema conversion.
- */
-export interface Options {
-    /**
-     * strict if true will not cast types before checking.
-     *
-     * Defaults to false.
-     */
-    strict: boolean;
-
-    /**
-     * context used to resolve precondition references.
-     */
-    context: Context;
-
-    /**
-     * partial if true will only validate present properties on object types.
-     *
-     * This is usually used for updates, defaults to false.
-     */
-    partial: boolean;
-}
-
-/**
- * Context is used to resolve preconditions found in the respective pipeline
- * directives.
- */
-export type Context = Record<JSONPrecondition | JSONPreconditionProvider>;

@@ -1,3 +1,5 @@
+import { preconditions } from '../../../../data/preconditions';
+
 export const tests = [
     {
         name: 'type=object',
@@ -405,5 +407,17 @@ export const tests = [
             preconditions: [['get', ['n']]]
         },
         cases: [{ value: { n: 1 } }]
+    },
+    {
+        name: 'inline',
+        schema: {
+            type: 'object',
+            preconditions: [preconditions.stringify()],
+            properties: {
+                x: { type: 'number', preconditions: [preconditions.inc(1)] },
+                y: { type: 'number' }
+            }
+        },
+        cases: [{ value: { x: 1, y: 1 }, ok: '{"y":1,"x":2}' }]
     }
 ];

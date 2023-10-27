@@ -1,14 +1,9 @@
-import { Record } from '@quenk/noni/lib/data/record';
-
-import { Schema } from '../../.../../../../lib/schema';
-
-export const tests: Record<Schema> = {
+export const tests = {
     'should parse array schema': {
         type: 'array',
         const: [1],
         default: [2],
         cast: true,
-        enum: [[1], [2], [3]],
         minItems: 1,
         maxItems: 3,
         items: {

@@ -14,8 +14,8 @@ import { get } from '@quenk/noni/lib/data/record/path';
 import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type, isFunction } from '@quenk/noni/lib/data/type';
 
-import { parse, Path } from '../parse';
-import { Schema } from '..';
+import { parse } from '../parse';
+import { PreconditionSpec, Schema } from '..';
 import { BaseOptions, CompileContext } from '.';
 
 /**
@@ -23,10 +23,12 @@ import { BaseOptions, CompileContext } from '.';
  */
 export type Precondition = base.Precondition<Value, Value>;
 
+type Provide<T> = (...args: Type[]) => T;
+
 /**
  * Provider provides a precondition given some arguments.
  */
-export type Provider = (...args: Type[]) => Precondition;
+export type Provider = Provide<Precondition>;
 
 /**
  * PreconditionsAvailable is a namespaced map or a map of providers.
@@ -128,11 +130,25 @@ export class FunctionContext extends CompileContext<Precondition, Options> {
     items = (prec: Precondition) =>
         <Precondition>base.and(base.typeOf<Value[]>('array'), array.map(prec));
 
-    get = (path: Path, args: Type[]): Maybe<Precondition> =>
-        get(path, this.options.preconditions).chain(fn =>
+    get = (spec: PreconditionSpec<Precondition>): Maybe<Precondition> =>
+        doGet<Precondition>(this.options.preconditions, spec);
+}
+
+const doGet = <T>(
+    rec: Record<Provide<T> | Record<Provide<T>>>,
+    spec: PreconditionSpec<T>
+): Maybe<T> => {
+    if (Array.isArray(spec)) {
+        let [path, args] = spec;
+        return get(path, rec).chain(fn =>
             isFunction(fn) ? just(fn.apply(null, args)) : nothing()
         );
-}
+    } else if (isFunction(spec)) {
+        return just(<T>spec);
+    } else {
+        return nothing();
+    }
+};
 
 /**
  * compile a schema into a single precondition function.
@@ -216,10 +232,10 @@ export class AsyncFunctionContext extends CompileContext<
             )
         );
 
-    get = (path: Path, args: Type[]): Maybe<AsyncPrecondition> =>
-        get(path, this.options.asyncPreconditions).chain(fn =>
-            isFunction(fn) ? just(fn.apply(null, args)) : nothing()
-        );
+    get = (
+        spec: PreconditionSpec<AsyncPrecondition>
+    ): Maybe<AsyncPrecondition> =>
+        doGet<AsyncPrecondition>(this.options.asyncPreconditions, spec);
 }
 
 /**

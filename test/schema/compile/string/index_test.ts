@@ -8,6 +8,7 @@ import { compile } from '../../../../lib/schema/compile/string';
 import { tests as asyncSchema } from '../function/data/async';
 import { runParseSuites, runParseTest } from '../../../tests';
 import { pipelines } from './data/key';
+import { allInline } from './data/inline';
 
 const tests = {
     object: object.tests,
@@ -31,20 +32,22 @@ const mkpath = (suite, name) => {
     for (let [target, dest] of Object.entries(replacements))
         str = str.split(target).join(dest);
 
-    return `${__dirname}/data/expected/${suite}/${str}.json`;
+    return `${__dirname}/data/expected/${suite}/${str}.ts`;
 };
 
-describe('string', () => {
-    describe('compile', () => {
-        runParseSuites(
-            {
-                mkpath,
-                parse: schema => compile({}, schema)
-            },
-            tests
-        );
+describe('compile', () => {
+    describe('string', () => {
+        describe('default options', () => {
+            runParseSuites(
+                {
+                    mkpath,
+                    parse: schema => compile({}, schema)
+                },
+                tests
+            );
+        });
 
-        describe('options.key', () => {
+        describe('options.key set', () => {
             for (let [suite, schema] of Object.entries(pipelines)) {
                 describe(suite, () => {
                     runParseTest(
@@ -60,21 +63,54 @@ describe('string', () => {
             }
         });
 
-        describe('options.async', () => {
+        describe('options.async true', () => {
             for (let [suite, tests] of Object.entries(asyncSchema)) {
                 describe(suite, () => {
                     for (let test of tests) {
-                        runParseTest(
-                            {
-                                name: test.name,
-                                suite,
-                                mkpath,
-                                parse: schema =>
-                                    compile({ async: true }, schema)
-                            },
-                            test.schema
-                        );
+                        if (!test.name.includes('inline'))
+                            runParseTest(
+                                {
+                                    name: test.name,
+                                    suite,
+                                    mkpath,
+                                    parse: schema =>
+                                        compile({ async: true }, schema)
+                                },
+                                test.schema
+                            );
                     }
+                });
+            }
+        });
+
+        describe('inline', () => {
+            for (let [suite, schema] of Object.entries(allInline)) {
+                describe(suite, () => {
+                    runParseTest(
+                        {
+                            name: `should work for ${suite} with embedded preconditions`,
+                            suite,
+                            mkpath,
+                            parse: schema => compile({}, schema)
+                        },
+                        schema
+                    );
+                });
+            }
+        });
+
+        describe('inline (async)', () => {
+            for (let [suite, schema] of Object.entries(allInline)) {
+                describe(suite, () => {
+                    runParseTest(
+                        {
+                            name: `should work for ${suite} with async embedded preconditions`,
+                            suite,
+                            mkpath,
+                            parse: schema => compile({ async: true }, schema)
+                        },
+                        schema
+                    );
                 });
             }
         });

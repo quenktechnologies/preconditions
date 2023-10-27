@@ -1,8 +1,4 @@
-import { Record } from '@quenk/noni/lib/data/record';
-
-import { Schema } from '../../.../../../../lib/schema';
-
-export const tests: Record<Schema> = {
+export const tests = {
     'should parse boolean schema': {
         type: 'boolean',
         const: false,

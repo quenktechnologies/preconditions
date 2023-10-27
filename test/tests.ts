@@ -1,11 +1,16 @@
-import * as precs from './preconditions';
+import * as precs from './data/preconditions';
 
 import { assert } from '@quenk/test/lib/assert';
 
 import { Value } from '@quenk/noni/lib/data/jsonx';
 import { Type } from '@quenk/noni/lib/data/type';
 import { Record } from '@quenk/noni/lib/data/record';
-import { readJSONFile, readTextFile, writeFile } from '@quenk/noni/lib/io/file';
+import {
+    readJSONFile,
+    readTextFile,
+    removeFile,
+    writeFile
+} from '@quenk/noni/lib/io/file';
 import { Either } from '@quenk/noni/lib/data/either';
 import { merge } from '@quenk/noni/lib/data/record';
 
@@ -235,7 +240,8 @@ export interface RunParseTestOptions extends ParseTestSuiteOptions {
 }
 
 /**
- * runParseTests compares the output of a parse/compile to files stored on disk.
+ * runParseTests compares the output of a parse (or string compile) to files
+ * stored on disk.
  */
 export const runParseTest = (
     { json, name, suite, mkpath, parse }: RunParseTestOptions,
@@ -243,6 +249,10 @@ export const runParseTest = (
 ) => {
     it(name, async () => {
         let mresult = parse(schema);
+
+        if (mresult.isLeft() && process.env.DEBUG)
+            console.error('parse error: ', mresult.takeLeft());
+
         assert(mresult.isRight(), 'parse successful').true();
 
         let result = mresult.takeRight() || '';
@@ -251,6 +261,8 @@ export const runParseTest = (
 
         if (process.env.GENERATE)
             return writeFile(path, json ? JSON.stringify(result) : result);
+
+        if (process.env.REMOVE) return removeFile(path);
 
         assert(result).equate(
             await (json ? readJSONFile(path) : readTextFile(path))

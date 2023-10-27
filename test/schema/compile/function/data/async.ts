@@ -1,3 +1,5 @@
+import { asyncPreconditionsRaw } from '../../../../data/preconditions';
+
 export const tests = {
     object: [
         {
@@ -40,7 +42,6 @@ export const tests = {
             },
             cases: [{ value: { n: 1 }, ok: 3 }]
         },
-
         {
             name: 'no async pipeline (properties)',
             schema: {
@@ -162,6 +163,21 @@ export const tests = {
                 }
             },
             cases: [{ value: { n: 1 }, ok: { n: 3 } }]
+        },
+        {
+            name: 'inline',
+            schema: {
+                type: 'object',
+                asyncPreconditions: [asyncPreconditionsRaw.stringify()],
+                properties: {
+                    x: {
+                        type: 'number',
+                        asyncPreconditions: [asyncPreconditionsRaw.inc(1)]
+                    },
+                    y: { type: 'number' }
+                }
+            },
+            cases: [{ value: { x: 1, y: 1 }, ok: '{"y":1,"x":2}' }]
         }
     ],
     array: [
@@ -260,6 +276,19 @@ export const tests = {
                 }
             },
             cases: [{ value: [1, 1, 1], ok: [3, 3, 3] }]
+        },
+
+        {
+            name: 'inline',
+            schema: {
+                type: 'array',
+                asyncPreconditions: [asyncPreconditionsRaw.stringify()],
+                items: {
+                    type: 'number',
+                    asyncPreconditions: [asyncPreconditionsRaw.inc(1)]
+                }
+            },
+            cases: [{ value: [1, 1, 1], ok: '[2,2,2]' }]
         }
     ],
     string: [
@@ -294,6 +323,14 @@ export const tests = {
                 ]
             },
             cases: [{ value: 'hi', ok: 'hi?!' }]
+        },
+        {
+            name: 'inline',
+            schema: {
+                type: 'string',
+                asyncPreconditions: [asyncPreconditionsRaw.concat('!')]
+            },
+            cases: [{ value: 'hello', ok: 'hello!' }]
         }
     ],
 
@@ -329,6 +366,14 @@ export const tests = {
                 ]
             },
             cases: [{ value: true, ok: true }]
+        },
+        {
+            name: 'inline',
+            schema: {
+                type: 'boolean',
+                asyncPreconditions: [asyncPreconditionsRaw.flip()]
+            },
+            cases: [{ value: false, ok: true }]
         }
     ],
 
@@ -364,6 +409,14 @@ export const tests = {
                 ]
             },
             cases: [{ value: 9, ok: 12 }]
+        },
+        {
+            name: 'inline',
+            schema: {
+                type: 'number',
+                asyncPreconditions: [asyncPreconditionsRaw.inc(1)]
+            },
+            cases: [{ value: 11, ok: 12 }]
         }
     ]
 };

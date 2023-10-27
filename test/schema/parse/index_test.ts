@@ -24,7 +24,7 @@ const tests = {
 const context = {
     builtinsAvailable: {},
 
-    get: (path: string, args: Type[]) => just([path, args]),
+    get: spec => just(spec),
 
     getPipeline: schema => <Type>schema.preconditions || [],
 
