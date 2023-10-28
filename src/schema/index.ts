@@ -114,7 +114,7 @@ export interface ArrayTypeSchema extends PropertyTypeSchema {
     /**
      * items indicates the allowed schema for any item appearing in the array.
      */
-    items: Schema;
+    items?: Schema;
 
     /**
      * minLength specifies the minimum array length allowed.

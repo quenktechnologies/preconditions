@@ -222,5 +222,12 @@ export const tests = [
             items: { type: 'number', preconditions: [preconditions.inc(1)] }
         },
         cases: [{ value: [1, 1, 1], ok: '[2,2,2]' }]
+    },
+    {
+        name: 'no items',
+        schema: {
+            type: 'array'
+        },
+        cases: [{ value: [1, '2', false], ok: [1, '2', false] }]
     }
 ];

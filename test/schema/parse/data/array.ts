@@ -55,5 +55,8 @@ export const tests = {
             optional: true,
             type: 'string'
         }
+    },
+    'should allow ommitted items key': {
+        type: 'array'
     }
 };

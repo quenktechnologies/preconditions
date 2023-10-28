@@ -299,18 +299,14 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                     let array = <ArrayNode<T>>(
                         (<Type>[
                             'array',
-                            [builtinPrecs, , precs],
+                            [builtinPrecs, null, precs],
                             Boolean(schema.optional)
                         ])
                     );
-
                     let newStack: Item<T>[] = [];
 
-                    newStack.push([
-                        <Schema>(<ArrayTypeSchema>schema).items,
-                        1,
-                        <T[]>array[1]
-                    ]);
+                    if (schema.items)
+                        newStack.push([<Schema>schema.items, 1, <T[]>array[1]]);
 
                     pending.push([
                         newStack,
