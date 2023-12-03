@@ -1,1 +1,1 @@
-object.restrict({n : inc(1)})
+object.schemaProperties({,n : inc(1),}, object.restrict, )

@@ -1,1 +1,1 @@
-object.map(base.identity)
+object.schemaProperties({,}, object.restrict, base.identity)

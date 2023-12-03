@@ -1,9 +1,1 @@
-[
-    "array",
-    [
-        [["base.type", ["array"]]],
-        ["string", [["base.type", ["string"]]], false],
-        []
-    ],
-    true
-]
+["array",[[["base.type",["array"]]],["string",[["base.type",["string"]]],false],[]],true]

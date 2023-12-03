@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@quenk/kindof": "^1.2.0",
-    "@quenk/noni": "^1.51.0",
+    "@quenk/noni": "^1.52.1",
     "@quenk/polate": "^1.3.0"
   }
 }

@@ -1,16 +1,1 @@
-[
-    "string",
-    [
-        ["base.default", [":)"]],
-        ["string.cast", [true]],
-        ["base.type", ["string"]],
-        ["base.enum", [[":)", ":(", ">:("]]],
-        ["string.minLength", [3]],
-        ["string.maxLength", [2]],
-        ["string.pattern", ["/[:(>(]/"]],
-        ["string.trim", [true]],
-        ["string.lowerCase", [true]],
-        ["string.upperCase", [true]]
-    ],
-    false
-]
+["string",[["base.default",[":)"]],["string.cast",[true]],["base.type",["string"]],["base.enum",[[":)",":(",">:("]]],["string.minLength",[3]],["string.maxLength",[2]],["string.pattern",["/[:(>(]/"]],["string.trim",[true]],["string.lowerCase",[true]],["string.upperCase",[true]]],false]

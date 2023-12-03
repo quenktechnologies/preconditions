@@ -1,1 +1,1 @@
-base.identity
+object.schemaProperties({,}, object.restrict, )

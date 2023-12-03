@@ -1,10 +1,1 @@
-[
-    "object",
-    [
-        [["base.type", ["object"]]],
-        { "id": ["number", [["base.type", ["number"]]], false] },
-        ["string", [["base.type", ["string"]]], false],
-        []
-    ],
-    true
-]
+["object",[[["base.type",["object"]]],{"id":["number",[["base.type",["number"]]],false]},["string",[["base.type",["string"]]],false],[]],true]

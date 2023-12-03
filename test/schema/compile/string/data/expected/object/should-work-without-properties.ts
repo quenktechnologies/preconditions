@@ -1,1 +1,1 @@
-base.and(base.type("object"),object.map(base.type("boolean")))
+base.and(base.type("object"),object.schemaProperties({,}, object.restrict, base.type("boolean")))

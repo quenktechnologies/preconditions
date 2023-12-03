@@ -1,1 +1,1 @@
-count
+base.and(object.schemaProperties({,}, object.restrict, ),count)

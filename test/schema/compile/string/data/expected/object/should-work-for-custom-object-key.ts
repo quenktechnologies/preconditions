@@ -1,1 +1,1 @@
-base.and(base.and(base.type("object"),base.or(object.restrict({name : base.and(base.type("string"),stringify),id : base.type("string")}),object.map(base.and(base.type("number"),numberify)))),objectify)
+base.and(base.and(base.type("object"),object.schemaProperties({,name : base.and(base.type("string"),stringify),id : base.type("string"),}, object.restrict, base.and(base.type("number"),numberify))),objectify)
