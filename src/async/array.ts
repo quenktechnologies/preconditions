@@ -1,5 +1,8 @@
+import * as lazy from '@quenk/noni/lib/data/lazy';
+
 import { Right, left } from '@quenk/noni/lib/data/either';
 import { pure, parallel, Future } from '@quenk/noni/lib/control/monad/future';
+
 import { Precondition } from '../async';
 import { ArrayFailure } from '../result/failure/array';
 import { Failure, Failures } from '../result/failure';
@@ -70,3 +73,30 @@ export const tuple =
             return pure(succeed<A[], B[]>(results.map(e => e.takeRight())));
         });
     };
+
+/**
+ * Reducer (async version)
+ */
+export type Reducer<A, B> = (accum: B) => Precondition<A, B>;
+
+/**
+ * reduce (async version)
+ */
+export const reduce =
+    <A, B>(getAccum: lazy.Lazy<B>, func: Reducer<A, B>): Precondition<A[], B> =>
+    (value: A[]) =>
+        Future.do(async () => {
+            let accum = lazy.evaluate(getAccum);
+            for (let i = 0; i < value.length; i++) {
+                let eresult = await func(accum)(value[i]);
+
+                if (eresult.isLeft()) {
+                    let err = eresult.takeLeft();
+                    return left(ArrayFailure.create({ [i]: err }, value, {}));
+                }
+
+                accum = eresult.takeRight();
+            }
+
+            return succeed(accum);
+        });

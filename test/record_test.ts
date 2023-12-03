@@ -1,8 +1,19 @@
 import { assert } from '@quenk/test/lib/assert';
 
 import { Type } from '@quenk/noni/lib/data/type';
+import { Value } from '@quenk/noni/lib/data/jsonx';
 
-import { restrict, disjoint, union, intersect, map } from '../lib/record';
+import {
+    restrict,
+    disjoint,
+    union,
+    intersect,
+    map,
+    merge,
+    mergeRight,
+    exclude,
+    schemaProperties
+} from '../lib/record';
 import { isRecord } from '../lib/record';
 import { Preconditions } from '../lib';
 import { Precondition, every } from '../lib';
@@ -249,6 +260,12 @@ describe('record', function () {
             shouldApplyEveryCondtion(union(access)));
     });
 
+    const inc = (val: number) => succeed<Value, Value>(++val);
+
+    const id = (val: number) => succeed<Value, Value>(val);
+
+    const bad = (val: number) => fail<Value, Value>('bad', val);
+
     // TODO: Migrate remaining tests.
     runPrecTests({
         map: [
@@ -350,6 +367,121 @@ describe('record', function () {
                     { value: [], notOk: 'object' }
                 ]
             }
+        ],
+        schemaProperties: [
+            {
+                name: 'should work when additionalProperties unspecified',
+                precondition: schemaProperties(restrict, {
+                    a: inc,
+                    b: id,
+                    c: inc
+                }),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        ok: {
+                            a: 2,
+                            b: 1,
+                            c: 2
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should work when properties empty',
+                precondition: schemaProperties(restrict, {}, inc),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        ok: {
+                            a: 2,
+                            b: 2,
+                            c: 2
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should work with both',
+                precondition: schemaProperties(
+                    restrict,
+                    { a: inc, b: id, c: inc },
+                    inc
+                ),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1, d: 1 },
+                        ok: { a: 2, b: 1, c: 2, d: 2 }
+                    }
+                ]
+            },
+            {
+                name: 'should pass through object if no properties or additionalProperties',
+                precondition: schemaProperties(restrict, {}),
+                cases: [{ value: { a: 1, b: 1, c: 1 } }]
+            },
+            {
+                name: 'should yield properties failures',
+                precondition: schemaProperties(restrict, {
+                    a: inc,
+                    b: id,
+                    c: bad
+                }),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        notOk: {
+                            c: 'bad'
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should yield additionalProperties Failures',
+                precondition: schemaProperties(restrict, {}, bad),
+                cases: [
+                    {
+                        value: { a: 1 },
+                        notOk: {
+                            a: 'bad'
+                        }
+                    }
+                ]
+            }
         ]
+    });
+
+    describe('merge', () => {
+        it('should merge objects', () => {
+            assert(merge({ x: 1 })({ y: 2 }).takeRight()).equate({
+                x: 1,
+                y: 2
+            });
+        });
+
+        it('should merge left', () => {
+            assert(merge({ x: 1 })({ x: 2 }).takeRight()).equate({ x: 2 });
+        });
+    });
+
+    describe('mergeRight', () => {
+        it('should merge objects', () => {
+            assert(mergeRight({ x: 1 })({ y: 2 }).takeRight()).equate({
+                x: 1,
+                y: 2
+            });
+        });
+
+        it('should merge right', () => {
+            assert(mergeRight({ x: 1 })({ x: 2 }).takeRight()).equate({ x: 1 });
+        });
+    });
+
+    describe('exclude', () => {
+        it('should exclude the specified keys', () => {
+            assert(
+                exclude(['a', 'c', 'd'])({ a: 1, b: 1, c: 1, d: 1 }).takeRight()
+            ).equate({ b: 1 });
+        });
     });
 });

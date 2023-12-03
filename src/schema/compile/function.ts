@@ -23,6 +23,11 @@ import { BaseOptions, CompileContext } from '.';
  */
 export type Precondition = base.Precondition<Value, Value>;
 
+/**
+ * Preconditions specialized to jsonx values.
+ */
+export type Preconditions = Record<Precondition>;
+
 type Provide<T> = (...args: Type[]) => T;
 
 /**
@@ -45,13 +50,6 @@ export interface Options extends BaseOptions {
      */
     preconditions: PreconditionsAvailable;
 }
-
-const props = {
-    restrict: object.restrict,
-    intersect: object.intersect,
-    disjoint: object.disjoint,
-    union: object.union
-};
 
 /**
  * @internal
@@ -110,6 +108,13 @@ export const defaultAvailables: PreconditionsAvailable = {
     }
 };
 
+const recWrappers = {
+    restrict: object.restrict,
+    intersect: object.intersect,
+    disjoint: object.disjoint,
+    union: object.union
+};
+
 /**
  * FunctionContext is used for compilation of a schema to a synchronous
  * precondition function.
@@ -123,9 +128,12 @@ export class FunctionContext extends CompileContext<Precondition, Options> {
 
     or = base.or;
 
-    properties = <Provider>props[<'restrict'>this.options.propMode];
-
-    additionalProperties = <Provider>object.map;
+    properties = (props: Preconditions, addProps?: Precondition) =>
+        object.schemaProperties(
+            recWrappers[<'restrict'>this.options.propMode],
+            props,
+            addProps
+        );
 
     items = (prec: Precondition) =>
         <Precondition>base.and(base.typeOf<Value[]>('array'), array.map(prec));
@@ -176,6 +184,11 @@ export const compile = (opts: Partial<Options>, schema: Schema) =>
 export type AsyncPrecondition = async.AsyncPrecondition<Value, Value>;
 
 /**
+ * AsyncPreconditions specialized to jsonx values.
+ */
+export type AsyncPreconditions = Record<AsyncPrecondition>;
+
+/**
  * AsyncProvider provides an async precondition given some arguments.
  */
 export type AsyncProvider = (...args: Type[]) => AsyncPrecondition;
@@ -197,7 +210,7 @@ export interface AsyncOptions extends BaseOptions {
 export interface AsyncPreconditionsAvailable
     extends Record<AsyncProvider | Record<AsyncProvider>> {}
 
-const asyncProps = {
+const asyncRecWrappers = {
     restrict: asyncObject.restrict,
     intersect: asyncObject.intersect,
     disjoint: asyncObject.disjoint,
@@ -220,9 +233,15 @@ export class AsyncFunctionContext extends CompileContext<
 
     or = async.or;
 
-    properties = <AsyncProvider>asyncProps[<'restrict'>this.options.propMode];
-
-    additionalProperties = <AsyncProvider>asyncObject.map;
+    properties = (
+        asyncProps: AsyncPreconditions,
+        addProps?: AsyncPrecondition
+    ) =>
+        asyncObject.schemaProperties(
+            asyncRecWrappers[<'restrict'>this.options.propMode],
+            asyncProps,
+            addProps
+        );
 
     items = (prec: AsyncPrecondition) =>
         <AsyncPrecondition>(

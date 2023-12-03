@@ -20,7 +20,8 @@ import {
     caseOf,
     match,
     whenFalse,
-    reject
+    reject,
+    tee
 } from '../src';
 
 const unwrap =
@@ -248,4 +249,33 @@ describe('index', function () {
             assert(reject('testing')(12).takeLeft().explain()).equal(
                 'testing'
             )));
+
+    describe('tee', () => {
+        let exc = (val: string) => succeed<string, string>(`${val}!`);
+
+        let fal = (_: string) => fail('fail', 'fail');
+
+        it('should succeed when given an empty list', () =>
+            assert(tee([])(12).takeRight()).equate([]));
+
+        it('should succeed when the list length is 1', () =>
+            assert(tee([exc])('hi').takeRight()).equate(['hi!']));
+
+        it('should succeed when the list length > 1', () =>
+            assert(tee([exc, exc, exc])('hi').takeRight()).equate([
+                'hi!',
+                'hi!',
+                'hi!'
+            ]));
+
+        it('should fail if any fail', () =>
+            assert(tee([exc, fal, exc])('hi').takeLeft().explain()).equate(
+                'fail'
+            ));
+
+        it('should report the first failure', () =>
+            assert(tee([exc, fal, fal])('hi').takeLeft().explain()).equate(
+                'fail'
+            ));
+    });
 });

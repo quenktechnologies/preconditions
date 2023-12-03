@@ -1,10 +1,5 @@
 import { Maybe } from '@quenk/noni/lib/data/maybe';
-import {
-    Record,
-    empty as isEmpty,
-    filter,
-    map
-} from '@quenk/noni/lib/data/record';
+import { Record, filter, map } from '@quenk/noni/lib/data/record';
 import { empty } from '@quenk/noni/lib/data/array';
 import { Type } from '@quenk/noni/lib/data/type';
 
@@ -128,18 +123,14 @@ export abstract class CompileContext<T, O extends BaseOptions = BaseOptions>
     };
 
     /**
-     * properties combines the preconditions of an object's properties into
-     * one precondition.
+     * properties combines the preconditions for "properties" and
+     * "additionalProperties" section into one.
      *
-     * This precondition must handle record/object types.
+     * The produced precondition must handle record/object type values. The
+     * additionalProperties section is expected to only handled those
+     * properties not explicitly stated in the properties section.
      */
-    abstract properties: (props: Record<T>) => T;
-
-    /**
-     * additionalProperties wraps a precondition so it can be used on the
-     * encountered properties of an object.
-     */
-    abstract additionalProperties: (prec: T) => T;
+    abstract properties: (props: Record<T>, addProps?: T) => T;
 
     /**
      * items given a precondition, produces a precondition that will apply it
@@ -168,14 +159,7 @@ export abstract class CompileContext<T, O extends BaseOptions = BaseOptions>
 
         if (!empty(builtins)) builtinPrecs = this.every(builtins);
 
-        let props;
-
-        if (!isEmpty(rec)) props = this.properties(rec);
-
-        if (addProps) {
-            let prec = this.additionalProperties(addProps);
-            props = props ? this.or(props, prec) : prec;
-        }
+        let props = this.properties(rec, addProps);
 
         let result;
 

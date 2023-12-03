@@ -24,10 +24,6 @@ export type Precondition<A, B> = (value: A) => Result<A, B>;
 
 /**
  * A map of key precondition pairs.
- *
- * The right type class should be the union
- * of all possible values (or any) and the
- * right th union of all possible outcomes.
  */
 export interface Preconditions<A, B> {
     [key: string]: Precondition<A, B>;
@@ -302,4 +298,28 @@ export const typeOf =
         return result
             ? succeed<A, A>(value)
             : fail<A, A>(type, value, { type });
+    };
+
+export { typeOf as type };
+
+/**
+ * tee applies each of the provided preconditions to a single value.
+ *
+ * This results in a list of values each corresponding to a value in the array
+ * upon success. This precondition fails on the first failed precondition
+ * encountered.
+ */
+export const tee =
+    <A, B>(precs: Precondition<A, B>[]): Precondition<A, B[]> =>
+    (value: A) => {
+        let results: B[] = [];
+        for (let i = 0; i < precs.length; i++) {
+            let prec = precs[i];
+            let result = prec(value);
+
+            if (result.isLeft()) return <Result<A, B[]>>(<unknown>result);
+
+            results.push(result.takeRight());
+        }
+        return succeed<A, B[]>(results);
     };

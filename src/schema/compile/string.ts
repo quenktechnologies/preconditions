@@ -37,12 +37,17 @@ export class StringContext extends CompileContext<Code> {
 
     or = (left: Code, right: Code) => `base.or(${left},${right})`;
 
-    properties = (props: Record<Code>) => {
-        let out = mapTo(props, (code, key) => `${key} : ${code}`);
-        return `object.${this.options.propMode}({${out.join(',')}})`;
-    };
+    properties = (props: Record<Code>, addProps = '') => {
+        let obj = [
+            '{',
+            ...mapTo(props, (code, key) => `${key} : ${code}`),
+            '}'
+        ].join(',');
 
-    additionalProperties = (prec: Code) => `object.map(${prec})`;
+        let propPrec = `object.${this.options.propMode}`;
+
+        return `object.schemaProperties(${obj}, ${propPrec}, ${addProps})`;
+    };
 
     items = (prec: Code) => `array.map(${prec})`;
 

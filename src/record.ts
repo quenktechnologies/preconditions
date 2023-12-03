@@ -1,17 +1,21 @@
 import { Type } from '@quenk/noni/lib/data/type';
 import {
     Record,
-    merge,
+    merge as _merge,
     reduce,
     empty,
-    isRecord as _isRecord
+    isRecord as _isRecord,
+    exclude as _exclude,
+    map as _map,
+    keys
 } from '@quenk/noni/lib/data/record';
-import { keys } from '@quenk/noni/lib/data/record';
+import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 
 import { fail as rfail } from './result/failure/record';
+import { reduce as arrayReduce } from './array';
 import { Failures, Failure } from './result/failure';
 import { Result, succeed, fail } from './result';
-import { Precondition, Preconditions, typeOf, and } from './';
+import { Precondition, Preconditions, typeOf, and, tee, identity } from './';
 
 interface Reports<A, B, R extends Record<B>> {
     failures: Failures<A>;
@@ -126,16 +130,29 @@ export const union =
  *
  * If any of the preconditions fail, the whole object is considered a failure.
  */
-export const map = <A, B, R extends Record<B>>(
-    condition: Precondition<A, B>
-): Precondition<Record<A>, R> =>
+
+export const map = <A, B>(
+    prec: Precondition<A, B>
+): Precondition<Record<A>, Record<B>> =>
     and(typeOf('object'), (value: Record<A>) => {
-        let add2Reports = (r: Reports<A, B, R>, v: A, k: string) =>
-            condition(v).fold(onFailure(k, r), onSuccess(k, r));
+        let fcount = 0;
+        let failures: Record<Failure<A>> = {};
+        let success: Record<B> = {};
 
-        let result = reduce(value, reports<A, B, R>(), add2Reports);
+        for (let [key, val] of Object.entries(value)) {
+            let result = prec(val);
 
-        return review<A, B, R>(result, value);
+            if (result.isLeft()) {
+                fcount++;
+                failures[key] = result.takeLeft();
+            } else {
+                (<Record<B>>success)[key] = result.takeRight();
+            }
+        }
+
+        return fcount > 0
+            ? rfail(failures, value, { value })
+            : succeed<Record<A>, Record<B>>(success);
     });
 
 const reports = <A, B, R extends Record<B>>(): Reports<A, B, R> => ({
@@ -158,7 +175,7 @@ const onFailure =
     ) =>
     (f: Failure<A>): Reports<A, B, R> => ({
         values,
-        failures: merge(failures, { [key]: f })
+        failures: _merge(failures, { [key]: f })
     });
 
 const onSuccess =
@@ -171,5 +188,73 @@ const onSuccess =
             ? { failures, values }
             : {
                   failures,
-                  values: merge(values, { [key]: v })
+                  values: _merge(values, { [key]: v })
               };
+
+/**
+ * merge the properties of the value into the provided object.
+ *
+ * Any conflicting properties resolve to the value's property.
+ */
+export const merge =
+    <A extends object, B extends object>(target: B): Precondition<A, A & B> =>
+    (value: A) => {
+        console.error('TARGET', target);
+        console.error('VALUE ', value);
+        return succeed(_merge(target, value));
+    };
+/**
+ * mergeRight is like merge except conflicts are resolved with the target's
+ * property.
+ */
+export const mergeRight =
+    <A extends object, B extends object>(target: B): Precondition<A, A & B> =>
+    (value: A) =>
+        succeed(_merge(value, target));
+
+/**
+ * exclude the specified keys from a record value.
+ */
+export const exclude =
+    <A, R extends Record<A>>(keys: string | string[]): Precondition<R, R> =>
+    (value: R) =>
+        succeed(<R>_exclude(value, keys));
+
+/**
+ * schemaProperties is a special precondition used internally for precondition
+ * generation from object type schema.
+ *
+ * @param props        - The preconditions parsed from the property section of
+ *                       the object schema. If there are no properties, the
+ *                       precondition generated will drop any property values
+ *                       unless the "additionalProperties" section is specified.
+ *
+ * @param propsPrec    - A precondition to wrap the props record in. This
+ *                       should be one of "restrict", "intersect", "union" etc.
+ *
+ * @param addPropsPrec - A precondition parsed from the "additionalProperties"
+ *                       section. This is used to intercept any not explicitly
+ *                       declared properties. Properties declared in the
+ *                       properties section are not passed to this precondition.
+ */
+export const schemaProperties = (
+    propsWrap: (
+        props: Preconditions<Value, Value>
+    ) => Precondition<Object, Object>,
+    props: Preconditions<Value, Value>,
+    addPropsPrec?: Precondition<Value, Value>
+): Precondition<Value, Value> => {
+    let finalPropPrec: Precondition<Object, Object> = empty(props)
+        ? identity
+        : propsWrap(props);
+
+    if (!addPropsPrec) return <Precondition<Value, Value>>finalPropPrec;
+
+    return <Precondition<Value, Value>>and(
+        tee<Object, Object>([
+            finalPropPrec,
+            and(exclude(keys(props)), map(addPropsPrec))
+        ]),
+        arrayReduce<Object, Object>(() => ({}), merge)
+    );
+};

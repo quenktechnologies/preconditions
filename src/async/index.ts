@@ -3,9 +3,12 @@
  * via bluebirds Promise API.
  */
 import * as sync from '../';
+
 import { Pattern, test } from '@quenk/noni/lib/data/type';
-import { Future, pure } from '@quenk/noni/lib/control/monad/future';
+import { Future, parallel, pure } from '@quenk/noni/lib/control/monad/future';
 import { Right, Left, left, right } from '@quenk/noni/lib/data/either';
+import { Record } from '@quenk/noni/lib/data/record';
+
 import { Failure, ModifiedFailure as MF, DualFailure } from '../result/failure';
 import { Result, succeed, fail } from '../result';
 
@@ -17,9 +20,7 @@ export type AsyncPrecondition<A, B> = (a: A) => Future<Result<A, B>>;
 /**
  * AsyncPreconditions map (async).
  */
-export interface AsyncPreconditions<A, B> {
-    [key: string]: AsyncPrecondition<A, B>;
-}
+export type AsyncPreconditions<A, B> = Record<AsyncPrecondition<A, B>>;
 
 // @deprecated
 export {
@@ -198,3 +199,23 @@ export const reject =
 export const log = <A>(value: A): Result<A, A> => (
     console.log(value), succeed(value)
 );
+
+/**
+ * tee (async version)
+ *
+ * See sync version for description.
+ */
+export const tee =
+    <A, B>(precs: AsyncPrecondition<A, B>[]): AsyncPrecondition<A, B[]> =>
+    (value: A) =>
+        Future.do(async () => {
+            let finalResults = [];
+            let results = await parallel(precs.map(prec => prec(value)));
+            for (let result of results) {
+                if (result.isLeft()) return <Result<A, B[]>>(<unknown>result);
+
+                finalResults.push(result.takeRight());
+            }
+
+            return succeed<A, B[]>(finalResults);
+        });

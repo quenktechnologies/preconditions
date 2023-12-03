@@ -8,18 +8,21 @@ import {
     fromCallback
 } from '@quenk/noni/lib/control/monad/future';
 import { Type } from '@quenk/noni/lib/data/type';
+import { Value } from '@quenk/noni/lib/data/jsonx';
 
 import {
     restrict,
     disjoint,
     union,
     intersect,
-    map
+    map,
+    schemaProperties
 } from '../../src/async/record';
 import { isRecord } from '../../src/record';
 import { every, async as wrap } from '../../src/async';
 import { Precondition, Preconditions } from '../../src/async';
 import { Result, succeed, fail } from '../../src/result';
+import { runPrecTests } from '../tests';
 
 const validUser = { name: 'name', age: 12, roles: 'none' };
 
@@ -256,5 +259,96 @@ describe('async', function () {
 
         it('should allow valid data', () =>
             shouldAllowValidData(every(wrap(isRecord), map(async('prim')))));
+    });
+
+    const inc = wrap((val: number) => succeed<Value, Value>(++val));
+
+    const id = wrap((val: number) => succeed<Value, Value>(val));
+
+    const bad = wrap((val: number) => fail<Value, Value>('bad', val));
+
+    // TODO: migrate other tests
+    runPrecTests({
+        schemaProperties: [
+            {
+                name: 'should work when additionalProperties unspecified',
+                precondition: schemaProperties(restrict, {
+                    a: inc,
+                    b: id,
+                    c: inc
+                }),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        ok: {
+                            a: 2,
+                            b: 1,
+                            c: 2
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should work when properties empty',
+                precondition: schemaProperties(restrict, {}, inc),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        ok: {
+                            a: 2,
+                            b: 2,
+                            c: 2
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should work with both',
+                precondition: schemaProperties(
+                    restrict,
+                    { a: inc, b: id, c: inc },
+                    inc
+                ),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1, d: 1 },
+                        ok: { a: 2, b: 1, c: 2, d: 2 }
+                    }
+                ]
+            },
+            {
+                name: 'should yield the object if no properties or additionalProperties',
+                precondition: schemaProperties(restrict, {}),
+                cases: [{ value: { a: 1, b: 1, c: 1 }  }]
+            },
+            {
+                name: 'should yield properties failures',
+                precondition: schemaProperties(restrict, {
+                    a: inc,
+                    b: id,
+                    c: bad
+                }),
+                cases: [
+                    {
+                        value: { a: 1, b: 1, c: 1 },
+                        notOk: {
+                            c: 'bad'
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'should yield additionalProperties Failures',
+                precondition: schemaProperties(restrict, {}, bad),
+                cases: [
+                    {
+                        value: { a: 1 },
+                        notOk: {
+                            a: 'bad'
+                        }
+                    }
+                ]
+            }
+        ]
     });
 });

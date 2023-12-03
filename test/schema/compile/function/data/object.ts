@@ -9,7 +9,6 @@ export const tests = [
         cases: [
             {
                 value: {
-                    n: 1
                 }
             },
             {

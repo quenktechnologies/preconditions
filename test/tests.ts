@@ -59,7 +59,7 @@ interface PrecTestSuite extends BaseTestSuite {
     /**
      * precondition to test.
      */
-    precondition: Precondition<Type, Type>;
+    precondition: Precondition<Type, Type> | AsyncPrecondition<Type, Type>;
 }
 
 /**

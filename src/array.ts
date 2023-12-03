@@ -1,3 +1,5 @@
+import * as lazy from '@quenk/noni/lib/data/lazy';
+
 import { Type } from '@quenk/noni/lib/data/type';
 import { Right, left } from '@quenk/noni/lib/data/either';
 
@@ -119,4 +121,33 @@ export const tuple =
         }
 
         return succeed<A[], B[]>(results.map(e => e.takeRight()));
+    };
+
+/**
+ * Reduce type defines a Precondition styled reducer function.
+ */
+export type Reducer<A, B> = (accum: B) => Precondition<A, B>;
+
+/**
+ * reduce a list of values into an accumalated value initially specified by the
+ * parameter "accum".
+ *
+ * Be careful not to mutate the accumulated value directly to avoid subtle bugs.
+ * Instead copy the value to be accumualted in each call to the reducer.
+ */
+export const reduce =
+    <A, B>(getAccum: lazy.Lazy<B>, func: Reducer<A, B>): Precondition<A[], B> =>
+    (value: A[]) => {
+        let accum = lazy.evaluate(getAccum);
+        for (let i = 0; i < value.length; i++) {
+            let eresult = func(accum)(value[i]);
+            if (eresult.isLeft()) {
+                let err = eresult.takeLeft();
+                return left(AF.create({ [i]: err }, value, {}));
+            }
+
+            accum = eresult.takeRight();
+        }
+
+        return succeed(accum);
     };

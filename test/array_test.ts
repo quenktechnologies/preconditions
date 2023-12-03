@@ -1,6 +1,14 @@
 import { assert } from '@quenk/test/lib/assert';
 
-import { nonEmpty, isArray, filter, map, range, tuple } from '../lib/array';
+import {
+    nonEmpty,
+    isArray,
+    filter,
+    map,
+    range,
+    tuple,
+    reduce
+} from '../lib/array';
 import { succeed, fail } from '../lib/result';
 
 const num = <A>(n: A) =>
@@ -87,6 +95,22 @@ describe('array', () => {
             let ret = tuple(checks)(value).isLeft();
 
             assert(ret).true();
+        });
+    });
+
+    describe('reduce', () => {
+        let inc = prev => curr => succeed(prev + curr);
+
+        it('should reduce an empty list', () => {
+            assert(reduce(0, inc)([]).takeRight()).equate(0);
+        });
+
+        it('should reduce a 1 length list', () => {
+            assert(reduce(0, inc)([1]).takeRight()).equate(1);
+        });
+
+        it('should reduce a n length list', () => {
+            assert(reduce(0, inc)([1, 2, 3, 4, 5]).takeRight()).equate(15);
         });
     });
 });

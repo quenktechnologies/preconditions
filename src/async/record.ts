@@ -1,10 +1,22 @@
-import { Record, reduce, keys, merge } from '@quenk/noni/lib/data/record';
+import * as baseAsync from '.';
+import * as base from '../';
+
+import {
+    Record,
+    reduce,
+    keys,
+    merge,
+    empty
+} from '@quenk/noni/lib/data/record';
+import { Value, Object } from '@quenk/noni/lib/data/jsonx';
 import { Future, pure } from '@quenk/noni/lib/control/monad/future';
 import { Type } from '@quenk/noni/lib/data/type';
 
 import { fail } from '../result/failure/record';
 import { Failure, Failures } from '../result/failure';
 import { Result, succeed } from '../result';
+import { exclude } from '../record';
+import { reduce as arrayReduce } from './array';
 import { Precondition, Preconditions } from './';
 
 interface Reports<A, B, R extends Record<B>> {
@@ -150,3 +162,34 @@ const review =
         keys(r.failures).length > 0
             ? pure(fail<A, B, R>(r.failures, value, {}))
             : pure(succeed<Record<A>, R>(r.values));
+
+/**
+ * schemaProperties (async)
+ */
+export const schemaProperties = (
+    propsWrap: (
+        props: Preconditions<Value, Value>
+    ) => Precondition<Object, Object>,
+    props: Preconditions<Value, Value>,
+    addPropsPrec?: Precondition<Value, Value>
+): Precondition<Value, Value> => {
+    let finalPropPrec: Precondition<Object, Object> = empty(props)
+        ? baseAsync.async(base.identity)
+        : propsWrap(props);
+
+    if (!addPropsPrec) return <Precondition<Value, Value>>finalPropPrec;
+
+    return <Precondition<Value, Value>>baseAsync.and(
+        baseAsync.tee<Object, Object>([
+            finalPropPrec,
+            baseAsync.and(
+                baseAsync.async(exclude(keys(props))),
+                map(addPropsPrec)
+            )
+        ]),
+        arrayReduce<Object, Object>(
+            () => ({}),
+            accm => value => pure(succeed(merge(accm, value)))
+        )
+    );
+};
