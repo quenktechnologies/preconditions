@@ -2,7 +2,6 @@ import * as base from '../../';
 import * as object from '../../record';
 import * as array from '../../array';
 import * as string from '../../string';
-import * as boolean from '../../boolean';
 import * as number from '../../number';
 import * as async from '../../async';
 import * as asyncObject from '../../async/record';
@@ -70,7 +69,8 @@ export const defaultAvailables: PreconditionsAvailable = {
         reject: base.reject,
         every: base.every,
         enum: base.exists,
-        log: () => base.log
+        log: () => base.log,
+        cast: <Provider>base.cast
     },
     object: {
         restrict: <Provider>object.restrict,
@@ -88,7 +88,6 @@ export const defaultAvailables: PreconditionsAvailable = {
         tuple: <Provider>array.tuple
     },
     string: {
-        cast: () => string.toString,
         minLength: <Provider>string.minLength,
         maxLength: <Provider>string.maxLength,
         pattern: <Provider>string.matches,
@@ -98,11 +97,8 @@ export const defaultAvailables: PreconditionsAvailable = {
         split: <Provider>string.split,
         nonEmpty: () => <Precondition>string.nonEmpty
     },
-    boolean: {
-        cast: () => boolean.toBoolean
-    },
+    boolean: {},
     number: {
-        cast: () => number.toNumber,
         min: <Provider>number.min,
         max: <Provider>number.max
     }

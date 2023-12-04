@@ -16,10 +16,15 @@ describe('number', function () {
 
     describe('toNumber', function () {
         it('should fail if not a number', function () {
+            assert(toNumber({}).takeLeft().explain()).equal('NaN');
+            assert(toNumber([]).takeLeft().explain()).equal('NaN');
             assert(toNumber(Date).takeLeft().explain()).equal('NaN');
         });
 
         it('should cast to number', function () {
+            assert(toNumber(1).takeRight()).equal(1);
+            assert(toNumber(true).takeRight()).equal(1);
+            assert(toNumber(false).takeRight()).equal(0);
             assert(toNumber('025.990').takeRight()).equal(25.99);
         });
     });

@@ -319,7 +319,7 @@ describe('async', function () {
             {
                 name: 'should yield the object if no properties or additionalProperties',
                 precondition: schemaProperties(restrict, {}),
-                cases: [{ value: { a: 1, b: 1, c: 1 }  }]
+                cases: [{ value: { a: 1, b: 1, c: 1 } }]
             },
             {
                 name: 'should yield properties failures',

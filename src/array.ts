@@ -1,6 +1,6 @@
 import * as lazy from '@quenk/noni/lib/data/lazy';
 
-import { Type } from '@quenk/noni/lib/data/type';
+import { isNull, isString, Type } from '@quenk/noni/lib/data/type';
 import { Right, left } from '@quenk/noni/lib/data/either';
 
 import { ArrayFailure as AF } from './result/failure/array';
@@ -13,6 +13,17 @@ import { Precondition } from './';
  */
 export const isArray: Precondition<Type, Type[]> = <A>(a: Type) =>
     Array.isArray(a) ? succeed<Type, A[]>(a) : fail<Type, A[]>('isArray', a);
+
+/**
+ * toArray converts a value into an array.
+ *
+ * If the value is an empty string or nullish, an empty array is produced.
+ */
+export const toArray = <A>(value: A) => {
+    if (Array.isArray(value)) return succeed(value);
+    if ((isString(value) && value === '') || isNull(value)) return succeed([]);
+    else return succeed([value]);
+};
 
 /**
  * notEmpty tests if an array has at least one member.

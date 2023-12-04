@@ -7,10 +7,15 @@
  * however some primitivies are provided to make things easier.
  */
 import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
+import { isRecord } from '@quenk/noni/lib/data/record';
+import { Object, Value } from '@quenk/noni/lib/data/jsonx';
 import { Type, Pattern, test, isObject } from '@quenk/noni/lib/data/type';
 
-import { Result, fail, succeed } from './result';
 import { Failure, ModifiedFailure as MF, DualFailure } from './result/failure';
+import { Result, fail, succeed } from './result';
+import { toArray } from './array';
+import { toNumber } from './number';
+import { toString } from './string';
 
 /**
  * Precondition represents some condition that must be satisfied
@@ -36,6 +41,8 @@ export const constant =
     <A, B>(b: B): Precondition<A, B> =>
     (_: A) =>
         succeed<A, B>(b);
+
+export { constant as const };
 
 /**
  * when conditionally applies one of two preconditions depending
@@ -122,6 +129,8 @@ export const defaultValue =
     <A>(fallback: A): Precondition<A, A> =>
     (value?: A) =>
         succeed(value == null ? fallback : value);
+
+export { defaultValue as default };
 
 /**
  * identity always succeeds with the value it is applied to.
@@ -241,6 +250,8 @@ export const isin =
             ? succeed<A, A>(value)
             : fail<A, A>('isin', value);
 
+export { isin as enum };
+
 /**
  * match preforms a type/structure matching on the input
  * value in order to decide which precondition to apply.
@@ -286,10 +297,15 @@ export const log = <A>(value: A): Result<A, A> => (
 );
 
 /**
+ * JSTypeString corresponds to one of the basic JS types.
+ */
+export type JSTypeString = 'object' | 'array' | 'string' | 'boolean' | 'number';
+
+/**
  * typeOf tests whether the value has the specified type.
  */
 export const typeOf =
-    <A>(type: string) =>
+    <A>(type: JSTypeString) =>
     (value: A) => {
         let result;
         if (type === 'array') result = Array.isArray(value);
@@ -301,6 +317,29 @@ export const typeOf =
     };
 
 export { typeOf as type };
+
+/**
+ * cast a value into a jsonx primitive value indicated by the "type".
+ */
+export function cast<A>(type: 'object'): Precondition<A, Object>;
+export function cast<A>(type: 'array'): Precondition<A, Value[]>;
+export function cast<A>(type: 'string'): Precondition<A, string>;
+export function cast<A>(type: 'number'): Precondition<A, number>;
+export function cast<A>(type: 'boolean'): Precondition<A, boolean>;
+export function cast<A>(type: JSTypeString): Precondition<A, Value> {
+    switch (type) {
+        case 'object':
+            return value => succeed(<Object>(isRecord(value) ? value : {}));
+        case 'array':
+            return <Precondition<A, Value[]>>toArray;
+        case 'string':
+            return toString;
+        case 'number':
+            return toNumber;
+        case 'boolean':
+            return (value: A) => succeed(Boolean(value));
+    }
+}
 
 /**
  * tee applies each of the provided preconditions to a single value.

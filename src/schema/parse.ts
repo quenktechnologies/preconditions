@@ -171,7 +171,7 @@ export const defaultBuiltins: BuiltinsAvailable = {
     ],
     string: [
         'base.default',
-        'string.cast',
+        'base.cast',
         'base.const',
         'base.type',
         'base.enum',
@@ -186,7 +186,7 @@ export const defaultBuiltins: BuiltinsAvailable = {
     ],
     number: [
         'base.default',
-        'number.cast',
+        'base.cast',
         'base.const',
         'base.type',
         'base.enum',
@@ -195,7 +195,7 @@ export const defaultBuiltins: BuiltinsAvailable = {
     ],
     boolean: [
         'base.default',
-        'boolean.cast',
+        'base.cast',
         'base.const',
         'base.type',
         'base.enum'
@@ -203,6 +203,8 @@ export const defaultBuiltins: BuiltinsAvailable = {
 };
 
 const booleanExtractors = ['trim', 'lowerCase', 'upperCase', 'cast'];
+
+const typeTakers = ['cast'];
 
 /**
  * parse a Schema into a representation.
@@ -333,14 +335,19 @@ const takeBuiltins = (
 ): JSONPrecondition[] =>
     (available[<'number'>schema.type] || []).reduce((result, path) => {
         let [, name] = path.split('.');
-        if (
-            Object.prototype.hasOwnProperty.call(schema, name) &&
-            !(
+        if (Object.prototype.hasOwnProperty.call(schema, name)) {
+            if (
                 booleanExtractors.includes(name) &&
-                (<Type>schema)[name] === false
-            )
-        )
-            result.push([path, [(<Type>schema)[name]]]);
+                (<Type>schema)[name] !== false
+            ) {
+                result.push([
+                    path,
+                    typeTakers.includes(name) ? [schema.type] : []
+                ]);
+            } else {
+                result.push([path, [(<Type>schema)[name]]]);
+            }
+        }
         return result;
     }, <JSONPrecondition[]>[]);
 

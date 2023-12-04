@@ -40,9 +40,9 @@ export class StringContext extends CompileContext<Code> {
     properties = (props: Record<Code>, addProps = '') => {
         let obj = [
             '{',
-            ...mapTo(props, (code, key) => `${key} : ${code}`),
+            mapTo(props, (code, key) => `${key} : ${code}`).join(','),
             '}'
-        ].join(',');
+        ].join('');
 
         let propPrec = `object.${this.options.propMode}`;
 

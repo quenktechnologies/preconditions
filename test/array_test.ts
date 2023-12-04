@@ -3,6 +3,7 @@ import { assert } from '@quenk/test/lib/assert';
 import {
     nonEmpty,
     isArray,
+    toArray,
     filter,
     map,
     range,
@@ -33,6 +34,21 @@ describe('array', () => {
         it('should work', () => {
             assert(isArray('coo').takeLeft().explain({})).equal('isArray');
             assert(isArray([]).takeRight()).equate([]);
+        });
+    });
+
+    describe('toArray', () => {
+        it('should convert to an array', () => {
+            assert(toArray({}).takeRight()).equate([{}]);
+            assert(toArray([]).takeRight()).equate([]);
+            assert(toArray(' ').takeRight()).equate([' ']);
+            assert(toArray(1).takeRight()).equate([1]);
+            assert(toArray(true).takeRight()).equate([true]);
+        });
+
+        it('should turn nulls and empty strings to empty arrays', () => {
+            assert(toArray(null).takeRight()).equate([]);
+            assert(toArray('').takeRight()).equate([]);
         });
     });
 

@@ -21,8 +21,10 @@ import {
     match,
     whenFalse,
     reject,
-    tee
+    tee,
+    cast
 } from '../src';
+import { runPrecTests } from './tests';
 
 const unwrap =
     <A, B>(p: () => Precondition<A, B>) =>
@@ -277,5 +279,79 @@ describe('index', function () {
             assert(tee([exc, fal, fal])('hi').takeLeft().explain()).equate(
                 'fail'
             ));
+    });
+
+    runPrecTests({
+        cast: [
+            {
+                name: 'object',
+                precondition: cast('object'),
+                cases: [
+                    { value: { name: 'me' } },
+                    { value: [], ok: {} },
+                    { value: '{}', ok: {} },
+                    { value: true, ok: {} },
+                    { value: 1, ok: {} },
+                    { value: null, ok: {} },
+                    { value: undefined, ok: {} }
+                ]
+            },
+            {
+                name: 'array',
+                precondition: cast('array'),
+                cases: [
+                    { value: { name: 'me' }, ok: [{ name: 'me' }] },
+                    { value: [1], ok: [1] },
+                    { value: [], ok: [] },
+                    { value: '1,2,3', ok: ['1,2,3'] },
+                    { value: true, ok: [true] },
+                    { value: 1, ok: [1] },
+                    { value: null, ok: [] },
+                    { value: undefined, ok: [] }
+                ]
+            },
+            {
+                name: 'string',
+                precondition: cast('string'),
+                cases: [
+                    { value: { name: 'me' }, ok: '[object Object]' },
+                    { value: [1], ok: '1' },
+                    { value: [], ok: '' },
+                    { value: '1,2,3' },
+                    { value: true, ok: 'true' },
+                    { value: 1, ok: '1' },
+                    { value: null, ok: '' },
+                    { value: undefined, ok: '' }
+                ]
+            },
+            {
+                name: 'boolean',
+                precondition: cast('boolean'),
+                cases: [
+                    { value: { name: 'me' }, ok: true },
+                    { value: [1], ok: true },
+                    { value: [], ok: true },
+                    { value: '1,2,3', ok: true },
+                    { value: true },
+                    { value: 1, ok: true },
+                    { value: null, ok: false },
+                    { value: undefined, ok: false }
+                ]
+            },
+            {
+                name: 'number',
+                precondition: cast('number'),
+                cases: [
+                    { value: { name: 'me' }, notOk: 'NaN' },
+                    { value: [1], notOk: 'NaN' },
+                    { value: [], notOk: 'NaN' },
+                    { value: '1,2,3', notOk: 'NaN' },
+                    { value: false, ok: 0 },
+                    { value: 1 },
+                    { value: null, ok: 0 },
+                    { value: undefined, notOk: 'NaN' }
+                ]
+            }
+        ]
     });
 });

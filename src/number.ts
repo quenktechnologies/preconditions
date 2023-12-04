@@ -66,7 +66,9 @@ export const isNumber: Precondition<Type, number> = <A>(n: A) =>
  * toNumber casts a string to a number.
  */
 export const toNumber: Precondition<Type, number> = <A>(value: A) => {
-    let n = Number(value);
+    if (value === null) return succeed(0);
+    else if (Array.isArray(value)) return fail('NaN', value, {});
 
+    let n = Number(value);
     return isNaN(n) ? fail<A, number>('NaN', value, {}) : succeed<A, number>(n);
 };
