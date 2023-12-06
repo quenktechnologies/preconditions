@@ -1,1 +1,1 @@
-base.and(base.and(base.type("number"),number.min(1)),number.max(3))
+base.and(base.and(base.and(base.cast(false),base.type("number")),number.min(1)),number.max(3))

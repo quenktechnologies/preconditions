@@ -1,1 +1,1 @@
-base.and(base.and(base.and(base.type("string"),string.trim(true)),stringify),uppercase)
+base.and(base.and(base.and(base.type("string"),string.trim),stringify),uppercase)

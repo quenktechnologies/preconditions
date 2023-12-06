@@ -1,1 +1,1 @@
-base.and(base.default(":)"),base.type("string"))
+base.and(base.and(base.and(base.and(base.and(base.default(":)"),base.cast(false)),base.type("string")),string.trim(false)),string.lowerCase(false)),string.upperCase(false))

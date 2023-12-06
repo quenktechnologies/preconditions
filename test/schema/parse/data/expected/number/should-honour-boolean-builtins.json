@@ -1,1 +1,1 @@
-["number",[["base.type",["number"]],["number.min",[1]],["number.max",[3]]],false]
+["number",[["base.cast",[false]],["base.type",["number"]],["number.min",[1]],["number.max",[3]]],false]

@@ -1,1 +1,1 @@
-object.schemaProperties({,n : base.identity,}, object.restrict, )
+object.schemaProperties({n : base.identity}, object.restrict, )

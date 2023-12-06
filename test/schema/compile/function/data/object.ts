@@ -8,8 +8,7 @@ export const tests = [
         },
         cases: [
             {
-                value: {
-                }
+                value: {}
             },
             {
                 value: new Object(),

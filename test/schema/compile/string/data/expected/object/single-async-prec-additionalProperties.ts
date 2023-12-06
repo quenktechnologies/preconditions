@@ -1,1 +1,1 @@
-object.schemaProperties({,}, object.restrict, inc(1))
+object.schemaProperties({}, object.restrict, inc(1))

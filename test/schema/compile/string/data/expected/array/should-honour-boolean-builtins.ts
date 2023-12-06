@@ -1,1 +1,1 @@
-base.and(base.and(base.type("array"),array.maxItems(3)),array.map(base.type("number")))
+base.and(base.and(base.type("array"),array.maxItems(3)),array.map(base.and(base.cast(false),base.type("number"))))

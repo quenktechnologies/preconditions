@@ -1,1 +1,1 @@
-base.and(base.const(false),base.type("boolean"))
+base.and(base.and(base.cast(false),base.const(false)),base.type("boolean"))
