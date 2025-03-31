@@ -9,7 +9,7 @@
 import { Left, Right, left, right } from '@quenk/noni/lib/data/either';
 import { isRecord } from '@quenk/noni/lib/data/record';
 import { Object, Value } from '@quenk/noni/lib/data/jsonx';
-import { Type, Pattern, test, isObject } from '@quenk/noni/lib/data/type';
+import { Type, test, isObject } from '@quenk/noni/lib/data/type';
 
 import { Failure, ModifiedFailure as MF, DualFailure } from './result/failure';
 import { Result, fail, succeed } from './result';
@@ -285,7 +285,7 @@ export const match =
  *             For String,Number and Boolean, this uses the typeof check.
  */
 export const caseOf =
-    <A, B>(t: Pattern<A>, p: Precondition<A, B>): Precondition<A, B> =>
+    <A, B>(t: Type, p: Precondition<A, B>): Precondition<A, B> =>
     (value: A) =>
         test(value, t) ? p(value) : fail<A, B>('caseOf', value, { type: t });
 

@@ -4,7 +4,7 @@
  */
 import * as sync from '../';
 
-import { Pattern, test } from '@quenk/noni/lib/data/type';
+import { test, Type } from '@quenk/noni/lib/data/type';
 import { Future, parallel, pure } from '@quenk/noni/lib/control/monad/future';
 import { Right, Left, left, right } from '@quenk/noni/lib/data/either';
 import { Record } from '@quenk/noni/lib/data/record';
@@ -138,7 +138,7 @@ const isNon = <A>(value: A): boolean =>
  */
 export const caseOf =
     <A, B>(
-        t: Pattern<A>,
+        t: Type,
         p: AsyncPrecondition<A, B>
     ): AsyncPrecondition<A, B> =>
     (value: A) =>
