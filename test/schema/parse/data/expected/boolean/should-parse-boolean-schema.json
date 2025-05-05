@@ -1,1 +1,11 @@
-["boolean",[["base.default",[true]],["base.cast",["boolean"]],["base.const",[false]],["base.type",["boolean"]],["base.enum",[[false]]]],false]
+[
+    "boolean",
+    [
+        ["base.default", [true]],
+        ["base.cast", ["boolean"]],
+        ["base.const", [false]],
+        ["base.type", ["boolean"]],
+        ["base.enum", [[false]]]
+    ],
+    false
+]

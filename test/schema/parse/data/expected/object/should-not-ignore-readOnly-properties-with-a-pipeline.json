@@ -1,1 +1,14 @@
-["object",[[["base.type",["object"]]],{"active":["boolean",[["base.type",["boolean"]]],false],"name":["string",[["base.type",["string"]]],false],"id":["number",[["test"]],false]},null,[]],false]
+[
+    "object",
+    [
+        [["base.type", ["object"]]],
+        {
+            "active": ["boolean", [["base.type", ["boolean"]]], false],
+            "name": ["string", [["base.type", ["string"]]], false],
+            "id": ["number", [["test"]], false]
+        },
+        null,
+        []
+    ],
+    false
+]

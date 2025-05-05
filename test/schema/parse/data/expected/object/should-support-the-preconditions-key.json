@@ -1,1 +1,34 @@
-["object",[[["base.type",["object"]]],{"n":["number",[["base.type",["number"]],["custom.one",[1]],["custom.two",[2]],["custom.three",[3]]],false]},["boolean",[["base.type",["boolean"]],["custom.one",[true]],["custom.two",[false]],["custom.three",[true]]],false],[["custom.one",[{"n":1}]],["custom.two",[{"n":2}]],["custom.three",[{"n":3}]]]],false]
+[
+    "object",
+    [
+        [["base.type", ["object"]]],
+        {
+            "n": [
+                "number",
+                [
+                    ["base.type", ["number"]],
+                    ["custom.one", [1]],
+                    ["custom.two", [2]],
+                    ["custom.three", [3]]
+                ],
+                false
+            ]
+        },
+        [
+            "boolean",
+            [
+                ["base.type", ["boolean"]],
+                ["custom.one", [true]],
+                ["custom.two", [false]],
+                ["custom.three", [true]]
+            ],
+            false
+        ],
+        [
+            ["custom.one", [{ "n": 1 }]],
+            ["custom.two", [{ "n": 2 }]],
+            ["custom.three", [{ "n": 3 }]]
+        ]
+    ],
+    false
+]

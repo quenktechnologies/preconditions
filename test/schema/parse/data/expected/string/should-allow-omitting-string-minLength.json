@@ -1,1 +1,16 @@
-["string",[["base.default",[":)"]],["base.cast",["string"]],["base.const",[":("]],["base.type",["string"]],["base.enum",[[":)",":(",">:("]]],["string.maxLength",[2]],["string.pattern",["/[:(>(]/"]],["string.trim",[]],["string.lowerCase",[]],["string.upperCase",[]]],false]
+[
+    "string",
+    [
+        ["base.default", [":)"]],
+        ["base.cast", ["string"]],
+        ["base.const", [":("]],
+        ["base.type", ["string"]],
+        ["base.enum", [[":)", ":(", ">:("]]],
+        ["string.maxLength", [2]],
+        ["string.pattern", ["/[:(>(]/"]],
+        ["string.trim", []],
+        ["string.lowerCase", []],
+        ["string.upperCase", []]
+    ],
+    false
+]

@@ -1,1 +1,37 @@
-["object",[[["base.default",[{"n":2}]],["base.type",["object"]]],{"n":["number",[["base.default",[2]],["base.cast",["number"]],["base.const",[1]],["base.type",["number"]],["base.enum",[[1,2,3]]],["number.min",[1]],["number.max",[3]]],false]},["boolean",[["base.default",[true]],["base.cast",["boolean"]],["base.const",[false]],["base.type",["boolean"]],["base.enum",[[false]]]],false],[]],false]
+[
+    "object",
+    [
+        [
+            ["base.default", [{ "n": 2 }]],
+            ["base.type", ["object"]]
+        ],
+        {
+            "n": [
+                "number",
+                [
+                    ["base.default", [2]],
+                    ["base.cast", ["number"]],
+                    ["base.const", [1]],
+                    ["base.type", ["number"]],
+                    ["base.enum", [[1, 2, 3]]],
+                    ["number.min", [1]],
+                    ["number.max", [3]]
+                ],
+                false
+            ]
+        },
+        [
+            "boolean",
+            [
+                ["base.default", [true]],
+                ["base.cast", ["boolean"]],
+                ["base.const", [false]],
+                ["base.type", ["boolean"]],
+                ["base.enum", [[false]]]
+            ],
+            false
+        ],
+        []
+    ],
+    false
+]

@@ -1,1 +1,12 @@
-["number",[["base.default",[2]],["base.const",[1]],["base.type",["number"]],["base.enum",[[1,2,3]]],["number.min",[1]],["number.max",[3]]],false]
+[
+    "number",
+    [
+        ["base.default", [2]],
+        ["base.const", [1]],
+        ["base.type", ["number"]],
+        ["base.enum", [[1, 2, 3]]],
+        ["number.min", [1]],
+        ["number.max", [3]]
+    ],
+    false
+]

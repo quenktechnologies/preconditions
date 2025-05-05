@@ -81,15 +81,15 @@ export interface PropertyTypeSchema {
      */
     optional?: boolean;
 
-  /**
-   * readOnly if true indicates the property is readOnly and should not be 
-   * included.
-   *
-   * The restrict and intersect preconditions only consider properties that 
-   * are defined and will omit any not appearing in the original compiled
-   * schema.
-   */
-    readOnly?: boolean
+    /**
+     * readOnly if true indicates the property is readOnly and should not be
+     * included.
+     *
+     * The restrict and intersect preconditions only consider properties that
+     * are defined and will omit any not appearing in the original compiled
+     * schema.
+     */
+    readOnly?: boolean;
 }
 
 /**

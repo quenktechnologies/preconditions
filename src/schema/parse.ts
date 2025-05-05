@@ -232,14 +232,16 @@ export const parse = <T>(ctx: ParseContext<T>, schema: Schema): Except<T> => {
                 stack.pop()
             );
 
-            let builtins = currentSchema.readOnly ? [] :  takeBuiltins(
-                merge(defaultBuiltins, ctx.builtinsAvailable || {}),
-                currentSchema
-            );
+            let builtins = currentSchema.readOnly
+                ? []
+                : takeBuiltins(
+                      merge(defaultBuiltins, ctx.builtinsAvailable || {}),
+                      currentSchema
+                  );
 
             let preconditions = ctx.getPipeline(currentSchema);
 
-            if(currentSchema.readOnly && empty(preconditions)) continue;
+            if (currentSchema.readOnly && empty(preconditions)) continue;
 
             if (!isComplex(currentSchema)) {
                 let eprecs = toPrecondition(ctx, [
