@@ -110,5 +110,23 @@ export const tests = {
             type: 'string',
             optional: true
         }
+    },
+ 'should ignore readOnly properties': {
+        type: 'object',
+        properties: {
+          id: { type: 'number', readOnly:true},
+          name: {type:'string' },
+          active: { type: 'boolean', readOnly: false }
+        },
+    },
+
+ 'should not ignore readOnly properties with a pipeline': {
+        type: 'object',
+        properties: {
+          id: { type: 'number', readOnly:true, preconditions: [['test']]},
+          name: {type:'string' },
+          active: { type: 'boolean', readOnly: false }
+        },
     }
+
 };
