@@ -46,7 +46,7 @@ export class StringContext extends CompileContext<Code> {
 
         let propPrec = `object.${this.options.propMode}`;
 
-        return `object.schemaProperties(${obj}, ${propPrec}, ${addProps})`;
+        return `object.schemaProperties(${propPrec}, ${obj}, ${addProps})`;
     };
 
     items = (prec: Code) => `array.map(${prec})`;

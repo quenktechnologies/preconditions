@@ -1,1 +1,1 @@
-base.and(object.schemaProperties({}, object.restrict, ),base.and(base.and(count,inc(1)),inc(1)))
+base.and(object.schemaProperties(object.restrict, {}, ),base.and(base.and(count,inc(1)),inc(1)))

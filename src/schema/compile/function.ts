@@ -132,7 +132,12 @@ export class FunctionContext extends CompileContext<Precondition, Options> {
         );
 
     items = (prec: Precondition) =>
-        <Precondition>base.and(base.typeOf<Value[]>('array'), array.map(prec));
+        <Precondition>(
+            base.and(
+                <Precondition>base.typeOf<Value[]>('array'),
+                <Precondition>array.map(prec)
+            )
+        );
 
     get = (spec: PreconditionSpec<Precondition>): Maybe<Precondition> =>
         doGet<Precondition>(this.options.preconditions, spec);
@@ -242,8 +247,8 @@ export class AsyncFunctionContext extends CompileContext<
     items = (prec: AsyncPrecondition) =>
         <AsyncPrecondition>(
             async.and(
-                async.async(base.typeOf<Value[]>('array')),
-                asyncArray.map(prec)
+                <AsyncPrecondition>async.async(base.typeOf<Value[]>('array')),
+                <AsyncPrecondition>asyncArray.map(prec)
             )
         );
 

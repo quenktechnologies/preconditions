@@ -137,10 +137,7 @@ const isNon = <A>(value: A): boolean =>
  * caseOf (async).
  */
 export const caseOf =
-    <A, B>(
-        t: Type,
-        p: AsyncPrecondition<A, B>
-    ): AsyncPrecondition<A, B> =>
+    <A, B>(t: Type, p: AsyncPrecondition<A, B>): AsyncPrecondition<A, B> =>
     (value: A) =>
         test(value, t)
             ? p(value)

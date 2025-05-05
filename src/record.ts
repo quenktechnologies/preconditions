@@ -134,26 +134,29 @@ export const union =
 export const map = <A, B>(
     prec: Precondition<A, B>
 ): Precondition<Record<A>, Record<B>> =>
-    and(typeOf('object'), (value: Record<A>) => {
-        let fcount = 0;
-        let failures: Record<Failure<A>> = {};
-        let success: Record<B> = {};
+    and(
+        <Precondition<Record<A>, Record<A>>>typeOf('object'),
+        (value: Record<A>) => {
+            let fcount = 0;
+            let failures: Record<Failure<A>> = {};
+            let success: Record<B> = {};
 
-        for (let [key, val] of Object.entries(value)) {
-            let result = prec(val);
+            for (let [key, val] of Object.entries(value)) {
+                let result = prec(val);
 
-            if (result.isLeft()) {
-                fcount++;
-                failures[key] = result.takeLeft();
-            } else {
-                (<Record<B>>success)[key] = result.takeRight();
+                if (result.isLeft()) {
+                    fcount++;
+                    failures[key] = result.takeLeft();
+                } else {
+                    (<Record<B>>success)[key] = result.takeRight();
+                }
             }
-        }
 
-        return fcount > 0
-            ? rfail(failures, value, { value })
-            : succeed<Record<A>, Record<B>>(success);
-    });
+            return fcount > 0
+                ? rfail(failures, value, { value })
+                : succeed<Record<A>, Record<B>>(success);
+        }
+    );
 
 const reports = <A, B, R extends Record<B>>(): Reports<A, B, R> => ({
     failures: {},

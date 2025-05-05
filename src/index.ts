@@ -304,9 +304,13 @@ export type JSTypeString = 'object' | 'array' | 'string' | 'boolean' | 'number';
 /**
  * typeOf tests whether the value has the specified type.
  */
-export const typeOf =
-    <A>(type: JSTypeString) =>
-    (value: A) => {
+export function typeOf<A>(type: 'object'): Precondition<A, Object>;
+export function typeOf<A>(type: 'array'): Precondition<A, Value[]>;
+export function typeOf<A>(type: 'string'): Precondition<A, string>;
+export function typeOf<A>(type: 'boolean'): Precondition<A, boolean>;
+export function typeOf<A>(type: 'number'): Precondition<A, number>;
+export function typeOf<A>(type: JSTypeString) {
+    return (value: A) => {
         let result;
         if (type === 'array') result = Array.isArray(value);
         else if (type === 'object') result = isObject(value);
@@ -315,6 +319,7 @@ export const typeOf =
             ? succeed<A, A>(value)
             : fail<A, A>(type, value, { type });
     };
+}
 
 export { typeOf as type };
 

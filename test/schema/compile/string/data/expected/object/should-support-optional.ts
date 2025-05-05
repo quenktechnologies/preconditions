@@ -1,1 +1,1 @@
-base.optional(base.and(base.type("object"),object.schemaProperties({id : base.type("number")}, object.restrict, base.type("string"))))
+base.optional(base.and(base.type("object"),object.schemaProperties(object.restrict, {id : base.type("number")}, base.type("string"))))

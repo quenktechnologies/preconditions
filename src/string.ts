@@ -18,6 +18,8 @@ export const matches = (
             : succeed<string, string>(value);
 };
 
+export {matches as pattern}
+
 /**
  * maxLength test.
  */

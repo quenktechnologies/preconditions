@@ -75,7 +75,7 @@ describe('async', function () {
             );
 
             return toPromise(p('quenk')).then(r =>
-                assert(r.takeRight()).equal('quenk -> String')
+                assert(r.takeRight()).equal('quenk -> quenk')
             );
         });
     });
